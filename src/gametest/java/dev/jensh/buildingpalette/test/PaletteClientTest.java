@@ -38,6 +38,14 @@ public final class PaletteClientTest implements FabricClientGameTest {
             world.getConnection().waitForChunksRender();
             context.waitTicks(25);
             context.runOnClient(mc -> {
+                var identities = new java.util.HashMap<Object, Shape>();
+                for (ItemStack icon : Materials.palette(new ItemStack(Items.OAK_PLANKS))) {
+                    var shape = Materials.get(icon).shape();
+                    var itemState = new net.minecraft.client.renderer.item.TrackingItemStackRenderState();
+                    mc.getItemModelResolver().updateForTopItem(itemState, icon, ItemDisplayContext.GUI, mc.level, mc.player, 0);
+                    Shape previous = identities.put(itemState.getModelIdentity(), shape);
+                    if (previous != null) throw new AssertionError("GUI model cache collision between " + previous + " and " + shape);
+                }
                 var entity = (MultipartEntity)mc.level.getBlockEntity(new BlockPos(0, 100, 0));
                 if (entity == null || entity.cells().occupied() == 0) throw new AssertionError("Multipart cells did not synchronize");
                 var renderer = mc.getBlockEntityRenderDispatcher().<MultipartEntity, dev.jensh.buildingpalette.client.MultipartRenderer.State>getRenderer(entity);

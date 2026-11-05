@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-alpha.3
+
+- Fix shared GUI atlas entries making the full block and vertical step look like extra corners in the shape palette.
+- Give generated shape icons a distinct cache identity for their material and shape.
+- Add a client regression checking that every palette shape has a distinct GUI model identity.
+
+## 0.1.0-alpha.2
+
+- Replace the vector-style icon with an original 16×16 pixel-art sprite inspired by the other projects.
+- Include the new icon in the mod jar and on the Modrinth page; gameplay is unchanged.
+
 ## 0.1.0-alpha.1
 
 - Add Alt-scroll building palette with conserved material balances and up to 512 corners per slot.

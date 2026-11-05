@@ -25,6 +25,8 @@ public abstract class ItemModelMixin {
         ItemStateAccessor accessor = (ItemStateAccessor)output;
         int start = accessor.palette$getCount();
         ((ItemModelResolver)(Object)this).appendItemLayers(output, new ItemStack(selection.parent()), context, level, owner, seed);
+        // Cropped geometry must not reuse the parent's GUI atlas entry or another shape's entry.
+        output.appendModelIdentityElement(selection);
         int mask = Cells.mask(selection.shape(), 0, 0);
         for (int layer = start; layer < accessor.palette$getCount(); layer++) {
             var state = accessor.palette$getLayers()[layer];

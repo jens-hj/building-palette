@@ -23,3 +23,7 @@ The full copied RPG environment needs two test-only adjustments: suppress Frozen
 This is an alpha. Functional block entities and families without a full-block parent are excluded; fences and walls preserve native behavior. Multipart blocks cannot be pushed by pistons, and arbitrary ticking-block behavior, structure rotations, or bespoke third-party processing APIs are not guaranteed. Standard ingredient-based processing inherits native selected-shape matching and fractional guards; individual machine interfaces have not all been exhaustively exercised.
 
 Keep the mod installed for worlds containing multipart blocks. There is no export/removal migration. No live RPG installation was performed. Subsequently, the alpha and source archives were uploaded to Modrinth and the project was submitted for public review; the source repository is public.
+
+## GUI cache regression — alpha.3
+
+The base-client regression first reproduced a shared GUI model identity between the full block and vertical step. Adding the material/shape selection to the model identity made the regression pass for every oak palette entry. The private-display client run also passed held, inventory, and offhand scrolling and captured fresh screenshots with distinct block, vertical-step, and corner icons. Alpha.3 and its sources were uploaded to Modrinth; both uploaded SHA-512 hashes match the local archives. The project gallery was refreshed.
