@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.9
+
+- Support Fabric Loader 0.19.5 instead of unnecessarily requiring 0.20.1.
+- Build and validate against Loader 0.19.5 so existing compatible instances can load the mod.
+
 ## 0.1.0-alpha.8
 
 - Refine the mixed-material icon with straighter isometric edges and more consistent pixel corners; gameplay is unchanged.

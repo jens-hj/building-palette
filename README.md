@@ -16,7 +16,7 @@ Fences and walls remain native and retain their normal connection/placement beha
 
 Install the same Building Palette jar on **client and server**, with:
 
-- Minecraft 26.3, Java 25, Fabric Loader 0.20.1 or later
+- Minecraft 26.3, Java 25, Fabric Loader 0.19.5 or later
 - Fabric API 0.165.0+26.3
 - Clutter No More **3.1.1+26.3**
 - Offgrid **1.0.4+26.3**
@@ -58,6 +58,6 @@ The full-RPG development test suppresses FrozenLib's development-only early log 
 
 ## Publishing
 
-The Modrinth project is configured with an icon, gallery, MIT license, both-side requirements, and pinned companion dependencies. Version `0.1.0-alpha.8` is uploaded and the project has been submitted for public review.
+The Modrinth project is configured with an icon, gallery, MIT license, both-side requirements, and pinned companion dependencies. Version `0.1.0-alpha.9` is uploaded and the project has been submitted for public review.
 
 For a new release, update `version` in `gradle.properties` and add its `CHANGELOG.md` section, then run `./gradlew build modrinth`. Use `./gradlew modrinthSyncBody` to update the description. Minotaur loads credentials internally from `MODRINTH_TOKEN` or the external user configuration file; credentials must never be committed or printed.

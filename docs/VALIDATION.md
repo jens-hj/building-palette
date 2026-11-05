@@ -47,3 +47,7 @@ The icon-only release built successfully. Uploaded mod and source archive SHA-51
 ## Icon edge refinement — alpha.8
 
 The icon-only release built successfully. Both uploaded archive SHA-512 hashes match the local files, and the packaged icon matches the updated project asset. No gameplay code changed.
+
+## Fabric Loader 0.19.5 compatibility — alpha.9
+
+The build and runtime dependency minimum now target Loader 0.19.5. Under that loader, all 413,964 model assertions and all 11 Minecraft server GameTests passed. The isolated client GameTest also passed, including GUI model identity, held/inventory-hover/offhand Alt-scroll, material conservation on the integrated server, and screenshots. Both uploaded archive SHA-512 hashes match the local files; the packaged metadata requires Loader >=0.19.5. No live instance loader was changed.
