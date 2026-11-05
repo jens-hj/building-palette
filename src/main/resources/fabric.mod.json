@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "building_palette",
+  "version": "${version}",
+  "name": "Building Palette",
+  "description": "Alt-scroll building shapes with conserved material and half-block multipart details.",
+  "authors": ["jens-hj"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.jensh.buildingpalette.BuildingPalette"],
+    "client": ["dev.jensh.buildingpalette.client.PaletteClient"]
+  },
+  "mixins": ["building_palette.mixins.json", {"config": "building_palette.client.mixins.json", "environment": "client"}],
+  "depends": {"fabricloader": ">=0.20.1", "fabric-api": "*", "minecraft": "~26.3", "java": ">=25", "clutternomore": "3.1.1+26.3", "offgrid": "1.0.4+26.3"}
+}

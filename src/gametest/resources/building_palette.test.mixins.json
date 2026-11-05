@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.jensh.buildingpalette.test.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "OptionsResetMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

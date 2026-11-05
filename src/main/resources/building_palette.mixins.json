@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "package": "dev.jensh.buildingpalette.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ItemInstanceMixin",
+    "ItemStackMixin",
+    "IngredientMixin",
+    "RecipeFixesMixin",
+    "RecipeRemoverMixin",
+    "ShapeMapMixin",
+    "SlotMixin",
+    "MenuMixin",
+    "HopperMixin",
+    "MiningMixin",
+    "ContainerMixin",
+    "InventoryMixin",
+    "FurnaceMixin",
+    "StackCodecMixin",
+    "TemplateCodecMixin",
+    "ShapeDropsMixin",
+    "StackedContentsMixin",
+    "ItemEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

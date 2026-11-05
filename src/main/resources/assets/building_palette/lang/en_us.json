@@ -1,0 +1,19 @@
+{
+  "item.building_palette.piece": "Building piece",
+  "item.building_palette.piece_name": "%s %s",
+  "block.building_palette.multipart": "Combined building pieces",
+  "tooltip.building_palette.balance": "%s pieces \u00b7 %s blocks + %s/8 material",
+  "tooltip.building_palette.remainder": "%s/8 material reserved; scroll to use it",
+  "tooltip.building_palette.scroll": "Hold Alt and scroll to select shape",
+  "shape.building_palette.block": "Full block",
+  "shape.building_palette.slab": "Slab",
+  "shape.building_palette.vertical_slab": "Vertical slab",
+  "shape.building_palette.stair": "Stair",
+  "shape.building_palette.step": "Step",
+  "shape.building_palette.vertical_step": "Vertical step",
+  "shape.building_palette.corner": "Corner",
+  "shape.building_palette.fence": "Fence",
+  "shape.building_palette.wall": "Wall",
+  "tag.item.building_palette.included": "Building Palette: included materials",
+  "tag.item.building_palette.excluded": "Building Palette: excluded materials"
+}

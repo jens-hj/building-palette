@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "building_palette_test",
+  "version": "1.0.0",
+  "name": "Building Palette Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.jensh.buildingpalette.test.PaletteGameTests"
+    ],
+    "fabric-client-gametest": [
+      "dev.jensh.buildingpalette.test.PaletteClientTest"
+    ]
+  },
+  "depends": {
+    "building_palette": "*"
+  },
+  "mixins": [
+    {
+      "config": "building_palette.test.mixins.json",
+      "environment": "client"
+    }
+  ]
+}
