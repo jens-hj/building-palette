@@ -28,6 +28,17 @@ for suffix in (".jar", "-sources.jar"):
 (destination / "SHA256SUMS.txt").write_text("\n".join(hashes) + "\n")
 description = (root / "docs" / "MODRINTH.md").read_text()
 (destination / "MODRINTH.md").write_text(description)
+project = json.loads((root / "docs" / "PROJECT.json").read_text())
+project["body_file"] = "MODRINTH.md"
+project["icon_file"] = "icon.png"
+shutil.copy2(root / "docs" / "assets" / "icon.png", destination / "icon.png")
+gallery_directory = destination / "gallery"
+gallery_directory.mkdir(exist_ok=True)
+for entry in project["gallery"]:
+    source = root / entry["file"]
+    shutil.copy2(source, gallery_directory / source.name)
+    entry["file"] = "gallery/" + source.name
+(destination / "project.json").write_text(json.dumps(project, indent=2) + "\n")
 (destination / "metadata.json").write_text(json.dumps({
     "name": "Building Palette", "version": version, "version_type": "alpha",
     "game_versions": ["26.3"], "loaders": ["fabric"], "client_side": "required", "server_side": "required",

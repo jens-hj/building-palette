@@ -10,7 +10,21 @@ Selected slabs remain slab ingredients, and planks remain plank ingredients. Fen
 
 ## Requirements
 
-Client **and** server: Fabric 26.3, Java 25, Fabric API, Clutter No More 3.1.1+26.3, and Offgrid 1.0.4+26.3.
+Client **and** server: Minecraft 26.3, Java 25, Fabric Loader 0.20.1 or newer, [Fabric API](https://modrinth.com/mod/fabric-api), [Clutter No More 3.1.1+26.3](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.4+26.3](https://modrinth.com/mod/offgrid).
+
+Building Palette is a companion: keep both original mods installed. It handles material accounting and solid-piece combinations while fences and walls keep their native placement behavior.
+
+## Survival building
+
+- Full block: 8 material units
+- Slab or vertical slab: 4 units
+- Straight stair: 6 units
+- Step or vertical step: 2 units
+- Corner cube: 1 unit
+
+Each material stack holds up to 512 units. A **+** beside a count means some material is reserved until you choose a smaller shape. Mining returns the exact removed material amount.
+
+Families from the RPG test instance were checked across vanilla and modded building blocks. Functional blocks and families without a full-block parent are excluded. Pack authors can adjust supported materials with the `building_palette:included` and `building_palette:excluded` item tags.
 
 ## Alpha limitations
 

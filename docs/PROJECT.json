@@ -1,0 +1,38 @@
+{
+  "slug": "building-palette",
+  "title": "Building Palette",
+  "description": "Alt-scroll between building shapes, conserve material, and combine slabs, steps, and corners in one block space.",
+  "project_type": "mod",
+  "categories": ["decoration", "utility"],
+  "additional_categories": ["game-mechanics"],
+  "client_side": "required",
+  "server_side": "required",
+  "license_id": "MIT",
+  "source_url": "https://github.com/jens-hj/building-palette",
+  "issues_url": "https://github.com/jens-hj/building-palette/issues",
+  "wiki_url": "https://github.com/jens-hj/building-palette#readme",
+  "license_url": "https://github.com/jens-hj/building-palette/blob/main/LICENSE",
+  "gallery": [
+    {
+      "file": "build/previews/building_palette_shapes.png",
+      "title": "Half-block details with mixed materials",
+      "description": "Slabs, explicit stairs, quarter-volume steps, and eighth-volume corners, including oak and stone within one block space.",
+      "featured": true,
+      "ordering": 0
+    },
+    {
+      "file": "build/previews/building_palette_palette.png",
+      "title": "Alt-scroll shape palette",
+      "description": "Select a building shape while retaining the material balance in the same inventory slot.",
+      "featured": false,
+      "ordering": 1
+    },
+    {
+      "file": "build/previews/building_palette_inventory.png",
+      "title": "One slot, conserved material",
+      "description": "512 corners, 128 slabs, or 85 stairs plus a stored remainder each represent 64 full blocks of material.",
+      "featured": false,
+      "ordering": 2
+    }
+  ]
+}

@@ -30,7 +30,7 @@
         ];
       in {
         devShells.default = pkgs.mkShell {
-          packages = [ pkgs.xorg-server jdk (pkgs.python3.withPackages (ps: [ ps.pillow ])) pkgs.git ];
+          packages = [ pkgs.xorg-server pkgs.librsvg jdk (pkgs.python3.withPackages (ps: [ ps.pillow ])) pkgs.git ];
           JAVA_HOME = "${jdk}";
           # /run/opengl-driver/lib holds the host GPU driver on NixOS
           LD_LIBRARY_PATH = "/run/opengl-driver/lib:${pkgs.lib.makeLibraryPath runtimeLibs}";
