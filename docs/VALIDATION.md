@@ -39,3 +39,7 @@ The isolated graphical client test passed with the continuous, rotated vanilla h
 ## Icon revision — alpha.6
 
 The icon-only release built successfully. Both uploaded archives match local SHA-512 hashes, and the jar icon matches the new project icon bytes. No gameplay code changed. The image-generated icon replaces the old scripted sprite; the Modrinth AI disclosure remains concise and includes code, assets, and text.
+
+## Coarse mixed-material icon — alpha.7
+
+The icon-only release built successfully. Uploaded mod and source archive SHA-512 hashes match the local files; the packaged icon matches the new project asset. Gameplay code is unchanged.

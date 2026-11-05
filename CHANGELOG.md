@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.7
+
+- Restore the mixed oak, stone, and turquoise icon with coarser pixels and simpler silhouettes; gameplay is unchanged.
+
 ## 0.1.0-alpha.6
 
 - Replace the icon with a clearer pixel-art arrangement of matching oak slab, step, and corner pieces.
