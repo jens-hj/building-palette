@@ -2,7 +2,6 @@ package dev.jensh.buildingpalette.client;
 
 import dev.jensh.buildingpalette.*;
 import dev.tazer.clutternomore.client.ClutterNoMoreClient;
-import java.util.Locale;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -11,15 +10,22 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public final class PaletteClient implements ClientModInitializer {
+    private static final Identifier HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
+    private static final Identifier SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
     private static double scroll;
     @Override public void onInitializeClient() {
         BlockEntityRendererRegistry.register(BuildingPalette.ENTITY, MultipartRenderer::new);
-        HudElementRegistry.addLast(BuildingPalette.id("palette"), (graphics, delta) -> draw(graphics));
+        HudElementRegistry.addLast(BuildingPalette.id("palette"), (graphics, delta) -> {
+            if (Minecraft.getInstance().gui.screen() == null) draw(graphics);
+        });
         ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
             var selection = Materials.get(stack);
             if (selection == null) return;
@@ -62,19 +68,31 @@ public final class PaletteClient implements ClientModInitializer {
     public static void draw(GuiGraphicsExtractor graphics) {
         if (!active()) return;
         Minecraft mc = Minecraft.getInstance();
+        int left = graphics.guiWidth() / 2 - 91 + mc.player.getInventory().getSelectedSlot() * 20;
+        if (target().index == 45) left = graphics.guiWidth() / 2 + (mc.player.getMainArm() == HumanoidArm.RIGHT ? -120 : 98);
+        draw(graphics, left, graphics.guiHeight() - 22);
+    }
+    public static void draw(GuiGraphicsExtractor graphics, int left, int top) {
+        if (!active()) return;
         ItemStack source = target().getItem();
         var palette = Materials.palette(source);
-        int left = (mc.getWindow().getGuiScaledWidth() - palette.size() * 22) / 2;
-        int top = mc.getWindow().getGuiScaledHeight() - 84;
-        graphics.fill(left - 5, top - 22, left + palette.size() * 22 + 3, top + 25, 0xe0202428);
         var selected = Materials.get(source);
+        int selectedIndex = 0;
         for (int i = 0; i < palette.size(); i++) {
-            ItemStack icon = palette.get(i);
-            int x = left + i * 22;
-            if (Materials.get(icon).shape() == selected.shape()) graphics.fill(x - 2, top - 2, x + 19, top + 20, 0xff718e79);
-            graphics.item(icon, x, top);
+            if (Materials.get(palette.get(i)).shape() == selected.shape()) selectedIndex = i;
         }
-        Component name = Component.translatable("shape.building_palette." + selected.shape().name().toLowerCase(Locale.ROOT));
-        graphics.text(mc.font, name, left, top - 16, -1, false);
+        // Scroll up pulls the nearest preview into the actual slot. Wrap the previews
+        // with the same ordering as ScrollPayload, so there is no end to the strip.
+        int visible = Math.min(5, Math.min(palette.size() - 1, top / 20));
+        for (int distance = visible; distance >= 1; distance--) {
+            int y = top - distance * 20;
+            // Join the two ends of the vanilla hotbar into a single slot without
+            // stretching its pixel borders; resource-pack hotbar sprites apply too.
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 0, 0, left, y, 11, 22);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 171, 0, left + 11, y, 11, 22);
+            ItemStack icon = palette.get(Math.floorMod(selectedIndex - distance, palette.size()));
+            graphics.item(icon, left + 3, y + 3);
+        }
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SELECTION, left - 1, top - 1, 24, 23);
     }
 }

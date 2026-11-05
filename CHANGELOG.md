@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.4
+
+- Replace the floating palette panel with a vertical, looping shape strip rising from the active hotbar slot.
+- Use Minecraft's hotbar sprites and selection frame, including resource-pack overrides, with no title.
+- Anchor the strip to the hovered inventory slot or offhand slot when those are being changed.
+
 ## 0.1.0-alpha.3
 
 - Fix shared GUI atlas entries making the full block and vertical step look like extra corners in the shape palette.

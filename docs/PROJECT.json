@@ -22,8 +22,8 @@
     },
     {
       "file": "build/previews/building_palette_palette.png",
-      "title": "Alt-scroll shape palette",
-      "description": "Select a building shape while retaining the material balance in the same inventory slot.",
+      "title": "Hotbar shape scroll",
+      "description": "A looping vertical shape strip rises from the active hotbar slot. Alt-scroll changes the shape while retaining the material balance in that slot.",
       "featured": false,
       "ordering": 1
     },

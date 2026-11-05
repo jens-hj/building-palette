@@ -27,3 +27,7 @@ Keep the mod installed for worlds containing multipart blocks. There is no expor
 ## GUI cache regression — alpha.3
 
 The base-client regression first reproduced a shared GUI model identity between the full block and vertical step. Adding the material/shape selection to the model identity made the regression pass for every oak palette entry. The private-display client run also passed held, inventory, and offhand scrolling and captured fresh screenshots with distinct block, vertical-step, and corner icons. Alpha.3 and its sources were uploaded to Modrinth; both uploaded SHA-512 hashes match the local archives. The project gallery was refreshed.
+
+## Hotbar selector — alpha.4
+
+The isolated graphical client test passed after replacing the panel with the vertical hotbar strip. Fresh screenshots confirm the title is absent and five previews rise directly above the active slot. Held, inventory-hover, and offhand scrolling still preserve material on the server. Alpha.4 and its sources were uploaded and their SHA-512 hashes match the local archives. The Modrinth description and gallery were refreshed.

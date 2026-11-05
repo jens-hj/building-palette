@@ -4,6 +4,8 @@ Build with slabs, stairs, quarter-volume steps, and eighth-volume corners while 
 
 Hold **Alt** and scroll a held stack or an inventory stack to change its shape. A full stack of 64 blocks becomes 128 slabs, 256 steps, or 512 corners **in the same slot**. Stair leftovers remain stored and become usable when you select another shape.
 
+The selector rises vertically from the active hotbar slot using Minecraft's hotbar styling. Scroll to cycle shapes into the slot continuously, with no title or separate panel. It follows the hovered inventory slot or offhand when editing those stacks.
+
 Combine pieces on a half-block grid, including different materials in the same block space. Mine the aimed material to remove all face-connected pieces of that material within the block. Explicit stairs and corner pieces allow small details with ordinary Minecraft block textures.
 
 Selected slabs remain slab ingredients, and planks remain plank ingredients. Fences and walls stay available in the palette with their normal behavior.
