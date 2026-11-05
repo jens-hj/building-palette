@@ -55,6 +55,18 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 mc.gui.toastManager().clear();
                 if (MaterialStacks.units(mc.player.getInventory().getItem(0)) != 512) throw new AssertionError("Corner balance did not synchronize");
                 if (mc.player.getInventory().getItem(1).getCount() != 128) throw new AssertionError("Slab count did not synchronize");
+                // Client prediction must not emit particles for the invisible carrier.
+                // The server sends a separate break event with the removed material.
+                mc.particleEngine.clearParticles();
+                mc.level.addDestroyBlockEffect(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.defaultBlockState());
+                mc.particleEngine.tick();
+                if (!mc.particleEngine.countParticles().matches(".*T\\s*0")) throw new AssertionError("Invisible multipart carrier emitted break particles: " + mc.particleEngine.countParticles());
+                for (var material : new String[]{"minecraft:oak_planks", "minecraft:stone_bricks"}) {
+                    mc.level.addDestroyBlockEffect(new BlockPos(0, 100, 0), MultipartBlock.material(material));
+                    mc.particleEngine.tick();
+                    if (mc.particleEngine.countParticles().matches(".*T\\s*0")) throw new AssertionError("Missing material break particles: " + material);
+                    mc.particleEngine.clearParticles();
+                }
             });
             context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_shapes").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
             context.getInput().holdAlt();

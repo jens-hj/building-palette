@@ -51,3 +51,7 @@ The icon-only release built successfully. Both uploaded archive SHA-512 hashes m
 ## Fabric Loader 0.19.5 compatibility — alpha.9
 
 The build and runtime dependency minimum now target Loader 0.19.5. Under that loader, all 413,964 model assertions and all 11 Minecraft server GameTests passed. The isolated client GameTest also passed, including GUI model identity, held/inventory-hover/offhand Alt-scroll, material conservation on the integrated server, and screenshots. Both uploaded archive SHA-512 hashes match the local files; the packaged metadata requires Loader >=0.19.5. No live instance loader was changed.
+
+## Multipart break particles — alpha.10
+
+The client regression rejects break particles from the invisible carrier and requires normal oak and stone break effects to emit particles. The regression passed after disabling carrier terrain particles. The full build also passed all 413,964 model assertions and 11 server GameTests on Loader 0.19.5. The existing server mining effect still uses the removed material state. Uploaded mod and source archive SHA-512 hashes match local files.

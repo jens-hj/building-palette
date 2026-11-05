@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.10
+
+- Stop invisible multipart carriers from emitting missing-texture break particles alongside the correct material particles.
+- Keep the removed material's normal break effect, with a client regression for carrier suppression and oak/stone particle emission.
+
 ## 0.1.0-alpha.9
 
 - Support Fabric Loader 0.19.5 instead of unnecessarily requiring 0.20.1.

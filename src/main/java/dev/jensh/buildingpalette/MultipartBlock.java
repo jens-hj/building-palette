@@ -22,7 +22,9 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     public static final BooleanProperty OPAQUE = BooleanProperty.create("opaque");
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
     public MultipartBlock(BlockBehaviour.Properties properties) {
-        super(properties.pushReaction(PushReaction.IMMOVEABLE).lightLevel(state -> state.getValue(LIGHT)));
+        // Mining sends the removed material's break effect separately. The invisible
+        // carrier has no particle texture and must not add a second placeholder burst.
+        super(properties.noTerrainParticles().pushReaction(PushReaction.IMMOVEABLE).lightLevel(state -> state.getValue(LIGHT)));
         registerDefaultState(stateDefinition.any().setValue(BlockStateProperties.WATERLOGGED, false).setValue(OPAQUE, false).setValue(LIGHT, 0));
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.WATERLOGGED, OPAQUE, LIGHT); }
