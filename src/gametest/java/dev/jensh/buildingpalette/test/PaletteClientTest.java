@@ -529,6 +529,43 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 });
             }
             context.runOnClient(mc -> dev.jensh.buildingpalette.client.PaletteConfig.precisePlacement = false);
+            // Chunk geometry must remain visible beyond the old block-entity
+            // renderer's 64-block cutoff, even at low entity render distance.
+            world.getServer().runCommand("fill -6 100 -2 6 106 84 minecraft:air");
+            world.getServer().runCommand("fill -6 99 -2 6 99 84 minecraft:stone");
+            world.getServer().computeOnServer(server -> {
+                var level = server.overworld();
+                for (int x = -4; x <= 4; x++) if (Math.abs(x) >= 2) for (int y = 100; y <= 104; y++) {
+                    var pos = new BlockPos(x, y, 0);
+                    if (x < 0) level.setBlock(pos, net.minecraft.world.level.block.Blocks.BLACKSTONE_SLAB.defaultBlockState(), 3);
+                    else {
+                        level.setBlock(pos, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                        ((MultipartEntity)level.getBlockEntity(pos)).setCells(new Cells().place(51, "minecraft:blackstone").place(128, "minecraft:quartz_block"));
+                    }
+                }
+                return true;
+            });
+            context.runOnClient(mc -> {
+                mc.options.entityDistanceScaling().set(.5);
+                mc.options.renderDistance().set(12);
+                mc.options.fov().set(30);
+            });
+            world.getServer().runCommand("tp @a 0.5 100 80.5 180 0");
+            context.waitTicks(30);
+            context.waitFor(mc -> mc.level.getBlockEntity(new BlockPos(3, 102, 0)) instanceof MultipartEntity
+                && mc.levelRenderer.isSectionCompiledAndVisible(new BlockPos(3, 102, 0), 0));
+            context.runOnClient(mc -> {
+                var pos = new BlockPos(3, 102, 0);
+                var entity = mc.level.getBlockEntity(pos);
+                if (!(entity instanceof MultipartEntity)) throw new AssertionError("Far multipart chunk was not loaded");
+                if (mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) <= 64 * 64) throw new AssertionError("Distance test is inside old renderer range");
+                if (mc.level.getBlockState(pos).getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL
+                        || mc.getBlockEntityRenderDispatcher().getRenderer(entity) != null)
+                    throw new AssertionError("Multipart still depends on an entity renderer at long distance");
+                if (!(mc.getModelManager().getBlockStateModelSet().get(mc.level.getBlockState(pos)) instanceof dev.jensh.buildingpalette.client.MultipartModel))
+                    throw new AssertionError("Far multipart is not using terrain geometry");
+            });
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_terrain_distance").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
         }
     }
     private static void assertPicked(ClientGameTestContext context, Shape shape, int units) {

@@ -23,6 +23,12 @@ public final class MultipartEntity extends BlockEntity implements net.fabricmc.f
         refreshProperties();
     }
     public void refreshProperties() {
+        refreshProperties(true);
+    }
+    public void refreshPropertiesOnLoad() {
+        refreshProperties(false);
+    }
+    private void refreshProperties(boolean notifyUnchanged) {
         if (level != null) {
             int light = 0, occlusion = 0;
             for (int i = 0; i < 8; i++) {
@@ -34,6 +40,7 @@ public final class MultipartEntity extends BlockEntity implements net.fabricmc.f
             }
             var state = getBlockState().setValue(MultipartBlock.OPAQUE, occlusion == 255).setValue(MultipartBlock.LIGHT, light).setValue(MultipartBlock.OCCLUSION, occlusion);
             if (cells.occupied() == 255) state = state.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED, false);
+            if (state == getBlockState() && !notifyUnchanged) return;
             if (state != getBlockState()) level.setBlock(worldPosition, state, 3);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             level.updateNeighborsAt(worldPosition, getBlockState().getBlock());

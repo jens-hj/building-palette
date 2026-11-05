@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-- `./gradlew build`: 414,333 model assertions and all 18 required Minecraft server GameTests passed in alpha.12.
+- `./gradlew build`: 414,333 model assertions and all 18 required Minecraft server GameTests passed in alpha.13.
 - Actual server tests cover 512-unit shape round trips, persistent codecs/templates, reserved stair material, storage capacity, cursor/drag behavior, constrained slots, randomized unit transfers, dropped merging, repeated chest/barrel recipes, furnace fuel, native shape drops, eight-corner placement, connected-material mining/refunds, and multipart persistence.
 - The isolated RPG graphical test passed with the copied client mod set, including Sodium, Iris, Lithium, Voxy, Controlify, Better End/Nether, Farmer's Delight, Macaw's blocks, and Wilder Wild. Crash Assistant was omitted from the test launch.
 - RPG family validation passed for **238 supported families, including 133 modded families**. Every supported palette has unique shape choices and conserves a 512-unit balance.
@@ -59,7 +59,7 @@ The client regression rejects break particles from the invisible carrier and req
 ## Placement, terrain lighting, and inventory controls — alpha.11
 
 - Fifteen server GameTests passed on Fabric Loader 0.19.5, alongside 413,964 material/geometry assertions. New coverage includes native stair facing/halves, precise placement opt-in, native slab doubling consumption, reserved placement guards, all native stair corner drop values, miss/unsupported-hit rejection, and every oak-family source/destination shape pairing at four balances.
-- A sealed-room lighting regression compared native slab roofs against multipart bottom slabs and mixed-material top slabs. Exposed sky measured 15; inside the room, both skylight and overhead block light measured 0 for all roof cases. Existing saved multipart entities refresh their new occlusion property via a scheduled tick on chunk load.
+- A sealed-room lighting regression compared native slab roofs against multipart bottom slabs and mixed-material top slabs. Exposed sky measured 15; inside the room, both skylight and overhead block light measured 0 for all roof cases. An initial scheduled-tick hook attempted to refresh saved occlusion properties on chunk load; alpha.13 replaces it after actual saved-world tests showed that this hook ran too early.
 - The graphical regression verifies terrain-model quad emission with AO, unique GUI model identity, centered fractional item bounds, held/offhand/inventory Alt-scroll, a full inventory palette cycle including corners, configuration defaults and per-player preference synchronization, rapid fractional cursor transfers, actual left/right mouse clicks, and cross-shape merging with a one-unit overflow.
 - The complete server/client run passed using Sodium 0.9.2, Iris 1.11.7, and Photon v1.4 with Iris explicitly reporting an active shader pack. Fresh shader screenshots are stored as `build/previews/alpha11_photon_*.png`.
 
@@ -86,3 +86,19 @@ The final Photon run passed all 18 server GameTests plus the complete graphical 
 The final copied RPG run passed with 238 supported families (133 modded), equipped-backpack/Trinkets two-stage picking, shift merging, survival Efficiency V/Haste II mining, and real player-collision placement packets in both placement modes. No live world, instance files, or shader settings were changed.
 
 Alpha.12 and its sources were uploaded to Modrinth as version `c6iu74BW`; both remote SHA-512 hashes match the local archives. The six-image gallery and description were refreshed. The project remains in Modrinth’s processing queue with approval requested.
+
+## Actual saved-world upgrades and terrain distance — alpha.13
+
+A new test-only dedicated-server harness boots the exact SHA-512-verified published alpha.10, alpha.11, and alpha.12 jars to create real saved worlds. Each server stops cleanly; the harness copies its world directory, opens the copy with the alpha.13 release candidate, saves, and starts another JVM to reopen it. Original fixture saves retain identical file hashes. No live instance or world is opened.
+
+Each source world contains all 255 occupied octant masks in single and mixed materials (510 carriers), 93 named shape/balance stacks in chests, 36 player inventory slots, offhand, 27 ender-chest slots, and three dropped stacks. Balances include 1, 65, and 512 units, covering incomplete native pieces and generic pieces. Checks preserve exact item identifiers, components, counts, material balances, mixed-material cells, collision volume, waterlogging, emission, and selected hotbar slot. The upgrade also mines one material from an old carrier, verifies the other remains and the refund is exact, adds a new corner, and verifies the edited block after restarting.
+
+All three paths passed 2,535 upgrade checks and 2,530 reopen checks apiece. The machine-readable summary and tested jar hashes are in `UPGRADE-VALIDATION.json`. Reproduce with `nix develop --command python scripts/world-upgrade-test.py`; public release URLs and hashes are pinned in `scripts/world-upgrade-artifacts.json`. Test code stays outside the shipped mod jar.
+
+The alpha.10→alpha.12 control run failed the old-block occlusion check, with Minecraft logging “Trying to schedule tick in not loaded position” during chunk loading. This exposes a gap in the earlier scheduled-tick migration described above. Alpha.13 queues loaded carriers until the end of the level tick instead. The saved slab-roof regression then measures zero skylight and overhead block light after upgrading. Already-correct loaded states skip notifications and neighbor updates; no continuous block-entity ticker is added.
+
+The graphical distance regression places native blackstone slabs beside combined blackstone/quartz pieces 80 blocks from the camera, with entity distance at 50%. It checks that the far section is compiled and visible, multipart render shape is MODEL, the terrain model is active, and there is no registered block-entity renderer. The standard-renderer run passes; screenshot: `build/previews/alpha13_distance_indigo.png`. Render distance is 12 chunks and the narrow test FOV makes the distant comparison legible. This is a visibility regression, not an FPS benchmark.
+
+The Sodium 0.9.2/Iris 1.11.7/Photon v1.4 run also passed the full graphical suite and the targeted 80-block compiled-section check, using the same reduced Photon test preset described above. Screenshot: `build/previews/alpha13_distance_photon.png`. The final build passed 414,333 model assertions and all 18 Minecraft server GameTests.
+
+Alpha.13 is uploaded as Modrinth version `xTGL5N3x`. Its primary jar SHA-512 exactly matches the jar used for all three saved-world upgrades; both uploaded archive hashes match local files. The project remains in Modrinth’s processing queue.

@@ -39,3 +39,5 @@ Test in a copied instance and disposable world first. Multipart blocks cannot be
 Keep the mod installed while a world contains multipart blocks; restore a pre-install backup before removing it. Existing items are valued by their current shape, without attempting to reconstruct historical conversion losses.
 
 Independently implemented and MIT licensed. The original dependency mods are required and are not redistributed.
+
+Combined pieces render with chunk terrain at block render distance. Existing saved pieces keep their materials and automatically refresh lighting after their chunks load.

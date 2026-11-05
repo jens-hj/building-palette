@@ -20,7 +20,7 @@ Multipart blocks are immovable by pistons. Mixed pieces do not tick, oxidize, or
 - Native items use their original placement code by default. Precise half-grid placement is an opt-in per-player preference, synchronized from the client's configuration; the preview toggle is independent and defaults off. Generic pieces without a native item and combinations inside multipart blocks use the half-grid representation.
 - Auto-connected native inner/outer stairs retain the value of one stair and stay native. They are not converted into multipart cells, because their 5/7-cell geometry differs from their 6-unit item cost. Use precise placement for explicit stair-and-corner combinations.
 - Multipart geometry uses Fabric's terrain model API and immutable block-entity render data, receiving chunk lighting and ambient occlusion through Indigo or Sodium/Iris. Material tint, render layer, and emissive properties remain attached to each quad.
-- Opaque octants contribute their exact shape to the light engine. Bottom/top slab roofs block skylight and overhead block light like native slabs. Existing multipart block entities refresh their occlusion state on chunk load, preserving the existing saved-cell schema.
+- Opaque octants contribute their exact shape to the light engine. Bottom/top slab roofs block skylight and overhead block light like native slabs. Existing multipart block entities queue an occlusion refresh for the end of the level tick after loading, preserving the existing saved-cell schema. Already-correct properties do not trigger redundant updates.
 - Pick-block uses Fabric's server-side pick event before ordinary callbacks. Existing material is selected without changing shape on the first pick; a second pick reshapes the held balance. The optional Traveler's Backpack adapter is compiled against Fabric 26.3-11.4.3 and uses its equipped storage access and normal hotbar swap, preserving the displaced stack.
 - Multipart mining leaves the client carrier intact until the server sends authoritative remaining cells. Removing the final material removes the block and collision normally. Part targeting uses the latest received player rotation, avoiding the server head-angle delay during rapid turns.
 - Custom placement includes the placing player in obstruction checks and tests only the exact added-piece shape. Non-overlapping pieces in the same occupied grid cell and slabs touching the player’s feet remain valid.
@@ -30,6 +30,8 @@ Multipart blocks are immovable by pistons. Mixed pieces do not tick, oxidize, or
 - Optional mod machines using standard Minecraft ingredient/stack APIs inherit these rules. Bespoke handlers require explicit validation; arbitrary third-party processing is not guaranteed.
 
 Material discovery reads the live Clutter No More map after reload. `building_palette:included` and `building_palette:excluded` item tags allow pack overrides; exclusion takes precedence. Inclusion cannot make functional block entities safe building materials.
+
+Combined pieces have block-entity storage, but use chunk terrain geometry rather than a block-entity renderer. Their visibility follows terrain render distance. They have no continuously ticking block-entity ticker.
 
 ## Validation record
 

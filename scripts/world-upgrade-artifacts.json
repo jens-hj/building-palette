@@ -1,0 +1,26 @@
+{
+  "0.1.0-alpha.12": {
+    "filename": "building-palette-0.1.0-alpha.12.jar",
+    "url": "https://cdn.modrinth.com/data/hBaJZHIg/versions/c6iu74BW/building-palette-0.1.0-alpha.12.jar",
+    "hashes": {
+      "sha512": "822a744a4f480f7fd64b69896e2add4ceac6bdea18f3bc14395bdbd312aa380c1be74786f478ba6fb7191d2308bc70f0add500057fc276bf4e36a5864b282a47",
+      "sha1": "8a99e979b5e25de1d7ed45673f1aa49e1eb66d23"
+    }
+  },
+  "0.1.0-alpha.11": {
+    "filename": "building-palette-0.1.0-alpha.11.jar",
+    "url": "https://cdn.modrinth.com/data/hBaJZHIg/versions/XaxXsytX/building-palette-0.1.0-alpha.11.jar",
+    "hashes": {
+      "sha1": "c24a85add3f6fa21569663a72f12aba0d2f30f1f",
+      "sha512": "8b7c9876ef9bae0328756b020fc5400e7ff5f6ed463b4cfd8248fc087b070e2c75b08987e983b1f902f8b821da554f04fd80ab3ab8881c0ebe174c334368a7a4"
+    }
+  },
+  "0.1.0-alpha.10": {
+    "filename": "building-palette-0.1.0-alpha.10.jar",
+    "url": "https://cdn.modrinth.com/data/hBaJZHIg/versions/jNbWqeo5/building-palette-0.1.0-alpha.10.jar",
+    "hashes": {
+      "sha512": "7f7fe4ef5f58bbb69a8a5af577a58846deb031b8acce0eddc75095b6a33b335b422b462160c877111f54883a36e3414246fc34607d2d42ddd8f074452c05f959",
+      "sha1": "a2517bf98b3bbb6699daf47fd5f00706dfbcf54d"
+    }
+  }
+}

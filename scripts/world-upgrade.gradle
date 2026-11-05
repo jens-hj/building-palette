@@ -1,0 +1,22 @@
+allprojects { p ->
+    p.afterEvaluate {
+        p.sourceSets.create('migration') {
+            compileClasspath += p.sourceSets.main.output + p.sourceSets.main.compileClasspath
+        }
+        p.tasks.register('migrationHarnessJar', Jar) {
+            dependsOn p.tasks.named('migrationClasses')
+            archiveFileName = 'world-upgrade-test.jar'
+            destinationDirectory = p.layout.buildDirectory.dir('migration')
+            from p.sourceSets.migration.output
+        }
+        p.tasks.register('migrationClasspath') {
+            dependsOn p.tasks.named('migrationHarnessJar'), p.tasks.named('jar')
+            doLast {
+                def excluded = p.sourceSets.main.output.files
+                def paths = p.sourceSets.main.runtimeClasspath.files.findAll { !excluded.contains(it) }
+                def out = p.layout.buildDirectory.file('migration/classpath.txt').get().asFile
+                out.text = paths.join(File.pathSeparator)
+            }
+        }
+    }
+}

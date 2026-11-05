@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.13
+
+- Reliably refresh lighting and occlusion for existing saved pieces after chunk loading. The previous scheduled-tick hook could run before the chunk's tick container existed.
+- Skip lighting notifications and neighbor updates when a loaded piece already has the correct properties.
+- Add real saved-world upgrade/reopen tests from the published alpha.10, alpha.11, and alpha.12 jars, covering 510 geometry/material fixtures, partial stacks, player inventories, ender chests, containers, drops, waterlogging, light emission, slab roofs, and editing old combined blocks.
+- Add a terrain-rendering regression 80 blocks from the camera with entity distance reduced, beyond the old block-entity renderer's cutoff.
+
 ## 0.1.0-alpha.12
 
 - Pick-block finds the pointed material in any inventory shape, preserving the first selected stack. Picking again while holding that material reshapes it to match the target without changing its material balance.

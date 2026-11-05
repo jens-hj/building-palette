@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,9 +52,22 @@ public final class BuildingPalette implements ModInitializer {
         var pickPhase = id("material_pick");
         PlayerPickItemEvents.BLOCK.addPhaseOrdering(pickPhase, Event.DEFAULT_PHASE);
         PlayerPickItemEvents.BLOCK.register(pickPhase, PickBlock::pick);
-        // Upgrade existing saved multipart blocks after their chunks are ready.
+        // Scheduling a block tick during BLOCK_ENTITY_LOAD is too early: the
+        // chunk's tick container may not yet be registered. Drain after world
+        // ticking so legacy states reliably receive their new light shape.
+        var pending = new java.util.IdentityHashMap<net.minecraft.server.level.ServerLevel, java.util.Set<MultipartEntity>>();
         ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register((entity, level) -> {
-            if (entity instanceof MultipartEntity) level.scheduleTick(entity.getBlockPos(), MULTIPART, 1);
+            if (entity instanceof MultipartEntity multipart) pending.computeIfAbsent(level,
+                ignored -> java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())).add(multipart);
         });
+        ServerBlockEntityEvents.BLOCK_ENTITY_UNLOAD.register((entity, level) -> {
+            var loaded = pending.get(level);
+            if (loaded != null) { loaded.remove(entity); if (loaded.isEmpty()) pending.remove(level); }
+        });
+        ServerTickEvents.END_LEVEL_TICK.register(level -> {
+            var loaded = pending.remove(level);
+            if (loaded != null) for (var entity : loaded) if (!entity.isRemoved()) entity.refreshPropertiesOnLoad();
+        });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> pending.keySet().removeIf(level -> level.getServer() == server));
     }
 }

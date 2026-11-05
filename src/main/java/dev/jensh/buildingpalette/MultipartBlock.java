@@ -45,7 +45,7 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     @Override protected VoxelShape getOcclusionShape(BlockState state) { return OCCLUSION_SHAPES[state.getValue(OCCLUSION)]; }
     @Override protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) { return state.getValue(OPAQUE) ? .2f : 1; }
     @Override protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
-        if (level.getBlockEntity(pos) instanceof MultipartEntity entity) entity.refreshProperties();
+        if (level.getBlockEntity(pos) instanceof MultipartEntity entity) entity.refreshPropertiesOnLoad();
     }
     public static VoxelShape shape(Cells cells, int mask) {
         VoxelShape shape = Shapes.empty();

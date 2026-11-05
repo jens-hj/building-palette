@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "building_palette_upgrade_test",
+  "version": "1.0.0",
+  "name": "Building Palette Saved World Upgrade Test",
+  "environment": "server",
+  "entrypoints": {"main": ["dev.jensh.buildingpalette.test.WorldUpgradeTest"]},
+  "depends": {"building_palette": "*"}
+}
