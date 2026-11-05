@@ -35,3 +35,7 @@ The isolated graphical client test passed after replacing the panel with the ver
 ## Continuous slot dividers — alpha.5
 
 The isolated graphical client test passed with the continuous, rotated vanilla hotbar background. The fresh preview shows thin internal dividers, with black borders only at the outside of the strip. Held, inventory-hover, and offhand scroll checks passed. Both uploaded archive SHA-512 hashes match the local release; the gallery was refreshed.
+
+## Icon revision — alpha.6
+
+The icon-only release built successfully. Both uploaded archives match local SHA-512 hashes, and the jar icon matches the new project icon bytes. No gameplay code changed. The image-generated icon replaces the old scripted sprite; the Modrinth AI disclosure remains concise and includes code, assets, and text.

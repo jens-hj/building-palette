@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.6
+
+- Replace the icon with a clearer pixel-art arrangement of matching oak slab, step, and corner pieces.
+- Update the AI disclosure for the image-generated icon; gameplay is unchanged.
+
 ## 0.1.0-alpha.5
 
 - Draw the vertical selector as one continuous vanilla hotbar, retaining its thin internal dividers instead of repeating black slot borders.
