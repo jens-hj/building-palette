@@ -19,6 +19,8 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     compileOnly "maven.modrinth:clutternomore:AQkLCaPY"
+    compileOnly "maven.modrinth:modmenu:21.0.0"
+    compileOnly "maven.modrinth:travelersbackpack:y1lpIqJS"
     localRuntime "maven.modrinth:clutternomore:AQkLCaPY"
     localRuntime "maven.modrinth:offgrid:H4rTCX81"
 
@@ -57,6 +59,8 @@ tasks.named('runClientGameTest') {
     jvmArgs '-Dfabric.noGui=true'
 
     def fixtureMods = providers.gradleProperty('rpgMods')
+    def testShaders = providers.gradleProperty('paletteShaders').map { it.toBoolean() }.getOrElse(false)
+    if (testShaders) jvmArgs '-Dbuilding_palette.shader_test=true'
     if (fixtureMods.isPresent()) {
         dependsOn 'harnessAgent'
         jvmArgs '-Dbuilding_palette.rpg_test=true'
@@ -65,6 +69,8 @@ tasks.named('runClientGameTest') {
     def testDirectory = layout.buildDirectory.dir('run/clientGameTest')
     doFirst {
         def directory = testDirectory.get().asFile
+        def paletteConfig = new File(directory, 'config/building_palette.json')
+        paletteConfig.parentFile.mkdirs()
         def destinationMods = new File(directory, 'mods')
         destinationMods.mkdirs()
         destinationMods.eachFile { old -> if (old.isFile()) old.delete() }
@@ -96,7 +102,23 @@ tasks.named('runClientGameTest') {
                     }
                 }
             }
+            def shaderDirectory = new File(sourceMods.absoluteFile.parentFile, 'shaderpacks')
+            if (testShaders && shaderDirectory.isDirectory()) {
+                def targetShaders = new File(directory, 'shaderpacks')
+                targetShaders.mkdirs()
+                shaderDirectory.eachFile { source ->
+                    if (source.isFile()) java.nio.file.Files.copy(source.toPath(), new File(targetShaders, source.name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                }
+            }
+            def irisFile = new File(directory, 'config/iris.properties')
+            if (irisFile.exists()) {
+                def shaderOptions = new Properties()
+                irisFile.withInputStream { shaderOptions.load(it) }
+                shaderOptions.setProperty('enableShaders', testShaders.toString())
+                irisFile.withOutputStream { shaderOptions.store(it, 'Isolated Building Palette test') }
+            }
         }
+        paletteConfig.text = '{"placementPreview":false,"precisePlacement":false}\n'
         def options = new File(directory, 'options.txt')
         options.parentFile.mkdirs()
         options.text = 'soundCategory_master:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\n'
@@ -134,6 +156,8 @@ modrinth {
     changelog = currentChangelog
     syncBodyFrom = providers.fileContents(layout.projectDirectory.file('docs/MODRINTH.md')).asText
     dependencies {
+        optional.project 'modmenu'
+        optional.project 'travelersbackpack'
         required.project 'fabric-api'
         required.version 'AQkLCaPY'
         required.version 'H4rTCX81'

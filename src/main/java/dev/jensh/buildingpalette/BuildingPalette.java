@@ -3,9 +3,13 @@ package dev.jensh.buildingpalette;
 import com.mojang.serialization.Codec;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.PlayerPickItemEvents;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -29,7 +33,7 @@ public final class BuildingPalette implements ModInitializer {
         .setId(ResourceKey.create(Registries.ITEM, id("piece")))));
     public static final MultipartBlock MULTIPART = Registry.register(BuiltInRegistries.BLOCK, id("multipart"),
         new MultipartBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id("multipart")))
-            .strength(2.0f).dynamicShape().noOcclusion()));
+            .strength(2.0f).dynamicShape()));
     public static final BlockEntityType<MultipartEntity> ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("multipart"),
         FabricBlockEntityTypeBuilder.create(MultipartEntity::new, MULTIPART).build());
 
@@ -37,7 +41,18 @@ public final class BuildingPalette implements ModInitializer {
     @Override public void onInitialize() {
         PaletteState.ready = true;
         PayloadTypeRegistry.serverboundPlay().register(ScrollPayload.TYPE, ScrollPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(PreferencesPayload.TYPE, PreferencesPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PreferencesPayload.TYPE, (payload, context) -> context.server().execute(
+            () -> PlacementPreferences.set(context.player(), payload.precisePlacement())));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> PlacementPreferences.remove(handler.player));
         ServerPlayNetworking.registerGlobalReceiver(ScrollPayload.TYPE, (payload, context) -> context.server().execute(() -> payload.apply(context.player())));
         UseBlockCallback.EVENT.register(Placement::use);
+        var pickPhase = id("material_pick");
+        PlayerPickItemEvents.BLOCK.addPhaseOrdering(pickPhase, Event.DEFAULT_PHASE);
+        PlayerPickItemEvents.BLOCK.register(pickPhase, PickBlock::pick);
+        // Upgrade existing saved multipart blocks after their chunks are ready.
+        ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register((entity, level) -> {
+            if (entity instanceof MultipartEntity) level.scheduleTick(entity.getBlockPos(), MULTIPART, 1);
+        });
     }
 }

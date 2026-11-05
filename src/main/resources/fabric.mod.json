@@ -13,6 +13,9 @@
     "main": [
       "dev.jensh.buildingpalette.BuildingPalette"
     ],
+    "modmenu": [
+      "dev.jensh.buildingpalette.client.PaletteModMenu"
+    ],
     "client": [
       "dev.jensh.buildingpalette.client.PaletteClient"
     ]
@@ -31,6 +34,10 @@
     "java": ">=25",
     "clutternomore": "3.1.1+26.3",
     "offgrid": "1.0.4+26.3"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "travelersbackpack": "*"
   },
   "icon": "assets/building_palette/icon.png"
 }

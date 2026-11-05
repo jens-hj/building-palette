@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.0-alpha.12
+
+- Pick-block finds the pointed material in any inventory shape, preserving the first selected stack. Picking again while holding that material reshapes it to match the target without changing its material balance.
+- Support the equipped Traveler's Backpack's normal hotbar/storage swap for material-aware pick-block.
+- Choose reusable pieces for compound geometry: steps for diagonal steps, and vertical steps for a rotated stair shape.
+- Keep multipart block entities during client mining prediction so remaining materials stay visible, targetable, and mineable.
+- Select mined/picked parts using the latest received player aim instead of head rotation from the previous server tick.
+- Reject placement intersecting the placing player using the exact added-piece collision shape, while allowing pieces in unoccupied parts of the same grid block.
+- Add Efficiency V/Haste II rapid-mining, real shifted-mouse, backpack, two-stage pick, player-collision, and native-versus-combined quartz/blackstone lighting regressions.
+
+## 0.1.0-alpha.11
+
+- Add Mod Menu settings for placement outlines and precise half-grid placement, both off by default. Placement controls synchronize per player to the server.
+- Use native placement for native shapes by default, preserving stair facing, halves, and corner connections. Keep exact material costs for slab doubling and auto-connected stairs.
+- Reject missed, unsupported, and out-of-range placement hits; hide the preview when aiming into empty space.
+- Render combined pieces through the terrain pipeline for per-vertex lighting, ambient occlusion, and Sodium/Iris shader compatibility.
+- Match native shape-aware skylight and block-light occlusion, including slab roofs. Refresh light-blocking properties for existing combined blocks when chunks load.
+- Stabilize fractional inventory cursor updates and preserve vanilla stack identity comparisons.
+- Replace the legacy inventory selector and scroll handler with the same palette order as the hotbar, showing choices above and below the hovered slot.
+- Center fractional item models in inventories, the palette, and held-item views.
+- Cover every source/destination shape pairing with material-based merging and overflow tests.
+
 ## 0.1.0-alpha.10
 
 - Stop invisible multipart carriers from emitting missing-texture break particles alongside the correct material particles.

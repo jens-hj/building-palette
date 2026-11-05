@@ -41,6 +41,18 @@ public final class ModelTest {
         }
         try { new Cells().place(1, "oak").place(1, "stone"); throw new AssertionError("Overlap accepted"); }
         catch (IllegalArgumentException expected) { checks++; }
+        for (int mask = 1; mask < 256; mask++) {
+            Shape picked = ShapePicker.closest(mask);
+            assert ShapePicker.canTile(mask, picked);
+            checks++;
+        }
+        for (Shape shape : Shape.values()) if (shape.isMultipart()) for (int anchor = 0; anchor < 8; anchor++) for (int axis : new int[]{0, 2}) {
+            assert ShapePicker.closest(Cells.mask(shape, anchor, axis)) == shape;
+            checks++;
+        }
+        assert ShapePicker.closest(153) == Shape.STEP; // two diagonal horizontal steps
+        assert ShapePicker.closest(95) == Shape.VERTICAL_STEP; // vertical slab plus vertical step
+        checks += 2;
         System.out.println("Passed " + checks + " material and geometry assertions.");
     }
 }

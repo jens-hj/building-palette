@@ -44,6 +44,8 @@ for entry in project["gallery"]:
     "game_versions": ["26.3"], "loaders": ["fabric"], "client_side": "required", "server_side": "required",
     "dependencies": [
         {"project_id": "P7dR8mSH", "dependency_type": "required"},
+        {"project_id": "mOgUt4GM", "dependency_type": "optional"},
+        {"project_id": "rlloIFEV", "dependency_type": "optional"},
         {"project_id": "ewyjbmG4", "version_id": "AQkLCaPY", "dependency_type": "required"},
         {"project_id": "vvgTqF0n", "version_id": "H4rTCX81", "dependency_type": "required"},
     ]

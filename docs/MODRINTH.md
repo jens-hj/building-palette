@@ -4,7 +4,11 @@ Build with slabs, stairs, quarter-volume steps, and eighth-volume corners while 
 
 Hold **Alt** and scroll a held stack or an inventory stack to change its shape. A full stack of 64 blocks becomes 128 slabs, 256 steps, or 512 corners **in the same slot**. Stair leftovers remain stored and become usable when you select another shape.
 
-The selector rises vertically from the active hotbar slot using Minecraft's hotbar styling. Scroll to cycle shapes into the slot continuously, with no title or separate panel. It follows the hovered inventory slot or offhand when editing those stacks.
+The selector rises vertically from the active hotbar slot using Minecraft's hotbar styling. In inventories it shows choices above and below the hovered stack, with the same shape order and corners. Drop any shape onto another stack of the same material to merge into the destination's shape, leaving only overflow beyond 64 blocks of material.
+
+Shift-click also fills existing material stacks first. Middle-click selects the pointed material from any shape in your inventory or equipped Traveler's Backpack; pick again while holding it to match the target shape while keeping the same material balance. Compound shapes choose a reusable building piece, such as steps for diagonal steps or vertical steps for a rotated stair. Mixed blocks pick the material you point at.
+
+With Mod Menu installed, open **Mods → Building Palette → Configure**. Placement outlines and precise half-grid placement both default off. Native items use their normal placement rules by default, including stair facing, upside-down placement, and corner connections. Enable precise placement to use the clicked half-grid position instead. Placement controls apply per player; pieces without a native item still use half-grid placement. Settings are also available in `config/building_palette.json`.
 
 Combine pieces on a half-block grid, including different materials in the same block space. Mine the aimed material to remove all face-connected pieces of that material within the block. Explicit stairs and corner pieces allow small details with ordinary Minecraft block textures.
 

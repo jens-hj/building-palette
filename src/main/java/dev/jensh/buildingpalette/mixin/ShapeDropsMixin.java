@@ -29,6 +29,8 @@ public abstract class ShapeDropsMixin {
             double x = (i & 1) * .5 + .25, y = ((i >> 1) & 1) * .5 + .25, z = ((i >> 2) & 1) * .5 + .25;
             if (boxes.stream().anyMatch(box -> box.contains(x, y, z))) units++;
         }
+        // Vanilla auto-connected inner/outer stairs still cost and drop one stair.
+        if (state.getBlock() instanceof net.minecraft.world.level.block.StairBlock) units = Shape.STAIR.cost;
         cir.setReturnValue(units == 0 ? List.of() : List.of(Materials.piece(selection.material(), Shape.CORNER, units)));
     }
 }

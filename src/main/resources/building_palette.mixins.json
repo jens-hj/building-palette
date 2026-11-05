@@ -19,6 +19,7 @@
     "StackCodecMixin",
     "TemplateCodecMixin",
     "ShapeDropsMixin",
+    "NativeConsumptionMixin",
     "StackedContentsMixin",
     "ItemEntityMixin"
   ],

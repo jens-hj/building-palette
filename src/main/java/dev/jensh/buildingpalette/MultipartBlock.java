@@ -21,17 +21,32 @@ import net.minecraft.world.phys.shapes.*;
 public final class MultipartBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     public static final BooleanProperty OPAQUE = BooleanProperty.create("opaque");
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
+    public static final IntegerProperty OCCLUSION = IntegerProperty.create("occlusion", 0, 255);
+    private static final VoxelShape[] OCCLUSION_SHAPES = occlusionShapes();
+    private static VoxelShape[] occlusionShapes() {
+        var result = new VoxelShape[256];
+        result[0] = Shapes.empty();
+        for (int mask = 1; mask < 255; mask++) result[mask] = shape(new Cells().place(mask, "opaque"), mask);
+        result[255] = Shapes.block();
+        return result;
+    }
     public MultipartBlock(BlockBehaviour.Properties properties) {
         // Mining sends the removed material's break effect separately. The invisible
         // carrier has no particle texture and must not add a second placeholder burst.
         super(properties.noTerrainParticles().pushReaction(PushReaction.IMMOVEABLE).lightLevel(state -> state.getValue(LIGHT)));
-        registerDefaultState(stateDefinition.any().setValue(BlockStateProperties.WATERLOGGED, false).setValue(OPAQUE, false).setValue(LIGHT, 0));
+        registerDefaultState(stateDefinition.any().setValue(BlockStateProperties.WATERLOGGED, false).setValue(OPAQUE, false).setValue(LIGHT, 0).setValue(OCCLUSION, 0));
     }
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.WATERLOGGED, OPAQUE, LIGHT); }
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.WATERLOGGED, OPAQUE, LIGHT, OCCLUSION); }
     @Override protected int getLightDampening(BlockState state) { return state.getValue(OPAQUE) ? 15 : state.getValue(BlockStateProperties.WATERLOGGED) ? 1 : 0; }
-    @Override protected boolean propagatesSkylightDown(BlockState state) { return !state.getValue(OPAQUE); }
+    @Override protected boolean propagatesSkylightDown(BlockState state) { return !state.getValue(OPAQUE) && !state.getValue(BlockStateProperties.WATERLOGGED); }
+    @Override protected boolean useShapeForLightOcclusion(BlockState state) { return true; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new MultipartEntity(pos, state); }
-    @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
+    @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    @Override protected VoxelShape getOcclusionShape(BlockState state) { return OCCLUSION_SHAPES[state.getValue(OCCLUSION)]; }
+    @Override protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) { return state.getValue(OPAQUE) ? .2f : 1; }
+    @Override protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        if (level.getBlockEntity(pos) instanceof MultipartEntity entity) entity.refreshProperties();
+    }
     public static VoxelShape shape(Cells cells, int mask) {
         VoxelShape shape = Shapes.empty();
         for (int i = 0; i < 8; i++) if (cells.at(i) != null && (mask & 1 << i) != 0) {
@@ -58,7 +73,7 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     }
     @Override protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof MultipartEntity e) {
-            HitResult hit = player.pick(player.blockInteractionRange(), 1, false);
+            HitResult hit = Placement.pick(player);
             if (hit instanceof BlockHitResult block && block.getBlockPos().equals(pos)) {
                 int cell = Placement.hitCell(block, false);
                 if (e.cells().at(cell) != null) return material(e.cells().at(cell)).getDestroyProgress(player, level, pos);

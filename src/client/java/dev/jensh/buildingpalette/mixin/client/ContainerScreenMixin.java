@@ -12,9 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ContainerScreenMixin {
     @Shadow protected int leftPos;
     @Shadow protected int topPos;
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void palette$draw(GuiGraphicsExtractor graphics, int x, int y, float delta, CallbackInfo ci) {
+    @Inject(method = "extractTooltip", at = @At("HEAD"), cancellable = true)
+    private void palette$hideLegacyTooltip(GuiGraphicsExtractor graphics, int x, int y, CallbackInfo ci) {
+        if (!PaletteClient.active()) return;
         var slot = PaletteClient.target();
         if (slot != null) PaletteClient.draw(graphics, leftPos + slot.x - 3, topPos + slot.y - 3);
+        ci.cancel();
     }
 }

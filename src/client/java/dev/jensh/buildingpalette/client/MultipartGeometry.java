@@ -1,55 +1,15 @@
 package dev.jensh.buildingpalette.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import dev.jensh.buildingpalette.*;
-import dev.jensh.buildingpalette.mixin.client.BlockModelStateAccessor;
 import java.util.*;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.blockentity.*;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 /** Crop each parent face to its octant, preserving vanilla texel density. */
-public final class MultipartRenderer implements BlockEntityRenderer<MultipartEntity, MultipartRenderer.State> {
-    public MultipartRenderer(BlockEntityRendererProvider.Context context) {}
-    public static final class State extends BlockEntityRenderState { final List<BlockModelRenderState> cells = new ArrayList<>(); public int materialCount() { return cells.size(); } }
-    @Override public State createRenderState() { return new State(); }
-    @Override public void extractRenderState(MultipartEntity entity, State state, float ticks, Vec3 camera, ModelFeatureRenderer.CrumblingOverlay progress) {
-        BlockEntityRenderer.super.extractRenderState(entity, state, ticks, camera, progress);
-        state.cells.clear();
-        for (int i = 0; i < 8; i++) {
-            String material = entity.cells().at(i);
-            if (material == null) continue;
-            BlockModelRenderState model = new BlockModelRenderState();
-            var worldModel = net.minecraft.client.Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(MultipartBlock.material(material));
-            List<BlockStateModelPart> source = new ArrayList<>();
-            worldModel.collectParts(net.minecraft.util.RandomSource.create(entity.getBlockPos().asLong()), source);
-            model.setupModel(new org.joml.Matrix4f(), worldModel.hasMaterialFlag(1));
-            var access = (BlockModelStateAccessor)model;
-            int visible = 0;
-            for (Direction direction : Direction.values()) {
-                int x = (i & 1) + direction.getStepX(), y = ((i >> 1) & 1) + direction.getStepY(), z = ((i >> 2) & 1) + direction.getStepZ();
-                boolean outside = x < 0 || x > 1 || y < 0 || y > 1 || z < 0 || z > 1;
-                if (outside || entity.cells().at(x | y << 1 | z << 2) == null) visible |= 1 << direction.ordinal();
-            }
-            List<BlockStateModelPart> parts = new ArrayList<>();
-            for (BlockStateModelPart part : source) parts.add(new CroppedPart(part, i, visible));
-            access.palette$setParts(parts);
-            state.cells.add(model);
-        }
-    }
-    @Override public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
-        for (BlockModelRenderState model : state.cells) model.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
-    }
+public final class MultipartGeometry {
+    private MultipartGeometry() {}
     public record CroppedPart(BlockStateModelPart source, List<BakedQuad> quads) implements BlockStateModelPart {
         CroppedPart(BlockStateModelPart source, int octant, int visible) { this(source, crop(source, octant, visible)); }
         @Override public List<BakedQuad> getQuads(Direction direction) { return direction == null ? quads : List.of(); }

@@ -17,14 +17,6 @@ public abstract class ItemStackMixin {
         if (missing < 0 || missing >= selection.shape().cost || units <= 0 || units > 512)
             cir.setReturnValue(com.mojang.serialization.DataResult.error(() -> "Invalid building material balance"));
     }
-    @Inject(method = "isSameItemSameComponents", at = @At("RETURN"), cancellable = true)
-    private static void palette$exactIngredients(ItemStack a, ItemStack b, CallbackInfoReturnable<Boolean> cir) {
-        if (Materials.get(a) != null || Materials.get(b) != null) {
-            // Fractional stacks must be merged through the unit-aware path.
-            cir.setReturnValue(a.getItem() == b.getItem() && MaterialStacks.missing(a) == 0 && MaterialStacks.missing(b) == 0
-                && a.getComponents().equals(b.getComponents()));
-        }
-    }
     @Inject(method = "copyWithCount", at = @At("RETURN"))
     private void palette$splitRemainder(int count, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack self = (ItemStack)(Object)this;

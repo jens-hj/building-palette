@@ -5,7 +5,8 @@ import dev.tazer.clutternomore.client.ClutterNoMoreClient;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -22,7 +23,11 @@ public final class PaletteClient implements ClientModInitializer {
     private static final Identifier SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
     private static double scroll;
     @Override public void onInitializeClient() {
-        BlockEntityRendererRegistry.register(BuildingPalette.ENTITY, MultipartRenderer::new);
+        PaletteConfig.load();
+        PlacementPreferences.clientPrecise = () -> PaletteConfig.precisePlacement;
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> PaletteConfig.sync());
+        ModelLoadingPlugin.register(context -> context.modifyBlockModelAfterBake().register((model, bake) ->
+            bake.state().is(BuildingPalette.MULTIPART) ? new MultipartModel(model) : model));
         HudElementRegistry.addLast(BuildingPalette.id("palette"), (graphics, delta) -> {
             if (Minecraft.getInstance().gui.screen() == null) draw(graphics);
         });
@@ -83,23 +88,28 @@ public final class PaletteClient implements ClientModInitializer {
         }
         // Scroll up pulls the nearest preview into the actual slot. Wrap the previews
         // with the same ordering as ScrollPayload, so there is no end to the strip.
-        int visible = Math.min(5, Math.min(palette.size() - 1, top / 20));
+        boolean inventory = Minecraft.getInstance().gui.screen() instanceof AbstractContainerScreen<?>;
+        int above = Math.min(inventory ? 2 : 5, Math.min(palette.size() - 1, Math.max(0, top / 20)));
+        int below = inventory ? Math.min(2, Math.min(palette.size() - 1 - above, Math.max(0, (graphics.guiHeight() - top - 22) / 20))) : 0;
+        int visible = above + below + (inventory ? 1 : 0);
         // Turn one continuous vanilla hotbar upright so its internal dividers
         // remain thin. Repeating isolated slots also repeats their black end caps.
         if (visible > 0) {
             var pose = graphics.pose();
             pose.pushMatrix();
-            pose.translate(left + 22, top - visible * 20);
+            pose.translate(left + 22, top - above * 20);
             pose.rotate((float)(Math.PI / 2));
             int length = visible * 20 + 1;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 0, 0, 0, 0, length, 22);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 181, 0, length, 0, 1, 22);
             pose.popMatrix();
         }
-        for (int distance = visible; distance >= 1; distance--) {
-            int y = top - distance * 20;
-            ItemStack icon = palette.get(Math.floorMod(selectedIndex - distance, palette.size()));
+        for (int offset = -above; offset <= below; offset++) {
+            if (offset == 0 && !inventory) continue;
+            int y = top + offset * 20;
+            ItemStack icon = offset == 0 ? source : palette.get(Math.floorMod(selectedIndex + offset, palette.size()));
             graphics.item(icon, left + 3, y + 3);
+            if (offset == 0) graphics.itemDecorations(Minecraft.getInstance().font, source, left + 3, y + 3);
         }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SELECTION, left - 1, top - 1, 24, 23);
     }

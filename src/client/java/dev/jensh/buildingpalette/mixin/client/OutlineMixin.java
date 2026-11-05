@@ -2,6 +2,7 @@ package dev.jensh.buildingpalette.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.jensh.buildingpalette.*;
+import dev.jensh.buildingpalette.client.PaletteConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -16,7 +17,8 @@ public abstract class OutlineMixin {
     @Inject(method = "submitBlockOutline", at = @At("HEAD"), cancellable = true)
     private void palette$preview(PoseStack pose, SubmitNodeCollector collector, LevelRenderState state, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || !(mc.hitResult instanceof BlockHitResult hit)) return;
+        if (mc.player == null || mc.level == null || !(mc.hitResult instanceof BlockHitResult hit)
+                || hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return;
         if (mc.level.getBlockEntity(hit.getBlockPos()) instanceof MultipartEntity entity) {
             int mask = entity.cells().connected(Placement.hitCell(hit, false));
             var camera = state.cameraRenderState.pos;
@@ -24,6 +26,7 @@ public abstract class OutlineMixin {
             collector.submitShapeOutline(pose, MultipartBlock.shape(entity.cells(), mask), RenderTypes.linesTranslucent(), 0xffe9dca6, 2, false);
             pose.popPose(); ci.cancel();
         }
+        if (!PaletteConfig.placementPreview) return;
         var plan = Placement.plan(mc.level, mc.player, mc.player.getMainHandItem(), hit);
         if (plan == null) return;
         var camera = state.cameraRenderState.pos;

@@ -26,7 +26,7 @@ public abstract class MenuMixin {
                 Slot slot = menu.getSlot(index);
                 if (slot.mayPlace(menu.getCarried()) && (slot.getItem().isEmpty() || MaterialStacks.sameMaterial(slot.getItem(), menu.getCarried()))) palette$dragSlots.add(slot);
             } else if (header == 2 && !palette$dragSlots.isEmpty()) {
-                ItemStack cursor = menu.getCarried();
+                ItemStack cursor = menu.getCarried().copy();
                 int cost = Materials.get(cursor).shape().cost;
                 int each = type == 1 ? 1 : MaterialStacks.available(cursor) / palette$dragSlots.size();
                 if (type == 2 && player.hasInfiniteMaterials()) each = 512 / cost;

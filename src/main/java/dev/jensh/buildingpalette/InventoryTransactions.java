@@ -31,7 +31,8 @@ public final class InventoryTransactions {
         return amount;
     }
     public static boolean pickup(AbstractContainerMenu menu, int index, int button, Player player) {
-        if (index < 0 || index >= menu.slots.size() || button < 0 || button > 1) return false;
+        // Screens normalize physical SDL buttons into inventory buttons 0/1.
+        if (index < 0 || index >= menu.slots.size() || (button != 0 && button != 1)) return false;
         Slot slot = menu.getSlot(index);
         ItemStack cursor = menu.getCarried(), existing = slot.getItem();
         boolean managedCursor = Materials.get(cursor) != null, managedSlot = Materials.get(existing) != null;
@@ -46,6 +47,9 @@ public final class InventoryTransactions {
             menu.setCarried(MaterialStacks.withUnits(existing, take));
             slot.setByPlayer(MaterialStacks.withUnits(existing, units - take));
         } else if (managedCursor && (existing.isEmpty() || MaterialStacks.sameMaterial(cursor, existing))) {
+            // Do not mutate a carried stack that a prediction/synchronization snapshot
+            // may still reference. Publish the completed cursor value atomically.
+            cursor = cursor.copy();
             int limit = button == 0 ? MaterialStacks.units(cursor)
                 : MaterialStacks.available(cursor) > 0 ? Materials.get(cursor).shape().cost : 0;
             insert(slot, cursor, limit);

@@ -1,4 +1,9 @@
 {
+  "config.building_palette.title": "Building Palette",
+  "config.building_palette.preview": "Placement outline: %s",
+  "config.building_palette.preview.help": "Show the colored preview of the piece you are about to place. Off by default.",
+  "config.building_palette.precise": "Precise half-grid placement: %s",
+  "config.building_palette.precise.help": "Off: native blocks use their normal placement rules, including stair facing and corners. On: use the clicked half-grid position for building pieces. Applies only to you. Neither mode allows air placement.",
   "item.building_palette.piece": "Building piece",
   "item.building_palette.piece_name": "%s %s",
   "block.building_palette.multipart": "Combined building pieces",

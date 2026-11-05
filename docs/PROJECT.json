@@ -3,8 +3,13 @@
   "title": "Building Palette",
   "description": "Alt-scroll between building shapes, conserve material, and combine slabs, steps, and corners in one block space.",
   "project_type": "mod",
-  "categories": ["decoration", "utility"],
-  "additional_categories": ["game-mechanics"],
+  "categories": [
+    "decoration",
+    "utility"
+  ],
+  "additional_categories": [
+    "game-mechanics"
+  ],
   "client_side": "required",
   "server_side": "required",
   "license_id": "MIT",
@@ -14,25 +19,46 @@
   "license_url": "https://github.com/jens-hj/building-palette/blob/main/LICENSE",
   "gallery": [
     {
-      "file": "build/previews/building_palette_shapes.png",
+      "file": "build/previews/alpha12_clean_shapes.png",
       "title": "Half-block details with mixed materials",
       "description": "Slabs, explicit stairs, quarter-volume steps, and eighth-volume corners, including oak and stone within one block space.",
       "featured": true,
       "ordering": 0
     },
     {
-      "file": "build/previews/building_palette_palette.png",
+      "file": "build/previews/alpha12_clean_palette.png",
       "title": "Hotbar shape scroll",
       "description": "A looping vertical shape strip rises from the active hotbar slot. Alt-scroll changes the shape while retaining the material balance in that slot.",
       "featured": false,
       "ordering": 1
     },
     {
-      "file": "build/previews/building_palette_inventory.png",
+      "file": "build/previews/alpha12_clean_inventory.png",
       "title": "One slot, conserved material",
       "description": "512 corners, 128 slabs, or 85 stairs plus a stored remainder each represent 64 full blocks of material.",
       "featured": false,
       "ordering": 2
+    },
+    {
+      "file": "build/previews/alpha12_clean_inventory_scroll.png",
+      "title": "Scroll shapes in either direction",
+      "description": "Hold Alt over an inventory stack to see nearby shapes above and below the selected slot, using the same shape order as the hotbar.",
+      "featured": false,
+      "ordering": 3
+    },
+    {
+      "file": "build/previews/alpha12_photon_shapes.png",
+      "title": "Terrain lighting with Photon",
+      "description": "Combined oak and stone pieces rendered with Sodium, Iris, and Photon, receiving terrain lighting, ambient occlusion, and shadows.",
+      "featured": false,
+      "ordering": 4
+    },
+    {
+      "file": "build/previews/alpha12_clean_material_lighting.png",
+      "title": "Native and combined material lighting",
+      "description": "Touching native quartz/blackstone vertical slabs on the left and the same materials combined in one grid block on the right, under equal overhead light.",
+      "featured": false,
+      "ordering": 5
     }
   ]
 }

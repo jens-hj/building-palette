@@ -14,6 +14,216 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 
 public final class PaletteGameTests {
+    @GameTest public void placementChecksExactPieceAgainstPlayer(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
+        try {
+            for (boolean precise : new boolean[]{false, true}) {
+                PlacementPreferences.set(player, precise);
+                // A corner fits beside a player whose hitbox occupies the same
+                // grid cell, but not the same octant. Test actual player bounds.
+                for (boolean overlaps : new boolean[]{true, false}) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    player.setPos(pos.getX() + (overlaps ? .1 : .9), pos.getY(), pos.getZ() + (overlaps ? .1 : .9));
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", Shape.CORNER, 8));
+                    var result = Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                    test.assertTrue(result == (overlaps ? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.SUCCESS), "Corner uses exact collision in mode " + precise);
+                    test.assertValueEqual(MaterialStacks.units(player.getMainHandItem()), overlaps ? 8 : 7, "Rejected placement preserves material");
+                    test.assertTrue((level.getBlockEntity(pos) instanceof MultipartEntity) != overlaps, "Rejected placement creates no carrier");
+                }
+            }
+            PlacementPreferences.set(player, true);
+            for (Shape shape : Shape.values()) if (shape.isMultipart()) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                player.setPos(pos.getX() + .1, pos.getY(), pos.getZ() + .1);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", shape, 16));
+                test.assertTrue(Placement.plan(level, player, player.getMainHandItem(), hit) == null, "No overlapping preview for " + shape);
+                test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.FAIL, "Reject intersecting " + shape);
+                test.assertValueEqual(MaterialStacks.units(player.getMainHandItem()), 16, "Rejected " + shape + " preserves balance");
+            }
+            // A bottom slab may be placed directly under feet at its top face;
+            // an upper slab in that same cell must be rejected.
+            for (boolean upper : new boolean[]{false, true}) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                player.setPos(pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", Shape.SLAB, 16));
+                level.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
+                var slabHit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX(), pos.getY() + (upper ? .75 : .25), pos.getZ() + .25), Direction.EAST, pos.west(), false);
+                test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, slabHit) == (upper ? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.SUCCESS), "Slab checks actual half and allows touching boundary");
+            }
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
+    @GameTest public void pickKeepsExistingShapeThenReshapesHeldMaterial(GameTestHelper test) {
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(pos.getX() + 1, pos.getY(), pos.getZ() + 1);
+        test.getLevel().setBlock(pos, Blocks.OAK_STAIRS.defaultBlockState(), 3);
+        var stored = Materials.piece("minecraft:oak_planks", Shape.SLAB, 80);
+        stored.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Picked material"));
+        player.getInventory().setItem(10, stored);
+        ItemStack first = PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false);
+        test.assertTrue(Materials.get(first).shape() == Shape.SLAB, "First pick preserves available shape");
+        test.assertValueEqual(MaterialStacks.units(first), 80, "First pick preserves whole balance");
+        player.getInventory().pickSlot(10);
+        ItemStack second = PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false);
+        test.assertTrue(Materials.get(second).shape() == Shape.STAIR, "Second pick matches clicked shape");
+        test.assertValueEqual(MaterialStacks.units(second), 80, "Second pick preserves fractional balance");
+        test.assertTrue(second.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME).equals(stored.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME)), "Pick preserves custom components");
+        player.getInventory().clearContent();
+        test.assertTrue(PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false).isEmpty(), "Survival pick cannot create missing material");
+        test.succeed();
+    }
+    @GameTest public void shiftClickMergesShapesBeforeEmptySlots(GameTestHelper test) {
+        var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = new SimpleContainer(27);
+        var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x3, 1, player.getInventory(), chest, 3);
+        chest.setItem(0, Materials.piece("minecraft:oak_planks", Shape.CORNER, 65));
+        player.getInventory().setItem(8, Materials.piece("minecraft:oak_planks", Shape.STAIR, 448));
+        player.getInventory().setItem(7, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 500));
+        menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+        test.assertTrue(chest.getItem(0).isEmpty(), "Shift click moves the whole available source");
+        test.assertValueEqual(MaterialStacks.units(player.getInventory().getItem(8)), 512, "Shift click fills existing stairs first");
+        test.assertTrue(Materials.get(player.getInventory().getItem(8)).shape() == Shape.STAIR, "Shift target keeps stair shape");
+        test.assertValueEqual(MaterialStacks.units(player.getInventory().getItem(7)), 501, "Shift remainder merges into another existing shape");
+        test.assertTrue(player.getInventory().getItem(0).isEmpty(), "No empty slot used while compatible stacks have room");
+        chest.setItem(0, Materials.piece("minecraft:oak_planks", Shape.SLAB, 500));
+        chest.setItem(1, Materials.piece("minecraft:oak_planks", Shape.VERTICAL_SLAB, 500));
+        player.getInventory().setItem(9, Materials.piece("minecraft:oak_planks", Shape.CORNER, 32));
+        menu.clicked(27, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+        test.assertValueEqual(MaterialStacks.units(chest.getItem(0)), 512, "Reverse shift click fills slab stack");
+        test.assertValueEqual(MaterialStacks.units(chest.getItem(1)), 512, "Reverse shift click fills vertical slabs");
+        test.assertValueEqual(MaterialStacks.units(chest.getItem(2)), 8, "Only overflow goes into an empty slot");
+        test.assertTrue(player.getInventory().getItem(9).isEmpty(), "Reverse shift click empties source");
+        for (int i = 0; i < 36; i++) player.getInventory().setItem(i, new ItemStack(Items.DIRT, 64));
+        player.getInventory().setItem(8, Materials.piece("minecraft:oak_planks", Shape.STAIR, 500));
+        chest.setItem(0, Materials.piece("minecraft:oak_planks", Shape.CORNER, 32));
+        menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+        test.assertValueEqual(MaterialStacks.units(player.getInventory().getItem(8)), 512, "Full inventory still fills compatible material stack");
+        test.assertValueEqual(MaterialStacks.units(chest.getItem(0)), 20, "Untransferable overflow remains in original slot");
+        test.succeed();
+    }
+    @GameTest(maxTicks = 120, skyAccess = true) public void slabRoofMatchesNativeLightBlocking(GameTestHelper test) {
+        var level = test.getLevel();
+        for (int x = 0; x <= 4; x++) for (int y = 0; y <= 4; y++) for (int z = 0; z <= 4; z++) {
+            var pos = test.absolutePos(new BlockPos(x, y, z));
+            boolean wall = y == 0 || x == 0 || x == 4 || z == 0 || z == 4;
+            level.setBlock(pos, wall ? Blocks.STONE.defaultBlockState() : y == 4 ? Blocks.OAK_SLAB.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+        }
+        var sample = test.absolutePos(new BlockPos(2, 3, 2));
+        level.setBlock(test.absolutePos(new BlockPos(2, 5, 2)), Blocks.GLOWSTONE.defaultBlockState(), 3);
+        test.runAfterDelay(15, () -> {
+            test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.SKY, test.absolutePos(new BlockPos(1, 5, 1))), 15, "Roof test is exposed to skylight");
+            test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.SKY, sample), 0, "Native slab roof blocks skylight");
+            test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, sample), 0, "Native slab roof blocks overhead block light");
+            for (int x = 1; x <= 3; x++) for (int z = 1; z <= 3; z++) {
+                var pos = test.absolutePos(new BlockPos(x, 4, z));
+                level.setBlock(pos, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                ((MultipartEntity)level.getBlockEntity(pos)).setCells(new Cells().place(51, "minecraft:oak_planks"));
+            }
+            test.runAfterDelay(15, () -> {
+                test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.SKY, sample), 0, "Multipart bottom slab roof blocks skylight");
+                test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, sample), 0, "Multipart bottom slab roof blocks overhead block light");
+                for (int x = 1; x <= 3; x++) for (int z = 1; z <= 3; z++) {
+                    var pos = test.absolutePos(new BlockPos(x, 4, z));
+                    ((MultipartEntity)level.getBlockEntity(pos)).setCells(new Cells().place(68, "minecraft:oak_planks").place(136, "minecraft:stone_bricks"));
+                }
+                test.runAfterDelay(15, () -> {
+                    test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.SKY, sample), 0, "Mixed top slab roof blocks skylight");
+                    test.assertValueEqual(level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, sample), 0, "Mixed top slab roof blocks overhead block light");
+                    test.succeed();
+                });
+            });
+        });
+    }
+    @GameTest public void everyShapeMergesByMaterial(GameTestHelper test) {
+        var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = new SimpleContainer(27);
+        var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x3, 1, player.getInventory(), chest, 3);
+        var palette = Materials.palette(new ItemStack(Items.OAK_PLANKS));
+        for (ItemStack from : palette) for (ItemStack to : palette) for (int[] amounts : new int[][]{{17, 65}, {448, 65}, {512, 17}, {3, 1}}) {
+            chest.setItem(0, MaterialStacks.withUnits(to, amounts[0]));
+            menu.setCarried(MaterialStacks.withUnits(from, amounts[1]));
+            menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+            int total = amounts[0] + amounts[1], expected = Math.min(total, 512);
+            test.assertValueEqual(MaterialStacks.units(chest.getItem(0)), expected, "Every shape pairing fills receiver by material");
+            test.assertValueEqual(MaterialStacks.units(menu.getCarried()), total - expected, "Only overflow remains on cursor");
+            test.assertTrue(Materials.get(chest.getItem(0)).shape() == Materials.get(to).shape(), "Static stack keeps its shape");
+            if (total <= 512) test.assertTrue(menu.getCarried().isEmpty(), "Fully merged cursor is empty");
+            else test.assertTrue(Materials.get(menu.getCarried()).shape() == Materials.get(from).shape(), "Overflow keeps moved shape");
+        }
+        test.succeed();
+    }
+    @GameTest public void nativePlacementAndPreferences(GameTestHelper test) {
+        var level = test.getLevel();
+        var support = test.absolutePos(new BlockPos(2, 2, 2));
+        var target = support.east();
+        level.setBlock(support, Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(support.getX() + 2, support.getY(), support.getZ() + 2);
+        try {
+            test.assertTrue(!PlacementPreferences.precise(player), "Placement defaults to native");
+            for (Direction facing : Direction.Plane.HORIZONTAL) for (double height : new double[]{.25, .75}) for (double side : new double[]{.25, .75}) {
+                level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+                player.setYRot(facing.toYRot());
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.OAK_STAIRS, 64));
+                var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(support.getX() + 1, support.getY() + height, support.getZ() + side), Direction.EAST, support, false);
+                test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.PASS, "Native stairs use original item placement");
+                Items.OAK_STAIRS.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, hit));
+                var state = level.getBlockState(target);
+                test.assertTrue(state.is(Blocks.OAK_STAIRS), "Native stair block remains native");
+                test.assertTrue(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING) == facing, "Native stair faces player direction");
+                var half = height > .5 ? net.minecraft.world.level.block.state.properties.Half.TOP : net.minecraft.world.level.block.state.properties.Half.BOTTOM;
+                test.assertTrue(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HALF) == half, "Native stair half follows vanilla hit height");
+                test.assertValueEqual(player.getMainHandItem().getCount(), 63, "Native placement spends one piece");
+            }
+            // A second slab must still be consumed despite CNM's doubled-shape shortcut.
+            level.setBlock(target, Blocks.OAK_SLAB.defaultBlockState(), 3);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.OAK_SLAB, 2));
+            var slabHit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(target.getX() + .25, target.getY() + .5, target.getZ() + .25), Direction.UP, target, false);
+            Items.OAK_SLAB.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, slabHit));
+            test.assertValueEqual(player.getMainHandItem().getCount(), 1, "Double slab spends the second slab");
+            level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, MaterialStacks.withUnits(new ItemStack(Items.OAK_STAIRS), 1));
+            var reservedHit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(support.getX() + 1, support.getY() + .25, support.getZ() + .25), Direction.EAST, support, false);
+            Items.OAK_STAIRS.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, reservedHit));
+            test.assertTrue(level.getBlockState(target).isAir(), "Reserved fraction cannot place a native stair");
+            test.assertValueEqual(MaterialStacks.units(player.getMainHandItem()), 1, "Reserved material is preserved");
+            level.setBlock(target, Blocks.CHEST.defaultBlockState(), 3);
+            var chestHit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(target.getX() + .5, target.getY() + .875, target.getZ() + .5), Direction.UP, target, false);
+            test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, chestHit) == net.minecraft.world.InteractionResult.PASS, "Reserved material does not block chest interaction");
+            level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+            PlacementPreferences.set(player, true);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.OAK_STAIRS, 2));
+            var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(support.getX() + 1, support.getY() + .25, support.getZ() + .25), Direction.EAST, support, false);
+            test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.SUCCESS, "Precise placement remains available");
+            test.assertTrue(level.getBlockEntity(target) instanceof MultipartEntity, "Precise placement makes explicit multipart stairs");
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
+    @GameTest public void noAirPlacementInEitherMode(GameTestHelper test) {
+        var level = test.getLevel();
+        var air = test.absolutePos(new BlockPos(2, 3, 2));
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(air.getX() + 1, air.getY(), air.getZ() + 1);
+        var point = net.minecraft.world.phys.Vec3.atCenterOf(air);
+        try {
+            for (boolean precise : new boolean[]{false, true}) for (ItemStack stack : new ItemStack[]{new ItemStack(Items.OAK_STAIRS, 2), Materials.piece("minecraft:oak_planks", Shape.CORNER, 2)}) {
+                PlacementPreferences.set(player, precise);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+                for (var hit : new net.minecraft.world.phys.BlockHitResult[]{new net.minecraft.world.phys.BlockHitResult(point, Direction.UP, air, false), net.minecraft.world.phys.BlockHitResult.miss(point, Direction.UP, air)}) {
+                    test.assertTrue(Placement.plan(level, player, stack, hit) == null, "Air and miss have no preview plan");
+                    test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.FAIL, "Air placement rejected");
+                    test.assertValueEqual(stack.getCount(), 2, "Rejected placement spends nothing");
+                    test.assertTrue(level.getBlockState(air).isAir(), "Rejected placement creates no block");
+                }
+            }
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
     @GameTest public void randomizedNativeTransfers(GameTestHelper test) {
         var random = new java.util.Random(837264);
         var storage = new SimpleContainer(6);
@@ -41,7 +251,7 @@ public final class PaletteGameTests {
         BlockPos pos = test.absolutePos(new BlockPos(2, 2, 2));
         level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
         var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-        player.setPos(pos.getX() + 4, pos.getY(), pos.getZ() + 4);
+        player.setPos(pos.getX() + 2, pos.getY(), pos.getZ() + 2);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", Shape.CORNER, 8));
         for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) for (int x = 0; x < 2; x++) {
             var point = new net.minecraft.world.phys.Vec3(pos.getX() + x * .5 + .25, pos.getY() + y * .5, pos.getZ() + z * .5 + .25);
@@ -61,10 +271,11 @@ public final class PaletteGameTests {
         var entity = (MultipartEntity)level.getBlockEntity(pos);
         entity.setCells(new Cells().place(7, "minecraft:oak_planks").place(128, "minecraft:stone_bricks"));
         var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-        player.setPos(pos.getX() + .25, pos.getY(), pos.getZ() - 2);
+        player.setPos(pos.getX() + 2, pos.getY(), pos.getZ() - 2);
         var aim = new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY() + .25, pos.getZ() + .25).subtract(player.getEyePosition());
         player.setYRot((float)(Math.toDegrees(Math.atan2(aim.z, aim.x)) - 90));
         player.setXRot((float)-Math.toDegrees(Math.atan2(aim.y, Math.sqrt(aim.x * aim.x + aim.z * aim.z))));
+        player.setYHeadRot(180); // Deliberately stale, as before the next server entity tick.
         test.assertTrue(player.gameMode.destroyBlock(pos), "Mining handler accepts target");
         test.assertValueEqual(((MultipartEntity)level.getBlockEntity(pos)).cells().occupied(), 128, "All connected oak removed, stone remains");
         var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
@@ -81,6 +292,12 @@ public final class PaletteGameTests {
             var drops = net.minecraft.world.level.block.Block.getDrops(state, test.getLevel(), pos, null);
             int expected = block == Blocks.OAK_SLAB ? 4 : 6;
             test.assertValueEqual(drops.stream().mapToInt(MaterialStacks::units).sum(), expected, "Existing native shape drops its physical volume");
+        }
+        for (var shape : net.minecraft.world.level.block.state.properties.StairsShape.values()) {
+            var state = Blocks.OAK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.STAIRS_SHAPE, shape);
+            test.getLevel().setBlock(pos, state, 3);
+            var drops = net.minecraft.world.level.block.Block.getDrops(state, test.getLevel(), pos, null);
+            test.assertValueEqual(drops.stream().mapToInt(MaterialStacks::units).sum(), 6, "Auto-connected stair keeps one stair's material value");
         }
         test.succeed();
     }
