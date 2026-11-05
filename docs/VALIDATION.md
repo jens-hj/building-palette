@@ -43,3 +43,7 @@ The icon-only release built successfully. Both uploaded archives match local SHA
 ## Coarse mixed-material icon — alpha.7
 
 The icon-only release built successfully. Uploaded mod and source archive SHA-512 hashes match the local files; the packaged icon matches the new project asset. Gameplay code is unchanged.
+
+## Icon edge refinement — alpha.8
+
+The icon-only release built successfully. Both uploaded archive SHA-512 hashes match the local files, and the packaged icon matches the updated project asset. No gameplay code changed.

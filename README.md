@@ -58,6 +58,6 @@ The full-RPG development test suppresses FrozenLib's development-only early log 
 
 ## Publishing
 
-The Modrinth project is configured with an icon, gallery, MIT license, both-side requirements, and pinned companion dependencies. Version `0.1.0-alpha.7` is uploaded and the project has been submitted for public review.
+The Modrinth project is configured with an icon, gallery, MIT license, both-side requirements, and pinned companion dependencies. Version `0.1.0-alpha.8` is uploaded and the project has been submitted for public review.
 
 For a new release, update `version` in `gradle.properties` and add its `CHANGELOG.md` section, then run `./gradlew build modrinth`. Use `./gradlew modrinthSyncBody` to update the description. Minotaur loads credentials internally from `MODRINTH_TOKEN` or the external user configuration file; credentials must never be committed or printed.

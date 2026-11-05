@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.8
+
+- Refine the mixed-material icon with straighter isometric edges and more consistent pixel corners; gameplay is unchanged.
+
 ## 0.1.0-alpha.7
 
 - Restore the mixed oak, stone, and turquoise icon with coarser pixels and simpler silhouettes; gameplay is unchanged.
