@@ -31,3 +31,7 @@ The base-client regression first reproduced a shared GUI model identity between 
 ## Hotbar selector — alpha.4
 
 The isolated graphical client test passed after replacing the panel with the vertical hotbar strip. Fresh screenshots confirm the title is absent and five previews rise directly above the active slot. Held, inventory-hover, and offhand scrolling still preserve material on the server. Alpha.4 and its sources were uploaded and their SHA-512 hashes match the local archives. The Modrinth description and gallery were refreshed.
+
+## Continuous slot dividers — alpha.5
+
+The isolated graphical client test passed with the continuous, rotated vanilla hotbar background. The fresh preview shows thin internal dividers, with black borders only at the outside of the strip. Held, inventory-hover, and offhand scroll checks passed. Both uploaded archive SHA-512 hashes match the local release; the gallery was refreshed.

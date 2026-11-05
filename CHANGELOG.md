@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.5
+
+- Draw the vertical selector as one continuous vanilla hotbar, retaining its thin internal dividers instead of repeating black slot borders.
+
 ## 0.1.0-alpha.4
 
 - Replace the floating palette panel with a vertical, looping shape strip rising from the active hotbar slot.

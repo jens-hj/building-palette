@@ -2,8 +2,12 @@
   "set": [
     {
       "type": "ai_content",
-      "uses": ["code", "assets", "text"],
-      "note": "The mod's implementation, tests, documentation, project description, and icon-generation script were written by an AI coding assistant following the author's design requirements. The pixel-art icon is drawn by that script on a 16x16 grid and scaled with nearest-neighbor sampling; gallery images are actual in-game screenshots. The mod does not use generative AI at runtime."
+      "uses": [
+        "code",
+        "assets",
+        "text"
+      ],
+      "note": "This mod is AI-generated with Codex, including its scripted pixel-art icon. Gallery images are in-game screenshots."
     }
   ],
   "remove": []

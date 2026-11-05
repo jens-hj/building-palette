@@ -84,12 +84,20 @@ public final class PaletteClient implements ClientModInitializer {
         // Scroll up pulls the nearest preview into the actual slot. Wrap the previews
         // with the same ordering as ScrollPayload, so there is no end to the strip.
         int visible = Math.min(5, Math.min(palette.size() - 1, top / 20));
+        // Turn one continuous vanilla hotbar upright so its internal dividers
+        // remain thin. Repeating isolated slots also repeats their black end caps.
+        if (visible > 0) {
+            var pose = graphics.pose();
+            pose.pushMatrix();
+            pose.translate(left + 22, top - visible * 20);
+            pose.rotate((float)(Math.PI / 2));
+            int length = visible * 20 + 1;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 0, 0, 0, 0, length, 22);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 181, 0, length, 0, 1, 22);
+            pose.popMatrix();
+        }
         for (int distance = visible; distance >= 1; distance--) {
             int y = top - distance * 20;
-            // Join the two ends of the vanilla hotbar into a single slot without
-            // stretching its pixel borders; resource-pack hotbar sprites apply too.
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 0, 0, left, y, 11, 22);
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 171, 0, left + 11, y, 11, 22);
             ItemStack icon = palette.get(Math.floorMod(selectedIndex - distance, palette.size()));
             graphics.item(icon, left + 3, y + 3);
         }
