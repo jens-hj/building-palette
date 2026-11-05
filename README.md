@@ -2,6 +2,8 @@
 
 Fabric 26.3 companion for Clutter No More and Offgrid. Hold **Alt** and scroll a held block or a stack in an inventory to select its building shape.
 
+[Modrinth](https://modrinth.com/mod/building-palette) · [Source and issues](https://github.com/jens-hj/building-palette)
+
 One material stack holds up to **64 full blocks**. Scrolling changes the available-piece count in the same slot: **64 blocks → 128 slabs → 256 steps → 512 corners**. Stairs show **85+** when two eighth-block units remain reserved. Hover the stack to see the exact balance.
 
 Shapes combine on a **2×2×2 grid** inside each world block. Add four quarter-volume steps or eight corners, with different materials if desired. Mining removes all face-connected material of the aimed type within that block space. Stairs keep their explicit geometry; add corners to construct inner and outer turns.
@@ -51,3 +53,9 @@ python scripts/package-release.py
 ```
 
 The full-RPG development test suppresses FrozenLib's development-only early log (which otherwise loads translations before Controlify can prepare its mixin), retains fixture options instead of restoring Fabric's incomplete keybind snapshot, and omits Crash Assistant. These harness changes are absent from the released mod.
+
+## Publishing
+
+The Modrinth project is configured with an icon, gallery, MIT license, both-side requirements, and pinned companion dependencies. Version `0.1.0-alpha.1` is uploaded and the project has been submitted for public review.
+
+For a new release, update `version` in `gradle.properties` and add its `CHANGELOG.md` section, then run `./gradlew build modrinth`. Use `./gradlew modrinthSyncBody` to update the description. Minotaur loads credentials internally from `MODRINTH_TOKEN` or the external user configuration file; credentials must never be committed or printed.

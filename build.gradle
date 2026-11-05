@@ -1,5 +1,6 @@
 plugins {
     id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'com.modrinth.minotaur' version '2.10.0'
 }
 base { archivesName = 'building-palette' }
 repositories {
@@ -110,3 +111,33 @@ tasks.register('harnessAgent', Jar) {
     from sourceSets.harness.output
     manifest { attributes 'Premain-Class': 'dev.jensh.buildingpalette.harness.FrozenLibTestAgent' }
 }
+
+// Same publishing workflow as the other Minecraft projects. Credentials remain external.
+def modrinthToken = providers.environmentVariable('MODRINTH_TOKEN').orElse(
+    providers.fileContents(layout.projectDirectory.file(
+        "${System.getProperty('user.home')}/.config/modrinth-token")).asText.map { it.trim() })
+def currentChangelog = providers.fileContents(layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
+    def section = text.split(/(?m)^## /).find { it.startsWith("${version}\n") || it.startsWith("${version}\r") }
+    section ? section.substring(section.indexOf('\n') + 1).trim() : ''
+}
+modrinth {
+    token = modrinthToken
+    projectId = 'hBaJZHIg'
+    versionNumber = project.version
+    versionName = project.version
+    versionType = 'alpha'
+    environment = 'client_and_server'
+    uploadFile = jar
+    additionalFiles { sourcesJar(tasks.named('sourcesJar')) }
+    gameVersions = [project.minecraft_version]
+    loaders = ['fabric']
+    changelog = currentChangelog
+    syncBodyFrom = providers.fileContents(layout.projectDirectory.file('docs/MODRINTH.md')).asText
+    dependencies {
+        required.project 'fabric-api'
+        required.version 'AQkLCaPY'
+        required.version 'H4rTCX81'
+    }
+}
+tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
+tasks.named('modrinthSyncBody') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
