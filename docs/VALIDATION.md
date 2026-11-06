@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-- `./gradlew build`: 414,333 model assertions and all 18 required Minecraft server GameTests passed in alpha.13.
+- `./gradlew build`: 414,333 model assertions and all 19 required Minecraft server GameTests passed in alpha.15.
 - Actual server tests cover 512-unit shape round trips, persistent codecs/templates, reserved stair material, storage capacity, cursor/drag behavior, constrained slots, randomized unit transfers, dropped merging, repeated chest/barrel recipes, furnace fuel, native shape drops, eight-corner placement, connected-material mining/refunds, and multipart persistence.
 - The isolated RPG graphical test passed with the copied client mod set, including Sodium, Iris, Lithium, Voxy, Controlify, Better End/Nether, Farmer's Delight, Macaw's blocks, and Wilder Wild. Crash Assistant was omitted from the test launch.
 - RPG family validation passed for **238 supported families, including 133 modded families**. Every supported palette has unique shape choices and conserves a 512-unit balance.
@@ -102,3 +102,21 @@ The graphical distance regression places native blackstone slabs beside combined
 The Sodium 0.9.2/Iris 1.11.7/Photon v1.4 run also passed the full graphical suite and the targeted 80-block compiled-section check, using the same reduced Photon test preset described above. Screenshot: `build/previews/alpha13_distance_photon.png`. The final build passed 414,333 model assertions and all 18 Minecraft server GameTests.
 
 Alpha.13 is uploaded as Modrinth version `xTGL5N3x`. Its primary jar SHA-512 exactly matches the jar used for all three saved-world upgrades; both uploaded archive hashes match local files. The project remains in Modrinth’s processing queue.
+
+## Step placement ownership — alpha.14
+
+The server regression covers horizontal and vertical quarter steps in both placement modes, two horizontal axes, and single/mixed materials. It exercises actual CNM horizontal-step BlockItems, requires the first piece to create a Building Palette carrier, fills all four quarter positions, checks exact material assignments after each placement, and verifies a same-material assembly becomes a normal full block. Every assembly consumes exactly eight material units. Native stair facing/halves/corners retain the existing placement regression.
+
+The base graphical run passed actual client/server use-item packets for both step directions, with precise placement off. It checks the first carrier, all four material masks, full-block conversion, and empty source stacks after consuming one block's worth of material. A further server regression seeds an old native step state directly, adds a different-material quarter through Building Palette, and checks the old material, new volume, and spent balance survive conversion.
+
+The final copied RPG client run passed all step-placement packets, including four-piece mixed assemblies, alongside the existing controls and lighting checks. It validated 238 families (133 modded). The far terrain regression also passed through Continuity’s `EmissiveBlockStateModel` wrapper; it now checks actual emitted terrain geometry rather than assuming the outer model must be a `MultipartModel`. No production renderer change was needed. The build passed 414,333 pure assertions and all 19 server GameTests, including old native step conversion.
+
+## Vanilla selection styling and optional hue — alpha.15
+
+The base build passed 414,333 pure assertions, all 19 server GameTests, and the full graphical suite. A test-only LevelRenderer invoker captures actual vanilla render submissions through a recording collector. Multipart strokes match native strokes in colour, alpha, render type, line width, and translucency in both normal and high-contrast modes, while retaining only the aimed quarter-material shape. Opt-in 120°/240° hues change the primary multipart stroke, leave native blocks and the accessibility outer stroke alone, and 360° wraps to the same colour as 0°.
+
+The settings test begins with the old two-field config file and requires highlighting to default off. It toggles highlighting, enables the hue slider, selects 270° through a slider click, reloads the saved file to verify both settings persist, then restores vanilla styling and requires the slider to disable. A live swatch previews the colour. No test-only invoker or recorder ships in the mod jar.
+
+The final copied RPG run passed the complete suite, including the normal/high-contrast outline comparisons, hue-slider persistence, all quarter-step placement packets, and far terrain geometry. Iris/render-type wrappers are compared by pipeline location, blend/depth state, culling, polygon mode, and topology rather than Java object identity. The smaller Sodium/Iris fixture also passed. RPG family validation remained 238 supported families (133 modded).
+
+Alpha.15 and sources are uploaded as Modrinth version `85oAfm1w`; both remote archive SHA-512 hashes match the local files. Test-only invokers and recorders are excluded from the primary jar.

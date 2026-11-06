@@ -74,6 +74,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 mesh.forEach(quad -> {
                     if (quad.ambientOcclusion() != net.fabricmc.fabric.api.util.TriState.TRUE) throw new AssertionError("Missing terrain ambient occlusion");
                 });
+                OutlineStyleTest.verify(mc);
                 mc.gui.toastManager().clear();
                 if (MaterialStacks.units(mc.player.getInventory().getItem(0)) != 512) throw new AssertionError("Corner balance did not synchronize");
                 if (mc.player.getInventory().getItem(1).getCount() != 128) throw new AssertionError("Slab count did not synchronize");
@@ -162,13 +163,29 @@ public final class PaletteClientTest implements FabricClientGameTest {
             context.getInput().releaseAlt();
             context.runOnClient(mc -> mc.gui.setScreen(null));
             context.runOnClient(mc -> {
-                if (dev.jensh.buildingpalette.client.PaletteConfig.placementPreview || dev.jensh.buildingpalette.client.PaletteConfig.precisePlacement)
+                if (dev.jensh.buildingpalette.client.PaletteConfig.placementPreview || dev.jensh.buildingpalette.client.PaletteConfig.precisePlacement
+                        || dev.jensh.buildingpalette.client.PaletteConfig.highlightParts)
                     throw new AssertionError("Placement settings must default off");
                 var screen = new dev.jensh.buildingpalette.client.PaletteConfigScreen(null);
                 mc.gui.setScreen(screen);
                 ((net.minecraft.client.gui.components.Button)screen.children().get(0)).onPress(null);
                 if (!dev.jensh.buildingpalette.client.PaletteConfig.placementPreview) throw new AssertionError("Preview toggle did not enable");
                 ((net.minecraft.client.gui.components.Button)screen.children().get(0)).onPress(null);
+                var highlight = (net.minecraft.client.gui.components.Button)screen.children().get(2);
+                var hue = (net.minecraft.client.gui.components.AbstractSliderButton)screen.children().get(3);
+                if (hue.active) throw new AssertionError("Hue slider should be disabled for vanilla styling");
+                highlight.onPress(null);
+                if (!hue.active || !dev.jensh.buildingpalette.client.PaletteConfig.highlightParts) throw new AssertionError("Highlight toggle did not enable hue");
+                hue.onClick(new net.minecraft.client.input.MouseButtonEvent(hue.getX() + 4 + .75 * (hue.getWidth() - 8), hue.getY() + 10,
+                    new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
+                if (dev.jensh.buildingpalette.client.PaletteConfig.outlineHue != 270) throw new AssertionError("Hue slider did not select the requested colour");
+                dev.jensh.buildingpalette.client.PaletteConfig.highlightParts = false;
+                dev.jensh.buildingpalette.client.PaletteConfig.outlineHue = 48;
+                dev.jensh.buildingpalette.client.PaletteConfig.load();
+                if (!dev.jensh.buildingpalette.client.PaletteConfig.highlightParts || dev.jensh.buildingpalette.client.PaletteConfig.outlineHue != 270)
+                    throw new AssertionError("Outline preference did not persist");
+                highlight.onPress(null);
+                if (hue.active) throw new AssertionError("Hue slider should disable after restoring vanilla styling");
                 ((net.minecraft.client.gui.components.Button)screen.children().get(1)).onPress(null);
             });
             context.waitTicks(5);
@@ -529,6 +546,56 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 });
             }
             context.runOnClient(mc -> dev.jensh.buildingpalette.client.PaletteConfig.precisePlacement = false);
+            // Actual step-item packets must never fall through to CNM's
+            // restricted native step states, including the very first piece.
+            for (Shape shape : new Shape[]{Shape.STEP, Shape.VERTICAL_STEP}) for (boolean mixed : new boolean[]{false, true}) {
+                world.getServer().runCommand("tp @a 2.5 100 -1.5 0 30");
+                world.getServer().computeOnServer(server -> {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    PlacementPreferences.set(player, false);
+                    player.getInventory().setSelectedSlot(0);
+                    player.getInventory().setItem(0, Materials.piece("minecraft:oak_planks", shape, mixed ? 4 : 8));
+                    player.getInventory().setItem(1, mixed ? Materials.piece("minecraft:stone_bricks", shape, 4) : ItemStack.EMPTY);
+                    server.overworld().setBlock(new BlockPos(0, 100, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    player.inventoryMenu.broadcastChanges();
+                    return true;
+                });
+                context.waitTicks(5);
+                Cells expected = new Cells();
+                for (int part = 0; part < 4; part++) {
+                    boolean stone = mixed && (part == 1 || part == 2);
+                    int half = part / 2, side = part % 2;
+                    double x = shape == Shape.STEP ? .25 : .25 + half * .5;
+                    double y = shape == Shape.STEP ? half * .5 : 0;
+                    double z = .25 + side * .5;
+                    int mask = Cells.mask(shape, shape == Shape.STEP ? (half << 1) | (side << 2) : half | (side << 2), 2);
+                    expected = expected.place(mask, stone ? "minecraft:stone_bricks" : "minecraft:oak_planks");
+                    Cells wanted = expected;
+                    boolean fullNative = part == 3 && !mixed;
+                    context.runOnClient(mc -> {
+                        mc.player.getInventory().setSelectedSlot(stone ? 1 : 0);
+                        mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                            new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(x, 100 + y, z), net.minecraft.core.Direction.UP,
+                                new BlockPos(0, y == 0 ? 99 : 100, 0), false));
+                    });
+                    context.waitTicks(5);
+                    context.runOnClient(mc -> {
+                        var pos = new BlockPos(0, 100, 0);
+                        if (fullNative ? !mc.level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.OAK_PLANKS)
+                                : !(mc.level.getBlockEntity(pos) instanceof MultipartEntity entity) || !java.util.Arrays.equals(entity.cells().copy(), wanted.copy()))
+                            throw new AssertionError("Client step packet used wrong carrier or material arrangement");
+                    });
+                    if (!world.getServer().computeOnServer(server -> {
+                        var pos = new BlockPos(0, 100, 0);
+                        return fullNative ? server.overworld().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.OAK_PLANKS)
+                            : server.overworld().getBlockEntity(pos) instanceof MultipartEntity entity && java.util.Arrays.equals(entity.cells().copy(), wanted.copy());
+                    })) throw new AssertionError("Server step packet did not preserve all four quarter positions/materials");
+                }
+                context.runOnClient(mc -> {
+                    if (!mc.player.getInventory().getItem(0).isEmpty() || !mc.player.getInventory().getItem(1).isEmpty())
+                        throw new AssertionError("Step assembly consumed the wrong material balance");
+                });
+            }
             // Chunk geometry must remain visible beyond the old block-entity
             // renderer's 64-block cutoff, even at low entity render distance.
             world.getServer().runCommand("fill -6 100 -2 6 106 84 minecraft:air");
@@ -562,8 +629,14 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 if (mc.level.getBlockState(pos).getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL
                         || mc.getBlockEntityRenderDispatcher().getRenderer(entity) != null)
                     throw new AssertionError("Multipart still depends on an entity renderer at long distance");
-                if (!(mc.getModelManager().getBlockStateModelSet().get(mc.level.getBlockState(pos)) instanceof dev.jensh.buildingpalette.client.MultipartModel))
-                    throw new AssertionError("Far multipart is not using terrain geometry");
+                // Pack mods may wrap the model. Require its terrain output,
+                // rather than a particular outer Java implementation class.
+                var model = mc.getModelManager().getBlockStateModelSet().get(mc.level.getBlockState(pos));
+                var mesh = net.fabricmc.fabric.api.client.renderer.v1.Renderer.get().mutableMesh();
+                ((net.fabricmc.fabric.api.client.renderer.v1.model.FabricBlockStateModel)model).emitQuads(mesh.emitter(), mc.level,
+                    pos, mc.level.getBlockState(pos), net.minecraft.util.RandomSource.create(1), direction -> false);
+                if (mesh.size() == 0) throw new AssertionError("Far multipart terrain geometry is empty");
+                System.out.println("[Building Palette] Far terrain geometry verified through " + model.getClass().getName());
             });
             context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_terrain_distance").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
         }

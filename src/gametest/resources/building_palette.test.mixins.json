@@ -3,7 +3,8 @@
   "package": "dev.jensh.buildingpalette.test.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "OptionsResetMixin"
+    "OptionsResetMixin",
+    "LevelRendererInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

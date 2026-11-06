@@ -46,7 +46,11 @@ public final class Placement {
             : BlockPos.containing(hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(.0001)));
     }
     public static boolean usesNativePlacement(Level level, Player player, ItemStack stack, BlockHitResult hit) {
-        return !PlacementPreferences.precise(player) && stack.getItem() instanceof BlockItem
+        var selection = Materials.get(stack);
+        // Quarter pieces always use our cell placement and material merging.
+        // CNM's native step states only support a restricted diagonal doubling.
+        return selection != null && selection.shape() != Shape.STEP && selection.shape() != Shape.VERTICAL_STEP
+            && !PlacementPreferences.precise(player) && stack.getItem() instanceof BlockItem
             && !(level.getBlockEntity(target(level, hit)) instanceof MultipartEntity);
     }
     public static Cells existing(Level level, BlockPos pos) {

@@ -17,7 +17,7 @@ Multipart blocks are immovable by pistons. Mixed pieces do not tick, oxidize, or
 ## Integration ownership
 
 - Building Palette handles solid shape placement and stacking for managed families; Offgrid retains its other placement features and native fences/walls.
-- Native items use their original placement code by default. Precise half-grid placement is an opt-in per-player preference, synchronized from the client's configuration; the preview toggle is independent and defaults off. Generic pieces without a native item and combinations inside multipart blocks use the half-grid representation.
+- Native items other than horizontal/vertical quarter steps use their original placement code by default. Precise half-grid placement is an opt-in per-player preference, synchronized from the client's configuration; the preview toggle is independent and defaults off. Generic pieces without a native item and combinations inside multipart blocks use the half-grid representation.
 - Auto-connected native inner/outer stairs retain the value of one stair and stay native. They are not converted into multipart cells, because their 5/7-cell geometry differs from their 6-unit item cost. Use precise placement for explicit stair-and-corner combinations.
 - Multipart geometry uses Fabric's terrain model API and immutable block-entity render data, receiving chunk lighting and ambient occlusion through Indigo or Sodium/Iris. Material tint, render layer, and emissive properties remain attached to each quad.
 - Opaque octants contribute their exact shape to the light engine. Bottom/top slab roofs block skylight and overhead block light like native slabs. Existing multipart block entities queue an occlusion refresh for the end of the level tick after loading, preserving the existing saved-cell schema. Already-correct properties do not trigger redundant updates.
@@ -40,3 +40,9 @@ The executable checks cover pure geometry/accounting, native stack serialization
 ### Test harness
 
 The copied RPG launch runs on Xvfb so failed launches cannot display error dialogs or capture desktop input. Crash Assistant is omitted. A separate Java test agent suppresses FrozenLib 3.0.3's early development-only log, reproducing its normal non-development startup behavior; original jars remain unchanged. The test mod also retains copied options because some RPG mods register keybinds after Fabric's default-options snapshot. Neither workaround is packaged in Building Palette.
+
+Horizontal and vertical quarter steps always use Building Palette placement and merging, including the first piece. Native stairs still use native facing/half/corner placement by default. This prevents delegation to CNM’s restricted native step states.
+
+Selection rendering keeps vanilla’s submission path, changing only the aimed material’s shape. The default colour, alpha, line width, render type, and high-contrast passes remain vanilla. `highlightParts` (default false) optionally recolours the primary multipart selection stroke using `outlineHue` (0–360°, default 48). These are client-only preferences, independent of placement previews. Old config files without the new fields retain vanilla styling.
+
+Ordinary resource-pack block textures are read from Minecraft’s current parent block models and baked sprite atlas; the mod does not ship hard-coded copies of building-material textures. Resource reloads rebake those models through the normal model-loading hook. Special connected-texture effects and unusual custom 3D models require separate compatibility testing.

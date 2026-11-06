@@ -3,11 +3,11 @@
   "config.building_palette.preview": "Placement outline: %s",
   "config.building_palette.preview.help": "Show the colored preview of the piece you are about to place. Off by default.",
   "config.building_palette.precise": "Precise half-grid placement: %s",
-  "config.building_palette.precise.help": "Off: native blocks use their normal placement rules, including stair facing and corners. On: use the clicked half-grid position for building pieces. Applies only to you. Neither mode allows air placement.",
+  "config.building_palette.precise.help": "Off: slabs and stairs use normal placement, including stair facing and corners. On: use the clicked half-grid position. Steps and corners always use half-grid placement. Applies only to you. Neither mode allows air placement.",
   "item.building_palette.piece": "Building piece",
   "item.building_palette.piece_name": "%s %s",
   "block.building_palette.multipart": "Combined building pieces",
-  "tooltip.building_palette.balance": "%s pieces \u00b7 %s blocks + %s/8 material",
+  "tooltip.building_palette.balance": "%s pieces · %s blocks + %s/8 material",
   "tooltip.building_palette.remainder": "%s/8 material reserved; scroll to use it",
   "tooltip.building_palette.scroll": "Hold Alt and scroll to select shape",
   "shape.building_palette.block": "Full block",
@@ -20,5 +20,8 @@
   "shape.building_palette.fence": "Fence",
   "shape.building_palette.wall": "Wall",
   "tag.item.building_palette.included": "Building Palette: included materials",
-  "tag.item.building_palette.excluded": "Building Palette: excluded materials"
+  "tag.item.building_palette.excluded": "Building Palette: excluded materials",
+  "config.building_palette.highlight": "Highlight combined parts: %s",
+  "config.building_palette.highlight.help": "Off: use Minecraft’s normal selection outline. On: highlight combined parts with your chosen hue. This does not change the placement preview.",
+  "config.building_palette.hue": "Outline hue: %s°"
 }

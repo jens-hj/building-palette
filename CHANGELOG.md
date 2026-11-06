@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.0-alpha.15
+
+- Use vanilla selection-outline styling for combined parts by default, preserving the aimed-material shape, opacity, line width, transparency handling, and high-contrast accessibility passes.
+- Add an optional combined-part highlight with a saved 0–360° hue slider and live colour preview in Mod Menu. The placement-preview toggle remains independent.
+- Test actual vanilla outline submissions against multipart submissions in normal and high-contrast modes, custom hues, native-block isolation, and preference persistence.
+
+## 0.1.0-alpha.14
+
+- Always handle horizontal and vertical quarter steps through Building Palette's multipart placement, including the first piece with precise placement disabled. Native stair placement remains unchanged.
+- Allow all four step positions to fill a block or combine different materials, preserving exact quarter-block costs.
+- Add server coverage for both step directions, horizontal axes, placement modes, and single/mixed materials, plus real client/server placement-packet regressions.
+
 ## 0.1.0-alpha.13
 
 - Reliably refresh lighting and occlusion for existing saved pieces after chunk loading. The previous scheduled-tick hook could run before the chunk's tick container existed.

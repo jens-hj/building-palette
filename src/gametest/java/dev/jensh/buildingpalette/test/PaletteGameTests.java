@@ -14,6 +14,79 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 
 public final class PaletteGameTests {
+    @GameTest public void stepsAlwaysUseMultipartPlacement(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(pos.getX() + 2, pos.getY(), pos.getZ() + 2);
+        try {
+            for (Shape shape : new Shape[]{Shape.STEP, Shape.VERTICAL_STEP})
+                for (boolean precise : new boolean[]{false, true}) for (boolean mixed : new boolean[]{false, true})
+                    for (Direction facing : new Direction[]{Direction.SOUTH, Direction.EAST}) {
+                PlacementPreferences.set(player, precise); player.setYRot(facing.toYRot());
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                ItemStack oak = Materials.piece("minecraft:oak_planks", shape, mixed ? 4 : 8);
+                ItemStack stone = Materials.piece("minecraft:stone_bricks", shape, 4);
+                if (shape == Shape.STEP) test.assertTrue(oak.getItem() instanceof BlockItem, "Regression exercises the actual CNM step item");
+                Cells expected = new Cells();
+                for (int part = 0; part < 4; part++) {
+                    boolean useStone = mixed && (part == 1 || part == 2);
+                    ItemStack stack = useStone ? stone : oak;
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+                    int half = part / 2, side = part % 2;
+                    double x = .25, y = half * .5, z = .25 + side * .5;
+                    int mask;
+                    if (shape == Shape.VERTICAL_STEP) {
+                        x = .25 + half * .5; y = 0;
+                        mask = Cells.mask(shape, half | side << 2, 0);
+                    } else {
+                        if (facing == Direction.EAST) { x = z; z = .25; }
+                        mask = Cells.mask(shape, (half << 1) | (facing == Direction.EAST ? side : side << 2), facing == Direction.EAST ? 0 : 2);
+                    }
+                    var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + x, pos.getY() + y, pos.getZ() + z),
+                        Direction.UP, y == 0 ? pos.below() : pos, false);
+                    test.assertTrue(!Placement.usesNativePlacement(level, player, stack, hit), "Steps never delegate to CNM in either preference mode");
+                    test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.SUCCESS, "All four quarter positions can be filled");
+                    expected = expected.place(mask, useStone ? "minecraft:stone_bricks" : "minecraft:oak_planks");
+                    if (part < 3 || mixed) {
+                        test.assertTrue(level.getBlockEntity(pos) instanceof MultipartEntity, "Step placement uses Building Palette carrier from first part");
+                        test.assertTrue(java.util.Arrays.equals(((MultipartEntity)level.getBlockEntity(pos)).cells().copy(), expected.copy()), "Step positions and materials match exactly");
+                    } else test.assertTrue(level.getBlockState(pos).is(Blocks.OAK_PLANKS), "Four same-material steps become a full native block");
+                }
+                test.assertTrue(oak.isEmpty() && (!mixed || stone.isEmpty()), "Four quarters spend exactly one block of material");
+            }
+            // A step already placed by CNM before upgrading must also convert
+            // when a different material is added to its remaining space.
+            PlacementPreferences.set(player, false); player.setYRot(0);
+            for (Shape shape : new Shape[]{Shape.STEP, Shape.VERTICAL_STEP}) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                var oak = Materials.piece("minecraft:oak_planks", shape, 2);
+                if (!(oak.getItem() instanceof BlockItem item)) continue;
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, oak);
+                var originalHit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
+                var state = item.getBlock().getStateForPlacement(new net.minecraft.world.item.context.BlockPlaceContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, oak, originalHit));
+                level.setBlock(pos, state, 3);
+                Cells before = Placement.existing(level, pos);
+                test.assertValueEqual(Integer.bitCount(before.occupied()), 2, "Legacy native fixture contains one quarter step");
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:stone_bricks", shape, 2));
+                boolean placed = false;
+                for (int x = 0; x < 2 && !placed; x++) for (int z = 0; z < 2 && !placed; z++) {
+                    var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25 + x * .5, pos.getY(), pos.getZ() + .25 + z * .5), Direction.UP, pos.below(), false);
+                    var plan = Placement.plan(level, player, player.getMainHandItem(), hit);
+                    if (plan == null) continue;
+                    test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.SUCCESS, "Can add different material to old native step");
+                    var after = ((MultipartEntity)level.getBlockEntity(pos)).cells();
+                    test.assertValueEqual(Integer.bitCount(after.occupied()), 4, "Converting old native step preserves volume");
+                    for (int i = 0; i < 8; i++) if (before.at(i) != null) test.assertTrue(before.at(i).equals(after.at(i)), "Old native step material survives conversion");
+                    test.assertTrue(player.getMainHandItem().isEmpty(), "Legacy conversion consumes exactly one new step");
+                    placed = true;
+                }
+                test.assertTrue(placed, "Legacy native step has an accessible free quarter");
+            }
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
     @GameTest public void placementChecksExactPieceAgainstPlayer(GameTestHelper test) {
         var level = test.getLevel();
         var pos = test.absolutePos(new BlockPos(2, 2, 2));
