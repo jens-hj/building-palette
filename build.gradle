@@ -18,11 +18,11 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    compileOnly "maven.modrinth:clutternomore:AQkLCaPY"
+    compileOnly "maven.modrinth:clutternomore:Chc4Pi2b"
     compileOnly "maven.modrinth:modmenu:21.0.0"
     compileOnly "maven.modrinth:travelersbackpack:y1lpIqJS"
-    localRuntime "maven.modrinth:clutternomore:AQkLCaPY"
-    localRuntime "maven.modrinth:offgrid:H4rTCX81"
+    localRuntime "maven.modrinth:clutternomore:Chc4Pi2b"
+    localRuntime "maven.modrinth:offgrid:IBTjtUTI"
 
 }
 processResources {
@@ -159,8 +159,8 @@ modrinth {
         optional.project 'modmenu'
         optional.project 'travelersbackpack'
         required.project 'fabric-api'
-        required.version 'AQkLCaPY'
-        required.version 'H4rTCX81'
+        required.version 'Chc4Pi2b'
+        required.version 'IBTjtUTI'
     }
 }
 tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.16
+
+- Support Clutter No More 3.1.3 and Offgrid 1.0.5. Dependencies now accept later patch releases (3.1.x, 1.0.x) instead of one exact version.
+- Hook exact multipart drops on vanilla block drops, since Clutter No More 3.1.3 removed the class the previous hook targeted.
+
 ## 0.1.0-alpha.15
 
 - Use vanilla selection-outline styling for combined parts by default, preserving the aimed-material shape, opacity, line width, transparency handling, and high-contrast accessibility passes.

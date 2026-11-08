@@ -16,7 +16,7 @@ Selected slabs remain slab ingredients, and planks remain plank ingredients. Fen
 
 ## Requirements
 
-Client **and** server: Minecraft 26.3, Java 25, Fabric Loader 0.19.5 or newer, [Fabric API](https://modrinth.com/mod/fabric-api), [Clutter No More 3.1.1+26.3](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.4+26.3](https://modrinth.com/mod/offgrid).
+Client **and** server: Minecraft 26.3, Java 25, Fabric Loader 0.19.5 or newer, [Fabric API](https://modrinth.com/mod/fabric-api), [Clutter No More 3.1.3+26.3 or newer 3.1.x](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 or newer 1.0.x](https://modrinth.com/mod/offgrid).
 
 Building Palette is a companion: keep both original mods installed. It handles material accounting and solid-piece combinations while fences and walls keep their native placement behavior.
 

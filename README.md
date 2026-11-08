@@ -24,8 +24,8 @@ Install the same Building Palette jar on **client and server**, with:
 
 - Minecraft 26.3, Java 25, Fabric Loader 0.19.5 or later
 - Fabric API 0.165.0+26.3
-- Clutter No More **3.1.1+26.3**
-- Offgrid **1.0.4+26.3**
+- Clutter No More **3.1.3+26.3** (3.1.x)
+- Offgrid **1.0.5+26.3** (1.0.x)
 
 This alpha is for a copied instance and disposable world first. Existing ordinary items are valued by their current shape's physical volume. Historical losses from prior Clutter No More conversions cannot be reconstructed.
 
