@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.18
+
+- Replace the icon with a flat isometric design. The Modrinth icon animates through the full block, slab, step, and corner, then mixed-material combinations; the jar uses a still frame. Gameplay is unchanged.
+
 ## 0.1.0-alpha.17
 
 - Add native NeoForge support for Minecraft 26.3 alongside Fabric, with separate loader-specific jars and dependencies.

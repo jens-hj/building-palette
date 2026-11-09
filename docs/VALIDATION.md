@@ -133,3 +133,7 @@ Alpha.15 and sources are uploaded as Modrinth version `85oAfm1w`; both remote ar
 NeoForge shader validation could not run with the published renderer combination. Stable Sodium 0.9.2 fails on NeoForge 26.3.0.102 before Building Palette's scene loads. Sodium 0.9.3-beta.4 works but rejects published Iris 1.11.7, requiring Iris 1.11.8+. No bypasses were used. This is recorded as unverified NeoForge shader compatibility, not a passing shader result. Existing Fabric shader results remain applicable to the Fabric implementation.
 
 All current port tests ran against disposable fixtures. The user's live RPG instance and worlds were not modified. The old-loader dependency error window during the first migration attempt was a harness defect; the harness now pins historical dependencies, disables Fabric GUI errors, and runs headlessly.
+
+## Animated flat icon — alpha.18
+
+The icon-only release built both loader jars and passed all 19 server GameTests. Both jars contain the still icon from `docs/assets/icon.png`, and the Modrinth project icon is the animated `docs/assets/icon.gif`. Fabric `l6j9WNeU` and NeoForge `b23fAxiy` uploaded with `client_and_server`; all four remote archive SHA-512 hashes match the local files. No gameplay code changed.
