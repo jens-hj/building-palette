@@ -8,7 +8,7 @@ The selector rises vertically from the active hotbar slot using Minecraft's hotb
 
 Shift-click also fills existing material stacks first. Middle-click selects the pointed material from any shape in your inventory or equipped Traveler's Backpack; pick again while holding it to match the target shape while keeping the same material balance. Compound shapes choose a reusable building piece, such as steps for diagonal steps or vertical steps for a rotated stair. Mixed blocks pick the material you point at.
 
-With Mod Menu installed, open **Mods → Building Palette → Configure**. Placement previews, precise half-grid placement, and coloured part highlighting default off. Selection outlines match vanilla by default; enable **Highlight combined parts** and choose **Outline hue** for an optional custom-colour highlight. Slabs and stairs use their normal placement rules by default, including stair facing, upside-down placement, and corner connections. Enable precise placement to use the clicked half-grid position instead. Placement controls apply per player; horizontal and vertical quarter steps, corners, and pieces without a native item always use Building Palette’s half-grid placement and mixed-material combining. Settings are also available in `config/building_palette.json`.
+On NeoForge, or on Fabric with Mod Menu installed, open **Mods → Building Palette → Configure**. Placement previews, precise half-grid placement, and coloured part highlighting default off. Selection outlines match vanilla by default; enable **Highlight combined parts** and choose **Outline hue** for an optional custom-colour highlight. Slabs and stairs use their normal placement rules by default, including stair facing, upside-down placement, and corner connections. Enable precise placement to use the clicked half-grid position instead. Placement controls apply per player; horizontal and vertical quarter steps, corners, and pieces without a native item always use Building Palette’s half-grid placement and mixed-material combining. Settings are also available in `config/building_palette.json`.
 
 Combine pieces on a half-block grid, including different materials in the same block space. Mine the aimed material to remove all face-connected pieces of that material within the block. Explicit stairs and corner pieces allow small details with ordinary Minecraft block textures.
 
@@ -16,7 +16,12 @@ Selected slabs remain slab ingredients, and planks remain plank ingredients. Fen
 
 ## Requirements
 
-Client **and** server: Minecraft 26.3, Java 25, Fabric Loader 0.19.5 or newer, [Fabric API](https://modrinth.com/mod/fabric-api), [Clutter No More 3.1.3+26.3 or newer 3.1.x](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 or newer 1.0.x](https://modrinth.com/mod/offgrid).
+Client **and** server: Minecraft **26.3**, Java **25**, [Clutter No More 3.1.3+26.3 (3.1.x)](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 (1.0.x)](https://modrinth.com/mod/offgrid). Choose matching builds for your loader:
+
+- **Fabric:** Loader 0.19.5 or newer and [Fabric API](https://modrinth.com/mod/fabric-api). Mod Menu is optional for settings.
+- **NeoForge:** 26.3.0.102 or newer for Minecraft 26.3. Settings are available in NeoForge’s Mods screen.
+
+Install the Building Palette jar for the same loader on both sides. Forge is not supported.
 
 Building Palette is a companion: keep both original mods installed. It handles material accounting and solid-piece combinations while fences and walls keep their native placement behavior.
 

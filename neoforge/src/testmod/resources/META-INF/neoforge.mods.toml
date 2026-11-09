@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[12,)"
+license="MIT"
+[[mods]]
+modId="building_palette_test"
+version="1.0"
+[[dependencies.building_palette_test]]
+modId="building_palette"
+type="required"
+versionRange="*"
+ordering="AFTER"
+side="BOTH"
+[[mixins]]
+config="building_palette.neo.test.mixins.json"

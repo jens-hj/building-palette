@@ -1,0 +1,1 @@
+{"required":true,"package":"dev.jensh.buildingpalette.test.mixin","compatibilityLevel":"JAVA_25","client":["LevelRendererInvoker","TestShapeKeyMixin","HoveredSlotAccessor"],"injectors":{"defaultRequire":1}}

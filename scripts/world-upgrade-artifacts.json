@@ -22,5 +22,13 @@
       "sha512": "7f7fe4ef5f58bbb69a8a5af577a58846deb031b8acce0eddc75095b6a33b335b422b462160c877111f54883a36e3414246fc34607d2d42ddd8f074452c05f959",
       "sha1": "a2517bf98b3bbb6699daf47fd5f00706dfbcf54d"
     }
+  },
+  "0.1.0-alpha.16": {
+    "filename": "building-palette-0.1.0-alpha.16.jar",
+    "url": "https://cdn.modrinth.com/data/hBaJZHIg/versions/U3GAfjUv/building-palette-0.1.0-alpha.16.jar",
+    "hashes": {
+      "sha1": "ac64e478b896193bcddacbdacb3b13f53dc170c9",
+      "sha512": "1344784bf73421f2dfe9e4c50eb92362a38dfff2639c5f4ee9c6a3ab823a47d693ddcfd84237c785509541c8c4c14b77db349fbed249dc10a7c278e65897e041"
+    }
   }
 }

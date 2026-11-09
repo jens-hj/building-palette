@@ -1,0 +1,110 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'com.modrinth.minotaur' version '2.10.0'
+}
+java { withSourcesJar(); toolchain.languageVersion = JavaLanguageVersion.of(25) }
+base { archivesName = 'building-palette' }
+neoForge {
+    version = '26.3.0.102'
+    runs { client { client() }; server { server(); programArgument '--nogui' } }
+    mods { building_palette { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } }
+}
+dependencies {
+    implementation project(':common')
+    implementation 'maven.modrinth:clutternomore:aP8yK8nm'
+    implementation 'maven.modrinth:offgrid:Dh9cO38a'
+    compileOnly 'maven.modrinth:travelersbackpack:YYMC88eu'
+    if (providers.gradleProperty('neoBackpack').isPresent()) runtimeOnly 'maven.modrinth:travelersbackpack:YYMC88eu'
+    if (providers.gradleProperty('neoShaders').isPresent()) runtimeOnly 'maven.modrinth:iris:Ag5S66CF'
+    if (providers.gradleProperty('neoGraphics').isPresent()) {
+        runtimeOnly 'maven.modrinth:sodium:zqgcaQxE'
+    }
+}
+tasks.withType(Jar).configureEach { from(rootProject.file('LICENSE')) }
+tasks.named('jar') {
+    archiveClassifier = 'neoforge'
+    from(project(':common').sourceSets.main.output)
+}
+tasks.named('sourcesJar') { archiveClassifier = 'neoforge-sources'; from(project(':common').sourceSets.main.allSource) }
+def releaseVersion = project.version.toString()
+processResources {
+    inputs.property 'version', releaseVersion
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: releaseVersion }
+}
+sourceSets {
+    testmod {
+        java.srcDirs rootProject.file('common/src/testFixtures/java'), rootProject.file('src/gametest/java')
+        java.exclude '**/PaletteClientTest.java', '**/PaletteGameTests.java', '**/BackpackPickTest.java', '**/OptionsResetMixin.java'
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+neoForge {
+    mods { building_palette_test { sourceSet sourceSets.testmod } }
+    runs {
+        upgradeServer {
+            server(); sourceSet = sourceSets.testmod
+            gameDirectory = rootProject.file(providers.gradleProperty('upgradeDirectory').getOrElse('build/migration/neoforge'))
+            programArguments.addAll('--nogui', '--world', 'world')
+            systemProperty 'palette.upgrade.phase', providers.gradleProperty('upgradePhase').getOrElse('seed')
+            systemProperty 'palette.upgrade.version', project.version.toString()
+        }
+        clientTest { client(); sourceSet = sourceSets.testmod; gameDirectory = rootProject.file('build/run/neoforgeClientTest'); systemProperty 'building_palette.client_test', 'true'; systemProperty 'building_palette.previews', rootProject.file('build/previews').absolutePath; systemProperty 'building_palette.test_result', rootProject.file('build/neoforge-client-result.json').absolutePath }
+        gameTestServer { type = 'gameTestServer'; sourceSet = sourceSets.testmod; gameDirectory = rootProject.file('build/run/neoforgeGameTest'); systemProperty 'neoforge.enabledGameTestNamespaces', 'building_palette' }
+    }
+}
+// The asset downloader runs on newer Java too; keep the project on one JDK.
+tasks.matching { it.name == 'downloadAssets' }.configureEach {
+    javaExecutable = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }.map { it.executablePath.asFile.absolutePath }
+}
+
+def neoClientRunDirectory = rootProject.file('build/run/neoforgeClientTest')
+def neoShaderFixture = rootProject.file('build/shader-instance')
+def enableNeoShaders = providers.gradleProperty('neoShaders').isPresent()
+tasks.named('runClientTest') {
+    doFirst {
+        def directory = neoClientRunDirectory
+        directory.mkdirs()
+        def iris = new File(directory, 'config/iris.properties'); iris.parentFile.mkdirs()
+        iris.text = 'enableShaders=' + enableNeoShaders + '\nshaderPack=photon_v1.4.zip\n'
+        if (enableNeoShaders) {
+            def target = new File(directory, 'shaderpacks'); target.mkdirs()
+            new File(neoShaderFixture, 'shaderpacks').eachFile { source ->
+                java.nio.file.Files.copy(source.toPath(),new File(target,source.name).toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+        new File(directory, 'options.txt').text = 'soundCategory_master:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\nonboardAccessibility:false\n'
+        def config = new File(directory, 'config/building_palette.json'); config.parentFile.mkdirs(); config.text = '{"placementPreview":false,"precisePlacement":false}\n'
+    }
+}
+
+// Same publishing workflow as the other Minecraft projects. Credentials remain external.
+def modrinthToken = providers.environmentVariable('MODRINTH_TOKEN').orElse(
+    providers.fileContents(rootProject.layout.projectDirectory.file(
+        "${System.getProperty('user.home')}/.config/modrinth-token")).asText.map { it.trim() })
+def currentChangelog = providers.fileContents(rootProject.layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
+    def section = text.split(/(?m)^## /).find { it.startsWith("${version}\n") || it.startsWith("${version}\r") }
+    section ? section.substring(section.indexOf('\n') + 1).trim() : ''
+}
+modrinth {
+    token = modrinthToken
+    projectId = 'hBaJZHIg'
+    versionNumber = "${project.version}+neoforge"
+    versionName = "${project.version} (NeoForge)"
+    versionType = 'alpha'
+    environment = 'client_and_server'
+    uploadFile = jar
+    additionalFiles { sourcesJar(tasks.named('sourcesJar')) }
+    gameVersions = [project.minecraft_version]
+    loaders = ['neoforge']
+    changelog = currentChangelog
+    syncBodyFrom = providers.fileContents(rootProject.layout.projectDirectory.file('docs/MODRINTH.md')).asText
+    dependencies {
+        optional.project 'travelersbackpack'
+        required.version 'aP8yK8nm'
+        required.version 'Dh9cO38a'
+    }
+}
+tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
+tasks.named('modrinthSyncBody') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }

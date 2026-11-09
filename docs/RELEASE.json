@@ -3,8 +3,55 @@
   "url": "https://modrinth.com/mod/building-palette",
   "status": "processing",
   "requested_status": "approved",
-  "version_id": "85oAfm1w",
-  "version": "0.1.0-alpha.15",
+  "version": "0.1.0-alpha.17",
   "version_type": "alpha",
-  "environment": "client_and_server"
+  "environment": "client_and_server",
+  "releases": {
+    "fabric": {
+      "version_id": "YexaksP9",
+      "version": "0.1.0-alpha.17+fabric",
+      "url": "https://modrinth.com/mod/building-palette/version/YexaksP9",
+      "files": [
+        {
+          "filename": "building-palette-0.1.0-alpha.17-fabric.jar",
+          "hashes": {
+            "sha1": "61134b6da88da5b05f54820a8dbf47396dac5f89",
+            "sha512": "16f0ea105c953cdc98ac22cb52641532c9fb8c08289d00319784433b8b799b2d1b2fbac33fe7208ead42eb9fbf760e506e3b2e7cb572c0cbfe777b64cb1e668b"
+          },
+          "primary": true
+        },
+        {
+          "filename": "building-palette-0.1.0-alpha.17-fabric-sources.jar",
+          "hashes": {
+            "sha512": "171fd6702eb2401d059f5b8d9d3637191cad4ec492788046b77052d87f3a89edb3e6aae1d733a7832315ec00af6918fb797039e68e573d24220817c4224e4306",
+            "sha1": "1c3dd1ca9bc00c2e21297d48338cbd90f0691d2e"
+          },
+          "primary": false
+        }
+      ]
+    },
+    "neoforge": {
+      "version_id": "mr9iyRlu",
+      "version": "0.1.0-alpha.17+neoforge",
+      "url": "https://modrinth.com/mod/building-palette/version/mr9iyRlu",
+      "files": [
+        {
+          "filename": "building-palette-0.1.0-alpha.17-neoforge.jar",
+          "hashes": {
+            "sha1": "bb84fba6acce95bbf11a8ce83a83a5562f5301a3",
+            "sha512": "54ab5225c31f360f16f1e809075223eac30369c7942f784dad637189c10f985d5a1f3162c0944e1cf63716d81170a72d2dc20919c7fcbca9729eb5aba7f85218"
+          },
+          "primary": true
+        },
+        {
+          "filename": "building-palette-0.1.0-alpha.17-neoforge-sources.jar",
+          "hashes": {
+            "sha512": "fd248fdfcd5ac78431db23062828968a6c9be3ac9e95bb4b96b8333c2e3d3dd3d5378974e5f54aebfee69d23391908d4d53ebe21a3342f9e1894eb329240f430",
+            "sha1": "d3e157d1d61c207d0fac4f3ce820632ae884e28d"
+          },
+          "primary": false
+        }
+      ]
+    }
+  }
 }

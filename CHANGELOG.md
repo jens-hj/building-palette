@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.17
+
+- Add native NeoForge support for Minecraft 26.3 alongside Fabric, with separate loader-specific jars and dependencies.
+- Share material accounting, placement, inventory, mining, recipes, configuration, and saved data between loaders.
+- Render NeoForge combined parts through chunk terrain models with immutable model data, parent textures, ambient occlusion, tint, and material layers.
+- Add NeoForge networking, native Mods-screen settings, pick-block integration, and a transactional Traveler’s Backpack adapter.
+- Preserve existing registry IDs, item components, and saved-cell schema.
+
 ## 0.1.0-alpha.16
 
 - Support Clutter No More 3.1.3 and Offgrid 1.0.5. Dependencies now accept later patch releases (3.1.x, 1.0.x) instead of one exact version.

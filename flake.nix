@@ -1,5 +1,5 @@
 {
-  description = "Building Palette - Minecraft Fabric mod dev environment";
+  description = "Building Palette - Minecraft Fabric/NeoForge mod dev environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

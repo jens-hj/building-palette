@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Boot released jars against real saved worlds. Touches only build/migration/."""
 from pathlib import Path
+import argparse
 import datetime
 import hashlib
 import json
@@ -13,7 +14,11 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'build/migration'
 RUN = BASE / ('run-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-VERSIONS = ('0.1.0-alpha.10', '0.1.0-alpha.11', '0.1.0-alpha.12')
+VERSIONS = ('0.1.0-alpha.10', '0.1.0-alpha.11', '0.1.0-alpha.12', '0.1.0-alpha.16')
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--from-version', action='append', choices=VERSIONS, help='Limit to a published starting version; repeat as needed')
+arguments = parser.parse_args()
+VERSIONS = tuple(arguments.from_version or VERSIONS)
 NEW = dict(line.split('=', 1) for line in (ROOT / 'gradle.properties').read_text().splitlines() if '=' in line)['version']
 
 def digest_tree(path):
@@ -30,10 +35,15 @@ def launch(directory, version, phase):
         'pause-when-empty-seconds=-1\nsync-chunk-writes=true\nmax-tick-time=120000\n')
     jar = BASE / 'artifacts' / f'building-palette-{version}.jar'
     assert jar.is_file(), f'Missing released artifact: {jar}'
-    command = ['java', '-Xmx2G', '-Dfabric.development=true',
+    classpath = (BASE / 'classpath.txt').read_text()
+    if version in ('0.1.0-alpha.10', '0.1.0-alpha.11', '0.1.0-alpha.12'):
+        classpath = os.pathsep.join(str(historical['clutternomore']) if '/maven.modrinth/clutternomore/' in p else
+                                   str(historical['offgrid']) if '/maven.modrinth/offgrid/' in p else p
+                                   for p in classpath.split(os.pathsep))
+    command = ['java', '-Xmx2G', '-Dfabric.development=true', '-Dfabric.noGui=true', '-Djava.awt.headless=true',
         '-Dfabric.addMods=' + str(jar) + os.pathsep + str(BASE / 'world-upgrade-test.jar'),
         '-Dpalette.upgrade.version=' + version, '-Dpalette.upgrade.phase=' + phase,
-        '-cp', (BASE / 'classpath.txt').read_text(),
+        '-cp', classpath,
         'net.fabricmc.loader.impl.launch.knot.KnotServer', '--nogui', '--world', 'world']
     marker = directory / 'upgrade-result.json'
     marker.unlink(missing_ok=True)
@@ -50,6 +60,17 @@ def launch(directory, version, phase):
     return report
 
 BASE.mkdir(parents=True, exist_ok=True)
+historical = {}
+for name, vid in [('clutternomore','AQkLCaPY'), ('offgrid','H4rTCX81')]:
+    metadata = json.load(urllib.request.urlopen('https://api.modrinth.com/v2/version/' + vid, timeout=30))
+    file = next(f for f in metadata['files'] if f['primary'])
+    path = BASE / 'artifacts' / file['filename']
+    if not path.is_file():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(urllib.request.urlopen(file['url'], timeout=60).read())
+    assert hashlib.sha512(path.read_bytes()).hexdigest() == file['hashes']['sha512']
+    historical[name] = path
+
 manifest = json.loads((ROOT / 'scripts/world-upgrade-artifacts.json').read_text())
 for old in VERSIONS:
     artifact = manifest[old]
@@ -60,8 +81,8 @@ for old in VERSIONS:
     assert hashlib.sha512(path.read_bytes()).hexdigest() == artifact['hashes']['sha512'], f'Wrong published artifact: {old}'
 
 subprocess.run(['./gradlew', '--no-daemon', '--offline', '--no-configuration-cache',
-                '-I', 'scripts/world-upgrade.gradle', 'migrationClasspath'], cwd=ROOT, check=True)
-shutil.copy2(ROOT / 'build/libs' / f'building-palette-{NEW}.jar', BASE / 'artifacts' / f'building-palette-{NEW}.jar')
+                '-I', 'scripts/world-upgrade.gradle', ':fabric:migrationClasspath'], cwd=ROOT, check=True)
+shutil.copy2(ROOT / 'build/libs' / f'building-palette-{NEW}-fabric.jar', BASE / 'artifacts' / f'building-palette-{NEW}.jar')
 RUN.mkdir(parents=True)
 reports = []
 for version in VERSIONS:

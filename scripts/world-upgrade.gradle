@@ -1,6 +1,11 @@
 allprojects { p ->
+    if (p.path != ':fabric') return
     p.afterEvaluate {
         p.sourceSets.create('migration') {
+            java.srcDir p.rootProject.file('src/migration/java')
+            java.srcDir p.rootProject.file('common/src/testFixtures/java')
+            java.exclude '**/PaletteGameTestScenarios.java'
+            resources.srcDir p.rootProject.file('src/migration/resources')
             compileClasspath += p.sourceSets.main.output + p.sourceSets.main.compileClasspath
         }
         p.tasks.register('migrationHarnessJar', Jar) {

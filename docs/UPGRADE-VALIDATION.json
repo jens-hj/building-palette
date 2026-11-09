@@ -1,76 +1,110 @@
 {
-  "target": "0.1.0-alpha.13",
-  "runs": [
-    {
-      "passed": true,
-      "phase": "seed",
-      "version": "0.1.0-alpha.10",
-      "checks": 2
-    },
-    {
-      "passed": true,
-      "phase": "upgrade",
-      "version": "0.1.0-alpha.13",
-      "checks": 2535
-    },
-    {
-      "passed": true,
-      "phase": "reopen",
-      "version": "0.1.0-alpha.13",
-      "checks": 2530
-    },
-    {
-      "passed": true,
-      "phase": "seed",
-      "version": "0.1.0-alpha.11",
-      "checks": 2
-    },
-    {
-      "passed": true,
-      "phase": "upgrade",
-      "version": "0.1.0-alpha.13",
-      "checks": 2535
-    },
-    {
-      "passed": true,
-      "phase": "reopen",
-      "version": "0.1.0-alpha.13",
-      "checks": 2530
-    },
-    {
-      "passed": true,
-      "phase": "seed",
-      "version": "0.1.0-alpha.12",
-      "checks": 2
-    },
-    {
-      "passed": true,
-      "phase": "upgrade",
-      "version": "0.1.0-alpha.13",
-      "checks": 2535
-    },
-    {
-      "passed": true,
-      "phase": "reopen",
-      "version": "0.1.0-alpha.13",
-      "checks": 2530
-    }
-  ],
-  "original_saves_unchanged": true,
-  "fixture": {
-    "placed_masks": 510,
-    "chest_stacks": 93,
-    "player_inventory_slots": 36,
-    "offhand_stacks": 1,
-    "ender_chest_slots": 27,
-    "dropped_stacks": 3,
-    "checks_per_upgrade": 2535,
-    "checks_per_reopen": 2530
+  "target": "0.1.0-alpha.17",
+  "fabric": {
+    "starting_versions": [
+      "0.1.0-alpha.10",
+      "0.1.0-alpha.11",
+      "0.1.0-alpha.12",
+      "0.1.0-alpha.16"
+    ],
+    "runs": [
+      {
+        "passed": true,
+        "phase": "seed",
+        "version": "0.1.0-alpha.10",
+        "checks": 2
+      },
+      {
+        "passed": true,
+        "phase": "upgrade",
+        "version": "0.1.0-alpha.17",
+        "checks": 2535
+      },
+      {
+        "passed": true,
+        "phase": "reopen",
+        "version": "0.1.0-alpha.17",
+        "checks": 2530
+      },
+      {
+        "passed": true,
+        "phase": "seed",
+        "version": "0.1.0-alpha.11",
+        "checks": 2
+      },
+      {
+        "passed": true,
+        "phase": "upgrade",
+        "version": "0.1.0-alpha.17",
+        "checks": 2535
+      },
+      {
+        "passed": true,
+        "phase": "reopen",
+        "version": "0.1.0-alpha.17",
+        "checks": 2530
+      },
+      {
+        "passed": true,
+        "phase": "seed",
+        "version": "0.1.0-alpha.12",
+        "checks": 2
+      },
+      {
+        "passed": true,
+        "phase": "upgrade",
+        "version": "0.1.0-alpha.17",
+        "checks": 2535
+      },
+      {
+        "passed": true,
+        "phase": "reopen",
+        "version": "0.1.0-alpha.17",
+        "checks": 2530
+      },
+      {
+        "passed": true,
+        "phase": "seed",
+        "version": "0.1.0-alpha.16",
+        "checks": 2
+      },
+      {
+        "passed": true,
+        "phase": "upgrade",
+        "version": "0.1.0-alpha.17",
+        "checks": 2535
+      },
+      {
+        "passed": true,
+        "phase": "reopen",
+        "version": "0.1.0-alpha.17",
+        "checks": 2530
+      }
+    ],
+    "original_saves_unchanged": true
   },
-  "target_jar_sha512": "affba8220fcb41f3904a76195b1fb96fb6546ee8a3a51486864bcde33b7c4227311b885ade99491841859190ed21ef7c8023a95da71d723b82e4f65385541054",
-  "source_jar_sha512": {
-    "0.1.0-alpha.12": "822a744a4f480f7fd64b69896e2add4ceac6bdea18f3bc14395bdbd312aa380c1be74786f478ba6fb7191d2308bc70f0add500057fc276bf4e36a5864b282a47",
-    "0.1.0-alpha.11": "8b7c9876ef9bae0328756b020fc5400e7ff5f6ed463b4cfd8248fc087b070e2c75b08987e983b1f902f8b821da554f04fd80ab3ab8881c0ebe174c334368a7a4",
-    "0.1.0-alpha.10": "7f7fe4ef5f58bbb69a8a5af577a58846deb031b8acce0eddc75095b6a33b335b422b462160c877111f54883a36e3414246fc34607d2d42ddd8f074452c05f959"
-  }
+  "neoforge": {
+    "runs": [
+      {
+        "passed": true,
+        "phase": "seed",
+        "version": "0.1.0-alpha.17",
+        "checks": 2
+      },
+      {
+        "passed": true,
+        "phase": "upgrade",
+        "version": "0.1.0-alpha.17",
+        "checks": 2535
+      },
+      {
+        "passed": true,
+        "phase": "reopen",
+        "version": "0.1.0-alpha.17",
+        "checks": 2530
+      }
+    ],
+    "original_saves_unchanged": true
+  },
+  "scope": "Disposable fixtures only; no live RPG or cross-loader modpack migration"
 }

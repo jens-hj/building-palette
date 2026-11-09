@@ -1,167 +1,18 @@
-plugins {
-    id 'net.fabricmc.fabric-loom' version "${loom_version}"
-    id 'com.modrinth.minotaur' version '2.10.0'
-}
-base { archivesName = 'building-palette' }
-repositories {
-    mavenCentral()
-    exclusiveContent {
-        forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
-        filter { includeGroup 'maven.modrinth' }
-    }
-}
-loom {
-    splitEnvironmentSourceSets()
-    mods { building_palette { sourceSet sourceSets.main; sourceSet sourceSets.client } }
-}
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    compileOnly "maven.modrinth:clutternomore:Chc4Pi2b"
-    compileOnly "maven.modrinth:modmenu:21.0.0"
-    compileOnly "maven.modrinth:travelersbackpack:y1lpIqJS"
-    localRuntime "maven.modrinth:clutternomore:Chc4Pi2b"
-    localRuntime "maven.modrinth:offgrid:IBTjtUTI"
-
-}
-processResources {
-    def modVersion = project.version
-    inputs.property 'version', modVersion
-    filesMatching('fabric.mod.json') { expand version: modVersion }
-}
-java { withSourcesJar(); sourceCompatibility = JavaVersion.VERSION_25; targetCompatibility = JavaVersion.VERSION_25 }
-tasks.withType(JavaCompile).configureEach { options.release = 25 }
-jar { from('LICENSE') }
-// Pure model tests run without booting Minecraft.
-tasks.register('modelTest', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'dev.jensh.buildingpalette.ModelTest'
-    enableAssertions = true
-}
-check.dependsOn modelTest
-
-// The model suite is a Java assertion runner; Minecraft integration uses Fabric GameTest.
-tasks.named('test') { enabled = false }
-fabricApi {
-    configureTests {
-        createSourceSet = true
-        modId = 'building_palette_test'
-        enableGameTests = true
-        enableClientGameTests = true
-        eula = true
-    }
-}
-
-// Test fixture configuration is copied into the disposable run directory immediately before launch.
-tasks.named('runClientGameTest') {
-    jvmArgs '-Dfabric.noGui=true'
-
-    def fixtureMods = providers.gradleProperty('rpgMods')
-    def testShaders = providers.gradleProperty('paletteShaders').map { it.toBoolean() }.getOrElse(false)
-    if (testShaders) jvmArgs '-Dbuilding_palette.shader_test=true'
-    if (fixtureMods.isPresent()) {
-        dependsOn 'harnessAgent'
-        jvmArgs '-Dbuilding_palette.rpg_test=true'
-        jvmArgs '-javaagent:' + layout.buildDirectory.file("libs/building-palette-${version}-test-agent.jar").get().asFile.absolutePath
-    }
-    def testDirectory = layout.buildDirectory.dir('run/clientGameTest')
-    doFirst {
-        def directory = testDirectory.get().asFile
-        def paletteConfig = new File(directory, 'config/building_palette.json')
-        paletteConfig.parentFile.mkdirs()
-        def destinationMods = new File(directory, 'mods')
-        destinationMods.mkdirs()
-        destinationMods.eachFile { old -> if (old.isFile()) old.delete() }
-        if (fixtureMods.isPresent()) {
-            def sourceMods = new File(fixtureMods.get())
-            sourceMods.eachFile { source ->
-                if (source.name.endsWith('.jar') && !source.name.startsWith('CrashAssistant-') && !source.name.startsWith('clutternomore-')
-                        && !source.name.startsWith('offgrid-') && !source.name.startsWith('fabric-api-')
-                        && !source.name.startsWith('building-palette-')) {
-                    java.nio.file.Files.copy(source.toPath(), new File(destinationMods, source.name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-                }
-            }
-            def sourcePacks = new File(sourceMods.absoluteFile.parentFile, 'frozenlib/downloaded_resourcepacks')
-            if (sourcePacks.isDirectory()) {
-                def destinationPacks = new File(directory, 'frozenlib/downloaded_resourcepacks')
-                destinationPacks.mkdirs()
-                sourcePacks.eachFile { source ->
-                    if (source.isFile()) java.nio.file.Files.copy(source.toPath(), new File(destinationPacks, source.name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-                }
-            }
-            def sourceConfig = new File(sourceMods.absoluteFile.parentFile, 'config')
-            if (sourceConfig.isDirectory()) {
-                sourceConfig.eachFileRecurse { source ->
-                    if (source.isFile()) {
-                        def relative = sourceConfig.toPath().relativize(source.toPath())
-                        def target = new File(directory, 'config').toPath().resolve(relative)
-                        java.nio.file.Files.createDirectories(target.parent)
-                        java.nio.file.Files.copy(source.toPath(), target, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-                    }
-                }
-            }
-            def shaderDirectory = new File(sourceMods.absoluteFile.parentFile, 'shaderpacks')
-            if (testShaders && shaderDirectory.isDirectory()) {
-                def targetShaders = new File(directory, 'shaderpacks')
-                targetShaders.mkdirs()
-                shaderDirectory.eachFile { source ->
-                    if (source.isFile()) java.nio.file.Files.copy(source.toPath(), new File(targetShaders, source.name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-                }
-            }
-            def irisFile = new File(directory, 'config/iris.properties')
-            if (irisFile.exists()) {
-                def shaderOptions = new Properties()
-                irisFile.withInputStream { shaderOptions.load(it) }
-                shaderOptions.setProperty('enableShaders', testShaders.toString())
-                irisFile.withOutputStream { shaderOptions.store(it, 'Isolated Building Palette test') }
-            }
+plugins { id 'base' }
+allprojects {
+    group = rootProject.property('group')
+    version = rootProject.property('version')
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.neoforged.net/releases' }
+        exclusiveContent {
+            forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
+            filter { includeGroup 'maven.modrinth' }
         }
-        paletteConfig.text = '{"placementPreview":false,"precisePlacement":false}\n'
-        def options = new File(directory, 'options.txt')
-        options.parentFile.mkdirs()
-        options.text = 'soundCategory_master:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\n'
     }
 }
-
-// Never included in the mod jar: matches normal FrozenLib startup in a development test launch.
-sourceSets { harness { java.srcDir 'src/harness/java' } }
-tasks.register('harnessAgent', Jar) {
-    dependsOn harnessClasses
-    archiveClassifier = 'test-agent'
-    from sourceSets.harness.output
-    manifest { attributes 'Premain-Class': 'dev.jensh.buildingpalette.harness.FrozenLibTestAgent' }
+tasks.named('build') { dependsOn ':common:build', ':fabric:build', ':neoforge:build' }
+for (def name : ['runClientGameTest', 'runGameTest', 'modelTest', 'modrinthSyncBody']) {
+    tasks.register(name) { dependsOn ":fabric:${name}" }
 }
-
-// Same publishing workflow as the other Minecraft projects. Credentials remain external.
-def modrinthToken = providers.environmentVariable('MODRINTH_TOKEN').orElse(
-    providers.fileContents(layout.projectDirectory.file(
-        "${System.getProperty('user.home')}/.config/modrinth-token")).asText.map { it.trim() })
-def currentChangelog = providers.fileContents(layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
-    def section = text.split(/(?m)^## /).find { it.startsWith("${version}\n") || it.startsWith("${version}\r") }
-    section ? section.substring(section.indexOf('\n') + 1).trim() : ''
-}
-modrinth {
-    token = modrinthToken
-    projectId = 'hBaJZHIg'
-    versionNumber = project.version
-    versionName = project.version
-    versionType = 'alpha'
-    environment = 'client_and_server'
-    uploadFile = jar
-    additionalFiles { sourcesJar(tasks.named('sourcesJar')) }
-    gameVersions = [project.minecraft_version]
-    loaders = ['fabric']
-    changelog = currentChangelog
-    syncBodyFrom = providers.fileContents(layout.projectDirectory.file('docs/MODRINTH.md')).asText
-    dependencies {
-        optional.project 'modmenu'
-        optional.project 'travelersbackpack'
-        required.project 'fabric-api'
-        required.version 'Chc4Pi2b'
-        required.version 'IBTjtUTI'
-    }
-}
-tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
-tasks.named('modrinthSyncBody') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }

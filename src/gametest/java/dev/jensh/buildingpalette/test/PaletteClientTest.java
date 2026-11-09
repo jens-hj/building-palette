@@ -18,7 +18,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 var level = server.overworld();
                 for (int x = -2; x <= 2; x++) {
                     var pos = new BlockPos(x, 100, 0);
-                    level.setBlock(pos, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                    level.setBlock(pos, BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                     Cells cells = switch (x) {
                         case -2 -> new Cells().place(Cells.mask(Shape.SLAB, 0, 0), "minecraft:oak_planks");
                         case -1 -> new Cells().place(Cells.mask(Shape.STAIR, 0, 0), "minecraft:stone_bricks");
@@ -81,7 +81,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 // Client prediction must not emit particles for the invisible carrier.
                 // The server sends a separate break event with the removed material.
                 mc.particleEngine.clearParticles();
-                mc.level.addDestroyBlockEffect(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.defaultBlockState());
+                mc.level.addDestroyBlockEffect(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.get().defaultBlockState());
                 mc.particleEngine.tick();
                 if (!mc.particleEngine.countParticles().matches(".*T\\s*0")) throw new AssertionError("Invisible multipart carrier emitted break particles: " + mc.particleEngine.countParticles());
                 for (var material : new String[]{"minecraft:oak_planks", "minecraft:stone_bricks"}) {
@@ -91,13 +91,13 @@ public final class PaletteClientTest implements FabricClientGameTest {
                     mc.particleEngine.clearParticles();
                 }
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_shapes").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_shapes").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             context.getInput().holdAlt();
             context.waitTicks(2);
             context.runOnClient(mc -> {
                 if (!dev.jensh.buildingpalette.client.PaletteClient.active()) throw new AssertionError("Alt does not activate the held palette");
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_palette").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_palette").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             context.getInput().scroll(-1);
             context.waitTicks(5);
             boolean switched = world.getServer().computeOnServer(server -> {
@@ -126,14 +126,14 @@ public final class PaletteClientTest implements FabricClientGameTest {
             });
             context.runOnClient(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)));
             context.waitTicks(5);
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_inventory").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_inventory").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             hoverSlot(context, 37);
             context.getInput().holdAlt();
             context.waitTicks(2);
             context.runOnClient(mc -> {
                 if (!dev.jensh.buildingpalette.client.PaletteClient.active()) throw new AssertionError("Inventory hover palette is inactive");
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_inventory_scroll").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_inventory_scroll").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             context.runOnClient(mc -> {
                 var expected = ScrollPayload.convert(mc.player.inventoryMenu.getSlot(37).getItem(), 1);
                 var screen = mc.gui.screen();
@@ -197,7 +197,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
             context.waitTicks(5);
             context.getInput().setCursorPos(0, 0);
             context.waitTicks(2);
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_settings").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_settings").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             context.runOnClient(mc -> mc.gui.setScreen(null));
             world.getServer().computeOnServer(server -> {
                 var player = server.getPlayerList().getPlayers().getFirst();
@@ -343,7 +343,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 level.setBlock(quartz, nativeSlabState(Materials.piece("minecraft:quartz_block", Shape.VERTICAL_SLAB, 4), 170, level, quartz), 3);
                 level.setBlock(blackstone, nativeSlabState(Materials.piece("minecraft:blackstone", Shape.VERTICAL_SLAB, 4), 85, level, blackstone), 3);
                 var combined = new BlockPos(1, 100, 0);
-                level.setBlock(combined, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                level.setBlock(combined, BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                 ((MultipartEntity)level.getBlockEntity(combined)).setCells(new Cells().place(85, "minecraft:quartz_block").place(170, "minecraft:blackstone"));
                 return true;
             });
@@ -355,7 +355,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 if (nativeFace <= 0 || nativeFace != combinedFace) throw new AssertionError("Comparison faces do not have equal lighting");
                 mc.gui.toastManager().clear();
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_material_lighting").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_material_lighting").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             // Exercise the normal serverbound pick packet, including first/second pick.
             world.getServer().runCommand("gamemode survival @a");
             world.getServer().runCommand("tp @a 0.25 100 -1.5 0 38");
@@ -377,7 +377,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
             assertPicked(context, Shape.STAIR, 80);
             world.getServer().computeOnServer(server -> {
                 var level = server.overworld();
-                level.setBlock(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                level.setBlock(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                 ((MultipartEntity)level.getBlockEntity(new BlockPos(0, 100, 0))).setCells(new Cells().place(95, "minecraft:oak_planks"));
                 return true;
             });
@@ -417,7 +417,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
             world.getServer().computeOnServer(server -> {
                 var player = server.getPlayerList().getPlayers().getFirst();
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                server.overworld().setBlock(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                server.overworld().setBlock(new BlockPos(0, 100, 0), BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                 ((MultipartEntity)server.overworld().getBlockEntity(new BlockPos(0, 100, 0))).setCells(new Cells().place(3, "minecraft:oak_planks").place(192, "minecraft:stone_bricks"));
                 player.inventoryMenu.broadcastChanges();
                 return true;
@@ -455,7 +455,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.HASTE, 12000, 1));
                 for (int x = -2; x <= 2; x++) {
                     var pos = new BlockPos(x, 100, 2);
-                    server.overworld().setBlock(pos, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                    server.overworld().setBlock(pos, BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                     ((MultipartEntity)server.overworld().getBlockEntity(pos)).setCells(new Cells().place(51, "minecraft:stone").place(68, "minecraft:blackstone"));
                 }
                 player.inventoryMenu.broadcastChanges();
@@ -495,7 +495,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                         || entity.cells().occupied() != 68) throw new AssertionError("Fast mining remaining cells at x=" + x + "; server=" + fastServerState
                             + "; client=" + (mc.level.getBlockEntity(new BlockPos(x, 100, 2)) instanceof MultipartEntity e ? e.cells().occupied() : mc.level.getBlockState(new BlockPos(x, 100, 2))));
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_fast_mining_leftovers").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_fast_mining_leftovers").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
             for (int x = -2; x <= 2; x++) {
                 int column = x;
                 context.runOnClient(mc -> {
@@ -606,7 +606,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                     var pos = new BlockPos(x, y, 0);
                     if (x < 0) level.setBlock(pos, net.minecraft.world.level.block.Blocks.BLACKSTONE_SLAB.defaultBlockState(), 3);
                     else {
-                        level.setBlock(pos, BuildingPalette.MULTIPART.defaultBlockState(), 3);
+                        level.setBlock(pos, BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
                         ((MultipartEntity)level.getBlockEntity(pos)).setCells(new Cells().place(51, "minecraft:blackstone").place(128, "minecraft:quartz_block"));
                     }
                 }
@@ -638,7 +638,7 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 if (mesh.size() == 0) throw new AssertionError("Far multipart terrain geometry is empty");
                 System.out.println("[Building Palette] Far terrain geometry verified through " + model.getClass().getName());
             });
-            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_terrain_distance").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of("../../previews")));
+            context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_terrain_distance").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
         }
     }
     private static void assertPicked(ClientGameTestContext context, Shape shape, int units) {

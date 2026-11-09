@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run graphical Minecraft tests on an isolated display, without desktop popups/input."""
+import json
 import os
 from pathlib import Path
 import shutil
@@ -32,10 +33,15 @@ with (root / "build" / "xvfb.log").open("w") as log:
         result = subprocess.run(sys.argv[1:], env=environment, cwd=root)
         if result.returncode:
             raise SystemExit(result.returncode)
-        for name in ("building_palette_shapes.png", "building_palette_inventory.png"):
+        for name in (("building_palette_neoforge_shapes.png", "building_palette_neoforge_distance.png")
+                     if os.environ.get("BUILDING_PALETTE_TEST_LOADER") == "neoforge" else ("building_palette_shapes.png", "building_palette_inventory.png")):
             screenshot = root / "build" / "previews" / name
             if not screenshot.exists() or screenshot.stat().st_mtime < started:
                 raise SystemExit("Minecraft exited without completing the graphical test: " + name)
+        if os.environ.get("BUILDING_PALETTE_TEST_LOADER") == "neoforge":
+            marker = root / "build/neoforge-client-result.json"
+            if not marker.exists() or marker.stat().st_mtime < started or not json.loads(marker.read_text())["passed"]:
+                raise SystemExit("NeoForge client assertions did not pass; inspect build/neoforge-client-result.json")
     finally:
         display.terminate()
         display.wait(timeout=10)
