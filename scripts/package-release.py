@@ -51,8 +51,8 @@ for loader, directory, companions in [
 (destination / 'SHA256SUMS.txt').write_text('\n'.join(hashes) + '\n')
 shutil.copy2(root / 'docs/MODRINTH.md', destination / 'MODRINTH.md')
 project = json.loads((root / 'docs/PROJECT.json').read_text())
-project.update(body_file='MODRINTH.md', icon_file='icon.png')
-shutil.copy2(root / 'docs/assets/icon.png', destination / 'icon.png')
+project.update(body_file='MODRINTH.md', icon_file='icon.gif')
+shutil.copy2(root / 'docs/assets/icon.gif', destination / 'icon.gif')
 (destination / 'gallery').mkdir(exist_ok=True)
 for entry in project['gallery']:
     source = root / entry['file']
