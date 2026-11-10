@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.19
+
+- NeoForge: accept NeoForge 26.3.0.76 and newer instead of requiring 26.3.0.102, so the mod loads in packs that stay on 26.3.0.101 because 26.3.0.102 breaks Puzzles Lib. Fabric and gameplay are unchanged.
+
 ## 0.1.0-alpha.18
 
 - Replace the icon with a flat isometric design. The Modrinth icon animates through the full block, slab, step, and corner, then mixed-material combinations; the jar uses a still frame. Gameplay is unchanged.

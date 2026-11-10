@@ -137,3 +137,7 @@ All current port tests ran against disposable fixtures. The user's live RPG inst
 ## Animated flat icon — alpha.18
 
 The icon-only release built both loader jars and passed all 19 server GameTests. Both jars contain the still icon from `docs/assets/icon.png`, and the Modrinth project icon is the animated `docs/assets/icon.gif`. Fabric `l6j9WNeU` and NeoForge `b23fAxiy` uploaded with `client_and_server`; all four remote archive SHA-512 hashes match the local files. No gameplay code changed.
+
+## Wider NeoForge range — alpha.19
+
+The NeoForge minimum is now 26.3.0.76. Built against NeoForge 26.3.0.76 and 26.3.0.102; all 20 NeoForge server GameTests pass on both, and all 19 Fabric GameTests pass. Fabric `atAqmHLb` and NeoForge `JPumPd2h` uploaded with `client_and_server`; remote archive SHA-512 hashes match the local files.
