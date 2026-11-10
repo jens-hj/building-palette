@@ -31,7 +31,7 @@ Fabric requirements:
 
 NeoForge requirements:
 
-- NeoForge **26.3.0.102** or later for Minecraft 26.3
+- NeoForge **26.3.0.76** or later for Minecraft 26.3
 - Clutter No More **3.1.3+26.3** (3.1.x), NeoForge build
 - Offgrid **1.0.5+26.3** (1.0.x), NeoForge build
 

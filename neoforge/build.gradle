@@ -6,7 +6,7 @@ plugins {
 java { withSourcesJar(); toolchain.languageVersion = JavaLanguageVersion.of(25) }
 base { archivesName = 'building-palette' }
 neoForge {
-    version = '26.3.0.102'
+    version = providers.gradleProperty('neoVersion').getOrElse('26.3.0.102')
     runs { client { client() }; server { server(); programArgument '--nogui' } }
     mods { building_palette { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } }
 }

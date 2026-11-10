@@ -11,7 +11,7 @@ iconFile="assets/building_palette/icon.png"
 [[dependencies.building_palette]]
 modId="neoforge"
 type="required"
-versionRange="[26.3.0.102,26.4)"
+versionRange="[26.3.0.76,26.4)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.building_palette]]

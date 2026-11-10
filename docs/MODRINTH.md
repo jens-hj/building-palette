@@ -19,7 +19,7 @@ Selected slabs remain slab ingredients, and planks remain plank ingredients. Fen
 Client **and** server: Minecraft **26.3**, Java **25**, [Clutter No More 3.1.3+26.3 (3.1.x)](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 (1.0.x)](https://modrinth.com/mod/offgrid). Choose matching builds for your loader:
 
 - **Fabric:** Loader 0.19.5 or newer and [Fabric API](https://modrinth.com/mod/fabric-api). Mod Menu is optional for settings.
-- **NeoForge:** 26.3.0.102 or newer for Minecraft 26.3. Settings are available in NeoForge’s Mods screen.
+- **NeoForge:** 26.3.0.76 or newer for Minecraft 26.3. Settings are available in NeoForge’s Mods screen.
 
 Install the Building Palette jar for the same loader on both sides. Forge is not supported.
 
