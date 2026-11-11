@@ -313,6 +313,49 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 return MaterialStacks.units(player.getInventory().getItem(4)) == 512 && MaterialStacks.units(player.getInventory().getItem(3)) == 1
                     && player.getInventory().getItem(13).isEmpty() && player.containerMenu.getCarried().isEmpty();
             })) throw new AssertionError("Server disagrees with shift-click material merge");
+            // Native full blocks shift-clicked out of a chest merge into a partial
+            // stack of another shape, instead of filling an empty slot.
+            int[] before = new int[1];
+            BlockPos chestPos = world.getServer().computeOnServer(server -> {
+                var player = server.getPlayerList().getPlayers().getFirst();
+                var pos = player.blockPosition().above(3);
+                server.overworld().setBlock(pos, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
+                var chest = (net.minecraft.world.level.block.entity.ChestBlockEntity)server.overworld().getBlockEntity(pos);
+                chest.setItem(0, new ItemStack(Items.OAK_PLANKS, 64));
+                player.getInventory().setItem(4, ItemStack.EMPTY);
+                player.getInventory().setItem(3, ItemStack.EMPTY);
+                player.getInventory().setItem(20, Materials.piece("minecraft:oak_planks", Shape.CORNER, 100));
+                for (int i = 0; i < 36; i++) before[0] += MaterialStacks.units(player.getInventory().getItem(i));
+                player.inventoryMenu.broadcastChanges();
+                player.openMenu(chest);
+                return pos;
+            });
+            context.waitTicks(5);
+            hoverSlot(context, 0);
+            context.runOnClient(mc -> {
+                var input = (net.fabricmc.fabric.mixin.client.gametest.input.MouseHandlerAccessor)mc.mouseHandler;
+                var button = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT,
+                    com.mojang.blaze3d.platform.InputConstants.MOD_SHIFT);
+                input.invokeOnButton(mc.getWindow().handle(), button, 1);
+                input.invokeOnButton(mc.getWindow().handle(), button, 0);
+            });
+            context.waitTicks(5);
+            String chestResult = world.getServer().computeOnServer(server -> {
+                var player = server.getPlayerList().getPlayers().getFirst();
+                var merged = player.getInventory().getItem(20);
+                var chest = (net.minecraft.world.level.block.entity.ChestBlockEntity)server.overworld().getBlockEntity(chestPos);
+                int total = 0;
+                for (int i = 0; i < 36; i++) total += MaterialStacks.units(player.getInventory().getItem(i));
+                String state = "corner=" + MaterialStacks.units(merged) + " " + (Materials.get(merged) == null ? null : Materials.get(merged).shape())
+                    + " total=" + total + "/" + (before[0] + 512) + " chest=" + chest.getItem(0);
+                player.closeContainer();
+                server.overworld().setBlock(chestPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                player.getInventory().clearContent();
+                player.inventoryMenu.broadcastChanges();
+                return MaterialStacks.units(merged) == 512 && Materials.get(merged).shape() == Shape.CORNER && total == before[0] + 512 && chest.getItem(0).isEmpty() ? null : state;
+            });
+            if (chestResult != null) throw new AssertionError("Chest shift-click did not merge into partial corners: " + chestResult);
+            context.waitTicks(5);
             world.getServer().computeOnServer(server -> {
                 var player = server.getPlayerList().getPlayers().getFirst();
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
@@ -429,11 +472,11 @@ public final class PaletteClientTest implements FabricClientGameTest {
             });
             context.waitTicks(10);
             context.runOnClient(mc -> {
-                var entity = mc.level.getBlockEntity(new BlockPos(0, 100, 0));
-                if (!(entity instanceof MultipartEntity multipart) || multipart.cells().occupied() != 192) throw new AssertionError("Remaining stone is not visible/targetable on client");
+                var cells = Placement.existing(mc.level, new BlockPos(0, 100, 0));
+                if (cells == null || cells.occupied() != 192) throw new AssertionError("Remaining stone is not visible/targetable on client");
             });
-            if (!world.getServer().computeOnServer(server -> server.overworld().getBlockEntity(new BlockPos(0, 100, 0)) instanceof MultipartEntity entity
-                    && entity.cells().occupied() == 192)) throw new AssertionError("Server removed other material");
+            if (!world.getServer().computeOnServer(server -> Placement.existing(server.overworld(), new BlockPos(0, 100, 0)) instanceof Cells cells
+                    && cells.occupied() == 192)) throw new AssertionError("Server removed other material");
             world.getServer().runCommand("tp @a 0.75 100 -1.5 0 21");
             context.waitTicks(5);
             context.runOnClient(mc -> mc.gameMode.startDestroyBlock(new BlockPos(0, 100, 0), net.minecraft.core.Direction.NORTH));
@@ -491,8 +534,8 @@ public final class PaletteClientTest implements FabricClientGameTest {
                 return out.toString();
             });
             context.runOnClient(mc -> {
-                for (int x = -2; x <= 2; x++) if (!(mc.level.getBlockEntity(new BlockPos(x, 100, 2)) instanceof MultipartEntity entity)
-                        || entity.cells().occupied() != 68) throw new AssertionError("Fast mining remaining cells at x=" + x + "; server=" + fastServerState
+                for (int x = -2; x <= 2; x++) if (!(Placement.existing(mc.level, new BlockPos(x, 100, 2)) instanceof Cells cells)
+                        || cells.occupied() != 68) throw new AssertionError("Fast mining remaining cells at x=" + x + "; server=" + fastServerState
                             + "; client=" + (mc.level.getBlockEntity(new BlockPos(x, 100, 2)) instanceof MultipartEntity e ? e.cells().occupied() : mc.level.getBlockState(new BlockPos(x, 100, 2))));
             });
             context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions.of("building_palette_fast_mining_leftovers").disableCounterPrefix().withDestinationDir(java.nio.file.Path.of(System.getProperty("building_palette.previews", "../../previews"))));
@@ -582,13 +625,13 @@ public final class PaletteClientTest implements FabricClientGameTest {
                     context.runOnClient(mc -> {
                         var pos = new BlockPos(0, 100, 0);
                         if (fullNative ? !mc.level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.OAK_PLANKS)
-                                : !(mc.level.getBlockEntity(pos) instanceof MultipartEntity entity) || !java.util.Arrays.equals(entity.cells().copy(), wanted.copy()))
+                                : !(Placement.existing(mc.level, pos) instanceof Cells cells) || !java.util.Arrays.equals(cells.copy(), wanted.copy()))
                             throw new AssertionError("Client step packet used wrong carrier or material arrangement");
                     });
                     if (!world.getServer().computeOnServer(server -> {
                         var pos = new BlockPos(0, 100, 0);
                         return fullNative ? server.overworld().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.OAK_PLANKS)
-                            : server.overworld().getBlockEntity(pos) instanceof MultipartEntity entity && java.util.Arrays.equals(entity.cells().copy(), wanted.copy());
+                            : Placement.existing(server.overworld(), pos) instanceof Cells cells && java.util.Arrays.equals(cells.copy(), wanted.copy());
                     })) throw new AssertionError("Server step packet did not preserve all four quarter positions/materials");
                 }
                 context.runOnClient(mc -> {

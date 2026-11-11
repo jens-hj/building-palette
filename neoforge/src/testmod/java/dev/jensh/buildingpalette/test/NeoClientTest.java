@@ -156,8 +156,7 @@ public final class NeoClientTest {
                 });
             }
             add(3, () -> {
-                var entity=(MultipartEntity)mc.level.getBlockEntity(new BlockPos(0,100,0));
-                require(entity.cells().occupied()==255,"NeoForge quarter assembly incomplete");
+                require(Placement.existing(mc.level,new BlockPos(0,100,0)).occupied()==255,"NeoForge quarter assembly incomplete");
                 require(mc.player.getInventory().getItem(0).isEmpty()&&mc.player.getInventory().getItem(1).isEmpty(),"Quarter assembly balance changed");
             });
         }
@@ -167,7 +166,7 @@ public final class NeoClientTest {
         });
         add(10, () -> { mc.gameMode.startDestroyBlock(new BlockPos(0,100,0),Direction.NORTH); require(mc.level.getBlockEntity(new BlockPos(0,100,0))!=null,"Mining predicted full carrier removal"); });
         add(8, () -> {
-            require(((MultipartEntity)mc.level.getBlockEntity(new BlockPos(0,100,0))).cells().occupied()==192,"Mining hid or removed other material");
+            require(Placement.existing(mc.level,new BlockPos(0,100,0)).occupied()==192,"Mining hid or removed other material");
             server(s -> { var p=s.getPlayerList().getPlayers().getFirst(); p.setGameMode(GameType.SURVIVAL); p.setItemInHand(InteractionHand.MAIN_HAND,Materials.piece("minecraft:stone",Shape.SLAB,65)); p.inventoryMenu.broadcastChanges(); s.overworld().setBlock(new BlockPos(0,100,0),Blocks.STONE_STAIRS.defaultBlockState(),3); });
         });
         add(8, () -> mc.gameMode.handlePickItemFromBlock(new BlockPos(0,100,0),false));
