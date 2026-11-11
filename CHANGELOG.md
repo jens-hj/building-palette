@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.20
+
+- Fix Offgrid fences, walls, panes, and bars not fitting into a block that holds a single step. A block with one piece of one material (a step, vertical step, slab, or vertical slab) is now stored as that material's normal block, so Offgrid can blocklog into it like any other step or slab. Mixed materials and other shapes still use a combined block; existing ones convert the next time you place or mine in them.
+- Middle-click refills the held stack when it lacks material for the picked shape, such as a full block showing **0+**. It pulls the same material from your inventory first, then your equipped Traveler's Backpack, up to 64 blocks' worth. Stacks with enough material are left alone.
+- Fix middle-click sometimes selecting a different hotbar slot with an identical stack after reshaping the held material.
+
 ## 0.1.0-alpha.19
 
 - NeoForge: accept NeoForge 26.3.0.76 and newer instead of requiring 26.3.0.102, so the mod loads in packs that stay on 26.3.0.101 because 26.3.0.102 breaks Puzzles Lib. Fabric and gameplay are unchanged.

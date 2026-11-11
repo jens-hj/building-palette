@@ -141,3 +141,11 @@ The icon-only release built both loader jars and passed all 19 server GameTests.
 ## Wider NeoForge range — alpha.19
 
 The NeoForge minimum is now 26.3.0.76. Built against NeoForge 26.3.0.76 and 26.3.0.102; all 20 NeoForge server GameTests pass on both, and all 19 Fabric GameTests pass. Fabric `atAqmHLb` and NeoForge `JPumPd2h` uploaded with `client_and_server`; remote archive SHA-512 hashes match the local files.
+
+## Native single pieces, pick refill — alpha.20
+
+`./gradlew build` passed, including the pure model assertions. All 22 Fabric and 23 NeoForge server GameTests passed. New tests check that a placed upper step is stored as the native Clutter No More step and that Offgrid's `Blocklogging` accepts a fence running under it. They also check that adding another material converts it back to a combined block, and that mining a mixed block down to one slab stores that slab natively. Pick refill is covered for the same shape and for a larger target shape. The tests also check that inventory storage is used before the hotbar, that the stack fills to capacity, that stacks with enough material stay untouched, and that the selected slot is kept. A chest shift-click test moves native full blocks into partial corner, step, slab, and stair stacks for planks and stone bricks.
+
+The Fabric and NeoForge graphical suites passed. The Fabric suite now includes a real shift-click from a chest screen into a partial corner stack. The Fabric graphical suite also passed against a fixture copied from the 311-mod Fabric pack, including Mouse Tweaks and Traveler's Backpack, with Fabric Loader 0.20.1 for that run only. All published saved-world upgrade paths (alpha.10, .11, .12, .16 to the new build) passed upgrade and reopen. Existing combined blocks are not rewritten on load.
+
+Fabric `1XzuM1I7` and NeoForge `OnefzYdK` uploaded with `client_and_server`; all four remote archive SHA-512 hashes match the local files.
