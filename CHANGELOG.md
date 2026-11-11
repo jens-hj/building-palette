@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.23
+
+- A piece can now overlap existing material of the same kind in its block, as long as the overlap is only part of both: a step laid across another step makes an L. You only spend the cells it adds.
+- Offgrid fences, walls, panes, bars, and chains can share a block with any shape, as long as part of them stays visible: corners, stairs, a block missing one corner, or mixed materials. Offgrid's rules that they run along stairs and steps and are never notched are lifted, for native slabs and stairs too. A full block is still refused.
+- Fix combined pieces showing no breaking cracks while mined. Only the aimed part cracks.
+
 ## 0.1.0-alpha.22
 
 - Fix breaking a step, vertical step, or vertical slab dropping no material. Clutter No More's own drops for these shapes were skipped, and since alpha.20 single steps are stored as Clutter No More blocks. This also happened with an Offgrid fence inside the step.
