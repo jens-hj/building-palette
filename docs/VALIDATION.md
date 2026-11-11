@@ -149,3 +149,7 @@ The NeoForge minimum is now 26.3.0.76. Built against NeoForge 26.3.0.76 and 26.3
 The Fabric and NeoForge graphical suites passed. The Fabric suite now includes a real shift-click from a chest screen into a partial corner stack. The Fabric graphical suite also passed against a fixture copied from the 311-mod Fabric pack, including Mouse Tweaks and Traveler's Backpack, with Fabric Loader 0.20.1 for that run only. All published saved-world upgrade paths (alpha.10, .11, .12, .16 to the new build) passed upgrade and reopen. Existing combined blocks are not rewritten on load.
 
 Fabric `1XzuM1I7` and NeoForge `OnefzYdK` uploaded with `client_and_server`; all four remote archive SHA-512 hashes match the local files.
+
+## Offgrid posts in steps — alpha.21
+
+A non-required mixin skips Offgrid's run-along-the-step and notch checks for step hosts only. The method signatures match in Offgrid 1.0.4, 1.0.5 and 1.0.6 on both loaders. The server tests check a bare post and a crossing fence against a placed upper step: each fits, and its blocklogged outline does not overlap the step. They also check that stairs still reject a bare post. A real fence `useOn` against the step's underside creates one Offgrid overlay, keeps the step, and spends one fence. Without the mixin the bare-post assertion fails. All 22 Fabric and 23 NeoForge server tests passed. Both graphical suites and the 311-mod Fabric pack fixture also passed. Fabric `7ZZ7QbfH` and NeoForge `gYIZSfLE` uploaded with `client_and_server`; remote SHA-512 hashes match the local files.

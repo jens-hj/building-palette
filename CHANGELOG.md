@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.21
+
+- Offgrid fences, walls, panes, and bars can now stand anywhere in a block holding a step, including a lone post beside an upper step or a fence crossing under it. Offgrid normally only allows them when they run along the step. The part overlapping the step is cut away as usual. Stairs keep Offgrid's own rules.
+
 ## 0.1.0-alpha.20
 
 - Fix Offgrid fences, walls, panes, and bars not fitting into a block that holds a single step. A block with one piece of one material (a step, vertical step, slab, or vertical slab) is now stored as that material's normal block, so Offgrid can blocklog into it like any other step or slab. Mixed materials and other shapes still use a combined block; existing ones convert the next time you place or mine in them.
