@@ -20,6 +20,7 @@ public final class BuildingPalette {
     public static final Handle<DataComponentType<Integer>> SHAPE = new Handle<>();
     public static final Handle<Item> PIECE = new Handle<>();
     public static final Handle<MultipartBlock> MULTIPART = new Handle<>();
+    public static final Handle<HostShapeBlock> HOST_SHAPE = new Handle<>();
     public static final Handle<BlockEntityType<MultipartEntity>> ENTITY = new Handle<>();
     public static final class Handle<T> implements Supplier<T> {
         private T value;
@@ -40,5 +41,7 @@ public final class BuildingPalette {
     public static void blocks(BiConsumer<Identifier, Block> register) {
         MULTIPART.bind(new MultipartBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id("multipart"))).strength(2.0f).dynamicShape()));
         register.accept(id("multipart"), MULTIPART.get());
+        HOST_SHAPE.bind(new HostShapeBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id("host_shape"))).noCollision()));
+        register.accept(id("host_shape"), HOST_SHAPE.get());
     }
 }

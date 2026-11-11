@@ -260,7 +260,6 @@ public final class PaletteGameTestScenarios {
                     test.assertTrue(!net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(cut.outline(),
                         state.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO), net.minecraft.world.phys.shapes.BooleanOp.AND), "Blocklogged post does not overlap the step");
                 }
-                test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(Blocks.OAK_FENCE.defaultBlockState(), Blocks.OAK_STAIRS.defaultBlockState()) == null, "Offgrid's stair rule is unchanged");
                 // Real placement: a fence clicked against the step's underside goes into the step's block.
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.OAK_FENCE, 4));
                 var under = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY() + .5, pos.getZ() + .5), Direction.DOWN, pos, false);
@@ -318,14 +317,42 @@ public final class PaletteGameTestScenarios {
                     test.assertTrue(Placement.use(player, level, hand, otherCorner) == net.minecraft.world.InteractionResult.SUCCESS, "Second piece joins a step with a fence");
                     test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence survives the second piece");
                 }
-                // A piece that cannot host the fence (a lone corner) is refused instead of destroying it.
+                // Any shape that leaves part of the fence visible shares the block: a lone corner,
+                // then a second material, stored in a carrier Offgrid sees through its cells.
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                 level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
                 player.setItemInHand(hand, Materials.piece("minecraft:oak_planks", Shape.CORNER, 8));
-                test.assertTrue(Placement.use(player, level, hand, ceiling) == net.minecraft.world.InteractionResult.FAIL, "Corner cannot host a fence");
-                test.assertTrue(level.getBlockState(pos).is(Blocks.OAK_FENCE) && MaterialStacks.units(player.getMainHandItem()) == 8, "Refused corner leaves fence and material");
+                test.assertTrue(Placement.use(player, level, hand, ceiling) == net.minecraft.world.InteractionResult.SUCCESS, "Corner shares a block with a fence");
+                player.setItemInHand(hand, Materials.piece("minecraft:stone_bricks", Shape.CORNER, 8));
+                test.assertTrue(Placement.use(player, level, hand, otherCorner) == net.minecraft.world.InteractionResult.SUCCESS, "Second material joins the fence block");
+                test.assertTrue(level.getBlockEntity(pos) instanceof MultipartEntity, "Mixed pieces with a fence use a carrier");
+                test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence is kept inside the carrier");
+                var kept = dev.tazer.offgrid.world.Cells.overlays(level, pos).getFirst();
+                test.assertTrue(dev.tazer.offgrid.world.Blocklogging.at(level, pos, kept) != null, "Offgrid sees the carrier as the fence's host");
+                // A full block would hide the fence completely, so it is refused instead of destroying it.
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                for (var overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos)) dev.tazer.offgrid.world.Overlays.remove(level, pos, overlay, false);
+                level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
+                player.setItemInHand(hand, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 8));
+                test.assertTrue(Placement.use(player, level, hand, ceiling) != net.minecraft.world.InteractionResult.SUCCESS, "Full block cannot share a fence's block");
+                test.assertTrue(level.getBlockState(pos).is(Blocks.OAK_FENCE) && MaterialStacks.units(player.getMainHandItem()) == 8, "Refused block leaves fence and material");
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
+            // Fence after the pieces: a carrier with any cells hosts a newly blocklogged fence.
+            String[] mixed = new String[8];
+            for (int i : new int[]{0, 1, 2, 4, 5, 6, 7}) mixed[i] = i == 0 ? "minecraft:stone_bricks" : "minecraft:oak_planks";
+            Placement.store(level, pos, new dev.jensh.buildingpalette.core.Cells(mixed), false);
+            var post = Blocks.OAK_FENCE.defaultBlockState();
+            test.assertTrue(dev.tazer.offgrid.world.Blocklogging.at(level, pos, post, net.minecraft.world.phys.Vec3.ZERO) != null, "Fence fits a carrier missing one corner");
+            test.assertTrue(dev.tazer.offgrid.world.Overlays.add(level, pos, post, net.minecraft.world.phys.Vec3.ZERO, null) != null, "Fence is blocklogged into the carrier");
+            test.assertTrue(level.getBlockEntity(pos) instanceof MultipartEntity e && e.cells().occupied() == 0b11110111, "Carrier keeps its cells");
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            for (var overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos)) dev.tazer.offgrid.world.Overlays.remove(level, pos, overlay, false);
+            // The relaxed rules hold for native hosts and other blocklogged pieces too.
+            var stair = Blocks.OAK_STAIRS.defaultBlockState();
+            test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(post, stair) != null, "Lone fence post stands in a stair");
+            test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(Blocks.COBBLESTONE_WALL.defaultBlockState(), Blocks.OAK_SLAB.defaultBlockState()) != null, "Wall stands in a bottom slab");
+            test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(Blocks.GLASS_PANE.defaultBlockState(), stair) != null, "Pane stands in a stair");
             // Breaking the step returns its material, with the fence inside or after it is gone.
             for (boolean fenceRemoved : new boolean[]{false, true}) {
                 level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
@@ -346,6 +373,49 @@ public final class PaletteGameTestScenarios {
         } finally { PlacementPreferences.remove(player); }
         test.succeed();
     }
+    public void overlappingPiecesMerge(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(pos.getX() + .5, pos.getY(), pos.getZ() - 1.5);
+        var hand = net.minecraft.world.InteractionHand.MAIN_HAND;
+        var floor = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
+        String oak = "minecraft:oak_planks";
+        int alongZ = dev.jensh.buildingpalette.core.Cells.mask(Shape.STEP, 0, 2), alongX = dev.jensh.buildingpalette.core.Cells.mask(Shape.STEP, 0, 0);
+        try {
+            PlacementPreferences.set(player, true);
+            player.setYRot(0); player.setYHeadRot(0);
+            player.setItemInHand(hand, Materials.piece(oak, Shape.STEP, 4));
+            test.assertTrue(Placement.use(player, level, hand, floor) == net.minecraft.world.InteractionResult.SUCCESS, "First step places");
+            test.assertValueEqual(Placement.existing(level, pos).occupied(), alongZ, "First step runs along the facing");
+            // The same step again overlaps all of it: refused.
+            test.assertTrue(Placement.use(player, level, hand, floor) != net.minecraft.world.InteractionResult.SUCCESS, "Identical step is refused");
+            // A perpendicular step overlaps one cell: it merges into an L and costs only the added cell.
+            player.setYRot(90); player.setYHeadRot(90);
+            test.assertTrue(Placement.use(player, level, hand, floor) == net.minecraft.world.InteractionResult.SUCCESS, "Perpendicular step merges");
+            test.assertValueEqual(Placement.existing(level, pos).occupied(), alongZ | alongX, "Steps merge into an L");
+            test.assertValueEqual(MaterialStacks.units(player.getMainHandItem()), 4 - 2 - 1, "Merged step costs only its added cell");
+            // A slab covering the whole L overlaps all existing material: refused.
+            player.setItemInHand(hand, Materials.piece(oak, Shape.SLAB, 4));
+            test.assertTrue(Placement.use(player, level, hand, floor) != net.minecraft.world.InteractionResult.SUCCESS, "Piece containing all existing material is refused");
+            // Overlap must be the same material.
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            player.setYRot(0); player.setYHeadRot(0);
+            player.setItemInHand(hand, Materials.piece(oak, Shape.STEP, 4));
+            Placement.use(player, level, hand, floor);
+            player.setYRot(90); player.setYHeadRot(90);
+            player.setItemInHand(hand, Materials.piece("minecraft:stone_bricks", Shape.STEP, 4));
+            test.assertTrue(Placement.use(player, level, hand, floor) != net.minecraft.world.InteractionResult.SUCCESS, "Overlap with another material is refused");
+            // Unit rule: partial overlaps only.
+            var step = new dev.jensh.buildingpalette.core.Cells().place(alongZ, oak);
+            test.assertValueEqual(Placement.added(step, alongX, oak), alongX & ~alongZ, "Partial overlap adds the rest");
+            test.assertValueEqual(Placement.added(step, alongZ, oak), 0, "Full overlap of new piece adds nothing");
+            test.assertValueEqual(Placement.added(step, 0b00110011, oak), 0, "Overlap equal to existing material adds nothing");
+            test.assertValueEqual(Placement.added(step, ~alongZ & 255 & 0b00001100, oak), 0b00001100 & ~alongZ, "Disjoint piece adds itself");
+        } finally { PlacementPreferences.remove(player); level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3); }
+        test.succeed();
+    }
     public void shiftClickMergesNativeBlocksIntoPartialShapes(GameTestHelper test) {
         var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
         var chest = new SimpleContainer(27);
@@ -354,13 +424,13 @@ public final class PaletteGameTestScenarios {
         // native full-block stack as found in a chest.
         for (var material : new Item[]{Items.OAK_PLANKS, Items.STONE_BRICKS}) {
             String key = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(material).toString();
-            for (Shape shape : new Shape[]{Shape.CORNER, Shape.STEP, Shape.SLAB, Shape.STAIR}) {
+            for (Shape shape : new Shape[]{Shape.CORNER, Shape.STEP, Shape.SLAB, Shape.STAIR}) for (int slot : new int[]{20, 4}) {
                 player.getInventory().clearContent();
                 chest.clearContent();
                 chest.setItem(0, new ItemStack(material, 64));
-                player.getInventory().setItem(20, Materials.piece(key, shape, 100));
+                player.getInventory().setItem(slot, Materials.piece(key, shape, 100));
                 menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
-                ItemStack merged = player.getInventory().getItem(20);
+                ItemStack merged = player.getInventory().getItem(slot);
                 test.assertTrue(Materials.get(merged).shape() == shape, "Shift-clicked " + key + " keeps destination " + shape);
                 test.assertValueEqual(MaterialStacks.units(merged), 512, "Shift-clicked " + key + " fills partial " + shape);
                 int total = 0;
@@ -368,6 +438,22 @@ public final class PaletteGameTestScenarios {
                 test.assertValueEqual(total, 612, "Shift-click " + key + " into " + shape + " conserves material");
                 test.assertTrue(chest.getItem(0).isEmpty(), "Shift-clicked " + key + " leaves the chest");
             }
+        }
+        // The player's own inventory screen moves main inventory <-> hotbar the same way.
+        var inventory = player.inventoryMenu;
+        String key = "minecraft:oak_planks";
+        for (Shape shape : new Shape[]{Shape.CORNER, Shape.STEP, Shape.SLAB, Shape.STAIR}) for (boolean toHotbar : new boolean[]{true, false}) {
+            player.getInventory().clearContent();
+            int from = toHotbar ? 20 : 3, to = toHotbar ? 4 : 25;
+            player.getInventory().setItem(from, new ItemStack(Items.OAK_PLANKS, 64));
+            player.getInventory().setItem(to, Materials.piece(key, shape, 100));
+            inventory.clicked(from < 9 ? 36 + from : from, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+            ItemStack merged = player.getInventory().getItem(to);
+            test.assertTrue(Materials.get(merged) != null && Materials.get(merged).shape() == shape, "Inventory shift-click keeps destination " + shape);
+            test.assertValueEqual(MaterialStacks.units(merged), 512, "Inventory shift-click " + (toHotbar ? "into hotbar" : "into main") + " fills partial " + shape);
+            int total = 0;
+            for (int i = 0; i < 36; i++) total += MaterialStacks.units(player.getInventory().getItem(i));
+            test.assertValueEqual(total, 612, "Inventory shift-click conserves material");
         }
         test.succeed();
     }

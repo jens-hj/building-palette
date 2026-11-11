@@ -53,7 +53,24 @@ public final class Placement {
             && !PlacementPreferences.precise(player) && stack.getItem() instanceof BlockItem
             && !(level.getBlockEntity(target(level, hit)) instanceof MultipartEntity)
             && !isQuarter(level.getBlockState(target(level, hit)))
+            && !holdsPiece(level, target(level, hit))
             && !OffgridHosts.occupied(level, target(level, hit));
+    }
+    /** A block already holding a piece combines with the new one through cells, so shapes can overlap and merge. */
+    private static boolean holdsPiece(Level level, BlockPos pos) {
+        if (level.getBlockState(pos).canBeReplaced()) return false;
+        Cells cells = existing(level, pos);
+        return cells != null && cells.occupied() != 0;
+    }
+    /** Cells the piece adds to {@code before}, or 0 if it cannot go there. A piece may overlap the
+     * block's existing material (same material only) as long as the overlap is neither all of the
+     * existing material nor all of the new piece: a perpendicular step on a step makes an L. */
+    public static int added(Cells before, int mask, String material) {
+        int occupied = before.occupied(), overlap = occupied & mask;
+        if (overlap == 0) return mask;
+        if (overlap == mask || overlap == occupied) return 0;
+        for (int i = 0; i < 8; i++) if ((overlap & 1 << i) != 0 && !material.equals(before.at(i))) return 0;
+        return mask & ~occupied;
     }
     // Quarter steps used to stay in a carrier; keep combining into them through cells.
     private static boolean isQuarter(BlockState state) {
@@ -157,11 +174,12 @@ public final class Placement {
             state = state.setValue(BlockStateProperties.STAIRS_SHAPE, net.minecraft.world.level.block.state.properties.StairsShape.STRAIGHT);
             mask = shapeMask(state, level, target);
         }
-        if ((before.occupied() & mask) != 0) return null;
+        mask = added(before, mask, selection.material());
+        if (mask == 0) return null;
         if (!canOccupy(level, player, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask).move(target))) return null;
         // Blocks holding Offgrid fences/walls only take a result that can still host them.
         if (OffgridHosts.occupied(level, target) && !OffgridHosts.accepts(level, target,
-                nativeState(before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER))) return null;
+                OffgridHosts.host(before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER))) return null;
         return new Plan(target, before, mask, selection.material());
     }
     private static boolean canOccupy(Level level, Player player, VoxelShape added) {
@@ -190,9 +208,11 @@ public final class Placement {
         // Native placement checks fractional availability in BlockItem.place, after
         // normal block interaction, so a reserved stack can still open a chest.
         if (!selection.shape().isMultipart() || usesNativePlacement(level, player, stack, hit)) return InteractionResult.PASS;
-        if (!player.hasInfiniteMaterials() && MaterialStacks.available(stack) < 1) return InteractionResult.FAIL;
+        if (!player.hasInfiniteMaterials() && MaterialStacks.units(stack) < 1) return InteractionResult.FAIL;
         Plan plan = plan(level, player, stack, hit);
-        if (plan == null || (!player.hasInfiniteMaterials() && MaterialStacks.available(stack) < 1)) return InteractionResult.FAIL;
+        // A piece merging into existing material costs only the cells it adds.
+        int cost = plan == null ? 0 : Integer.bitCount(plan.mask());
+        if (plan == null || (!player.hasInfiniteMaterials() && MaterialStacks.units(stack) < cost)) return InteractionResult.FAIL;
         if (!level.mayInteract(player, plan.pos()) || !player.mayUseItemAt(plan.pos(), hit.getDirection(), stack)
                 || level.isOutsideBuildHeight(plan.pos())) return InteractionResult.FAIL;
         Cells next = plan.before().place(plan.mask(), plan.material());
@@ -206,7 +226,7 @@ public final class Placement {
                 level.setBlock(plan.pos(), previous, 3);
                 return InteractionResult.FAIL;
             }
-            if (!player.hasInfiniteMaterials()) MaterialStacks.spend(stack, 1);
+            if (!player.hasInfiniteMaterials()) InventoryTransactions.assign(stack, MaterialStacks.withUnits(stack, MaterialStacks.units(stack) - cost));
             level.playSound(null, plan.pos(), MultipartBlock.material(plan.material()).getSoundType().getPlaceSound(),
                 net.minecraft.sounds.SoundSource.BLOCKS, 1, 1);
         }

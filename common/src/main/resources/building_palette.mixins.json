@@ -22,7 +22,8 @@
     "NativeConsumptionMixin",
     "StackedContentsMixin",
     "ItemEntityMixin",
-    "OffgridStepBlocklogMixin"
+    "OffgridBlocklogMixin",
+    "OffgridHostShapeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

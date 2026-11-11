@@ -7,6 +7,7 @@
   "item.building_palette.piece": "Building piece",
   "item.building_palette.piece_name": "%s %s",
   "block.building_palette.multipart": "Combined building pieces",
+  "block.building_palette.host_shape": "Building piece host shape",
   "tooltip.building_palette.balance": "%s pieces · %s blocks + %s/8 material",
   "tooltip.building_palette.remainder": "%s/8 material reserved; scroll to use it",
   "tooltip.building_palette.scroll": "Hold Alt and scroll to select shape",

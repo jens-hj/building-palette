@@ -1,9 +1,6 @@
 package dev.jensh.buildingpalette.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.*;
-import com.llamalad7.mixinextras.sugar.Local;
-import dev.jensh.buildingpalette.Materials;
-import dev.jensh.buildingpalette.core.Shape;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -12,26 +9,28 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Offgrid only lets fences, walls, panes and bars into a step when they run along it,
- * and otherwise rejects pieces the host would notch. Building Palette places steps
- * anywhere in the half-grid, so let a post stand in any step block; Offgrid still cuts
- * the overlapping part from its outline, collision and support shapes.
+ * Offgrid only lets fences, walls, panes, bars and chains into a stair or step when they
+ * run along it, and rejects any host that would notch them. Building Palette builds
+ * arbitrary half-grid shapes, so a blocklogged piece may share any host as long as part
+ * of it stays visible: Offgrid still cuts the overlapping part from its outline,
+ * collision and support shapes, and rejects a piece the host hides completely.
  * Optional: a changed Offgrid only loses this allowance.
  */
 @Mixin(targets = "dev.tazer.offgrid.world.Blocklogging", remap = false)
-public abstract class OffgridStepBlocklogMixin {
-    private static boolean palette$step(BlockState host) {
-        return Materials.classify(host.getBlock()) == Shape.STEP;
-    }
+public abstract class OffgridBlocklogMixin {
     @WrapOperation(method = "compute", require = 0, at = @At(value = "INVOKE",
         target = "Ldev/tazer/offgrid/world/Blocklogging;runAxis(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/core/Direction$Axis;"))
-    private static Direction.Axis palette$anyRunInStep(BlockState state, BlockState host, Operation<Direction.Axis> original) {
-        return palette$step(host) ? null : original.call(state, host);
+    private static Direction.Axis palette$anyRun(BlockState state, BlockState host, Operation<Direction.Axis> original) {
+        return null;
+    }
+    @WrapOperation(method = "fit", require = 0, at = @At(value = "INVOKE",
+        target = "Ldev/tazer/offgrid/world/Blocklogging;runAxis(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/core/Direction$Axis;"))
+    private static Direction.Axis palette$fitAnyRun(BlockState state, BlockState host, Operation<Direction.Axis> original) {
+        return null;
     }
     @WrapOperation(method = "compute", require = 0, at = @At(value = "INVOKE",
         target = "Ldev/tazer/offgrid/world/Blocklogging;thins(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/phys/shapes/VoxelShape;Lnet/minecraft/world/phys/shapes/VoxelShape;Lnet/minecraft/world/phys/Vec3;)Z"))
-    private static boolean palette$notchInStep(BlockState state, VoxelShape outline, VoxelShape hostShape, Vec3 offset, Operation<Boolean> original,
-            @Local(argsOnly = true, ordinal = 1) BlockState host) {
-        return !palette$step(host) && original.call(state, outline, hostShape, offset);
+    private static boolean palette$notchAllowed(BlockState state, VoxelShape outline, VoxelShape hostShape, Vec3 offset, Operation<Boolean> original) {
+        return false;
     }
 }
