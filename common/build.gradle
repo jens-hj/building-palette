@@ -8,6 +8,8 @@ sourceSets.main.java.srcDir 'src/client/java'
 dependencies {
     compileOnly 'net.fabricmc:sponge-mixin:0.17.4+mixin.0.8.7'
     compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
+    // Offgrid is a required dependency on both loaders; its world API is loader-neutral.
+    compileOnly 'maven.modrinth:offgrid:Dh9cO38a'
 }
 tasks.register('modelTest', JavaExec) {
     dependsOn testClasses

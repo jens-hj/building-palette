@@ -10,6 +10,7 @@ public final class PaletteGameTests {
     @GameTest public void pickRefillsInsufficientHeldMaterial(GameTestHelper test) { new PaletteGameTestScenarios().pickRefillsInsufficientHeldMaterial(test); }
     @GameTest public void shiftClickMergesShapesBeforeEmptySlots(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesShapesBeforeEmptySlots(test); }
     @GameTest public void singlePiecesUseNativeBlocks(GameTestHelper test) { new PaletteGameTestScenarios().singlePiecesUseNativeBlocks(test); }
+    @GameTest public void offgridFenceAndStepInEitherOrder(GameTestHelper test) { new PaletteGameTestScenarios().offgridFenceAndStepInEitherOrder(test); }
     @GameTest public void shiftClickMergesNativeBlocksIntoPartialShapes(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesNativeBlocksIntoPartialShapes(test); }
     @GameTest(maxTicks = 120, skyAccess = true) public void slabRoofMatchesNativeLightBlocking(GameTestHelper test) { new PaletteGameTestScenarios().slabRoofMatchesNativeLightBlocking(test); }
     @GameTest public void everyShapeMergesByMaterial(GameTestHelper test) { new PaletteGameTestScenarios().everyShapeMergesByMaterial(test); }

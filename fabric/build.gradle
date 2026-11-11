@@ -22,6 +22,7 @@ dependencies {
     compileOnly "maven.modrinth:travelersbackpack:y1lpIqJS"
     localRuntime "maven.modrinth:clutternomore:Chc4Pi2b"
     localRuntime "maven.modrinth:offgrid:IBTjtUTI"
+    compileOnly "maven.modrinth:offgrid:IBTjtUTI"
 
 }
 processResources {

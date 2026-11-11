@@ -268,8 +268,7 @@ public final class PaletteGameTestScenarios {
                 test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence post is blocklogged into the step's block");
                 test.assertTrue(Materials.classify(level.getBlockState(pos).getBlock()) == Shape.STEP, "Step stays in place under the fence");
                 test.assertValueEqual(player.getMainHandItem().getCount(), 3, "Blocklogging uses one fence");
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                level.setBlock(pos, state, 3);
+                for (var overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos)) dev.tazer.offgrid.world.Overlays.remove(level, pos, overlay, false);
                 // Adding a different material still converts into a carrier.
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:stone_bricks", Shape.CORNER, 8));
                 var corner = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
@@ -288,6 +287,62 @@ public final class PaletteGameTestScenarios {
             test.assertTrue(Placement.mine(player, pos), "Mining handler accepts mixed block");
             test.assertTrue(level.getBlockState(pos).getBlock() instanceof net.minecraft.world.level.block.SlabBlock, "Remaining single slab is stored natively");
             test.assertValueEqual(Placement.existing(level, pos).occupied(), Cells.mask(Shape.SLAB, 2, 0), "Remaining slab keeps its cells");
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
+    public void offgridFenceAndStepInEitherOrder(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos.above(), Blocks.STONE.defaultBlockState(), 3);
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(pos.getX() + .5, pos.getY() - 1, pos.getZ() - 1.5);
+        var hand = net.minecraft.world.InteractionHand.MAIN_HAND;
+        // Step under the ceiling, clicked on the ceiling's underside as in game.
+        var ceiling = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY() + 1, pos.getZ() + .25), Direction.DOWN, pos.above(), false);
+        try {
+            for (boolean precise : new boolean[]{false, true}) {
+                PlacementPreferences.set(player, precise);
+                // Fence first, then the step.
+                level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
+                player.setItemInHand(hand, Materials.piece("minecraft:oak_planks", Shape.STEP, 8));
+                test.assertTrue(Placement.use(player, level, hand, ceiling) == net.minecraft.world.InteractionResult.SUCCESS, "Step places into a block holding a fence");
+                test.assertTrue(Materials.classify(level.getBlockState(pos).getBlock()) == Shape.STEP, "Step becomes the block's host");
+                test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence is kept inside the step");
+                test.assertTrue(dev.tazer.offgrid.world.Cells.overlays(level, pos).getFirst().getState().is(Blocks.OAK_FENCE), "Kept piece is the fence");
+                test.assertValueEqual(MaterialStacks.units(player.getMainHandItem()), 6, "Step spends one piece");
+                // A second step that still leaves room for the fence joins the host.
+                var otherCorner = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY() + 1, pos.getZ() + .75), Direction.DOWN, pos.above(), false);
+                var planned = Placement.plan(level, player, player.getMainHandItem(), otherCorner);
+                if (planned != null) {
+                    test.assertTrue(Placement.use(player, level, hand, otherCorner) == net.minecraft.world.InteractionResult.SUCCESS, "Second piece joins a step with a fence");
+                    test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence survives the second piece");
+                }
+                // A piece that cannot host the fence (a lone corner) is refused instead of destroying it.
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
+                player.setItemInHand(hand, Materials.piece("minecraft:oak_planks", Shape.CORNER, 8));
+                test.assertTrue(Placement.use(player, level, hand, ceiling) == net.minecraft.world.InteractionResult.FAIL, "Corner cannot host a fence");
+                test.assertTrue(level.getBlockState(pos).is(Blocks.OAK_FENCE) && MaterialStacks.units(player.getMainHandItem()) == 8, "Refused corner leaves fence and material");
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            }
+            // Breaking the step returns its material, with the fence inside or after it is gone.
+            for (boolean fenceRemoved : new boolean[]{false, true}) {
+                level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 3);
+                player.setItemInHand(hand, Materials.piece("minecraft:stone_bricks", Shape.STEP, 2));
+                test.assertTrue(Placement.use(player, level, hand, ceiling) == net.minecraft.world.InteractionResult.SUCCESS, "Stone step places around fence");
+                if (fenceRemoved) for (var overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos))
+                    dev.tazer.offgrid.world.Overlays.remove(level, pos, overlay, false);
+                level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(2)).forEach(e -> e.discard());
+                player.setItemInHand(hand, new ItemStack(Items.NETHERITE_PICKAXE));
+                test.assertTrue(player.gameMode.destroyBlock(pos), "Step can be broken" + (fenceRemoved ? " after its fence" : " with its fence"));
+                int units = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(2)).stream()
+                    .filter(e -> Materials.get(e.getItem()) != null && Materials.get(e.getItem()).material().equals("minecraft:stone_bricks"))
+                    .mapToInt(e -> MaterialStacks.units(e.getItem())).sum();
+                test.assertValueEqual(units, 2, "Broken step returns its material" + (fenceRemoved ? " after its fence" : " with its fence"));
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                for (var overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos)) dev.tazer.offgrid.world.Overlays.remove(level, pos, overlay, false);
+            }
         } finally { PlacementPreferences.remove(player); }
         test.succeed();
     }
@@ -503,6 +558,17 @@ public final class PaletteGameTestScenarios {
             int expected = block == Blocks.OAK_SLAB ? 4 : 6;
             test.assertValueEqual(drops.stream().mapToInt(MaterialStacks::units).sum(), expected, "Existing native shape drops its physical volume");
         }
+        // Clutter No More shapes have no loot table of their own.
+        for (Shape shape : new Shape[]{Shape.STEP, Shape.VERTICAL_SLAB, Shape.VERTICAL_STEP})
+            for (String material : new String[]{"minecraft:oak_planks", "minecraft:stone_bricks"}) {
+                ItemStack item = Materials.piece(material, shape, shape.cost);
+                if (!(item.getItem() instanceof BlockItem block)) continue;
+                var state = block.getBlock().defaultBlockState();
+                test.getLevel().setBlock(pos, state, 3);
+                var pickaxe = new ItemStack(Items.NETHERITE_PICKAXE);
+                var drops = net.minecraft.world.level.block.Block.getDrops(state, test.getLevel(), pos, null, null, pickaxe);
+                test.assertValueEqual(drops.stream().mapToInt(MaterialStacks::units).sum(), shape.cost, "Clutter No More " + shape + " of " + material + " drops its volume");
+            }
         for (var shape : net.minecraft.world.level.block.state.properties.StairsShape.values()) {
             var state = Blocks.OAK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.STAIRS_SHAPE, shape);
             test.getLevel().setBlock(pos, state, 3);

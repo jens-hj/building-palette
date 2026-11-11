@@ -52,7 +52,8 @@ public final class Placement {
         return selection != null && selection.shape() != Shape.STEP && selection.shape() != Shape.VERTICAL_STEP
             && !PlacementPreferences.precise(player) && stack.getItem() instanceof BlockItem
             && !(level.getBlockEntity(target(level, hit)) instanceof MultipartEntity)
-            && !isQuarter(level.getBlockState(target(level, hit)));
+            && !isQuarter(level.getBlockState(target(level, hit)))
+            && !OffgridHosts.occupied(level, target(level, hit));
     }
     // Quarter steps used to stay in a carrier; keep combining into them through cells.
     private static boolean isQuarter(BlockState state) {
@@ -102,6 +103,8 @@ public final class Placement {
         if (level.getBlockEntity(pos) instanceof MultipartEntity e) return e.cells();
         BlockState state = level.getBlockState(pos);
         if (state.canBeReplaced()) return new Cells();
+        // A lone Offgrid fence/wall leaves the grid cells free; it becomes an overlay of the new piece.
+        if (OffgridHosts.isGuest(level, pos, state)) return new Cells();
         ItemStack stack = new ItemStack(state.getBlock().asItem());
         var selection = Materials.get(stack);
         if (selection == null || !selection.shape().isMultipart() || state.hasBlockEntity()) return null;
@@ -156,6 +159,9 @@ public final class Placement {
         }
         if ((before.occupied() & mask) != 0) return null;
         if (!canOccupy(level, player, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask).move(target))) return null;
+        // Blocks holding Offgrid fences/walls only take a result that can still host them.
+        if (OffgridHosts.occupied(level, target) && !OffgridHosts.accepts(level, target,
+                nativeState(before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER))) return null;
         return new Plan(target, before, mask, selection.material());
     }
     private static boolean canOccupy(Level level, Player player, VoxelShape added) {
@@ -193,7 +199,13 @@ public final class Placement {
         VoxelShape added = MultipartBlock.shape(next, plan.mask()).move(plan.pos().getX(), plan.pos().getY(), plan.pos().getZ());
         if (!canOccupy(level, player, added)) return InteractionResult.FAIL;
         if (!level.isClientSide()) {
+            BlockState previous = level.getBlockState(plan.pos());
+            boolean guest = OffgridHosts.isGuest(level, plan.pos(), previous);
             store(level, plan.pos(), next, level.getFluidState(plan.pos()).getType() == Fluids.WATER);
+            if (guest && !OffgridHosts.adopt((net.minecraft.server.level.ServerLevel)level, plan.pos(), previous)) {
+                level.setBlock(plan.pos(), previous, 3);
+                return InteractionResult.FAIL;
+            }
             if (!player.hasInfiniteMaterials()) MaterialStacks.spend(stack, 1);
             level.playSound(null, plan.pos(), MultipartBlock.material(plan.material()).getSoundType().getPlaceSound(),
                 net.minecraft.sounds.SoundSource.BLOCKS, 1, 1);
