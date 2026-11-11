@@ -54,6 +54,8 @@ fabricApi {
     }
 }
 
+// Offgrid API for blocklogging assertions; Offgrid itself is already on the dev runtime.
+dependencies { gametestCompileOnly "maven.modrinth:offgrid:IBTjtUTI" }
 sourceSets.gametest.java.srcDirs rootProject.file('src/gametest/java'), rootProject.file('common/src/testFixtures/java')
 sourceSets.gametest.resources.srcDir rootProject.file('src/gametest/resources')
 sourceSets.test.java.srcDir rootProject.file('common/src/test/java')

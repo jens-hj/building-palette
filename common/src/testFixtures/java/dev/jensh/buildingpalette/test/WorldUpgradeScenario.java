@@ -182,13 +182,13 @@ public abstract class WorldUpgradeScenario {
         player.setYRot((float)(Math.toDegrees(Math.atan2(aim.z, aim.x)) - 90));
         player.setXRot((float)-Math.toDegrees(Math.atan2(aim.y, Math.sqrt(aim.x * aim.x + aim.z * aim.z))));
         require(Placement.mine(player, pos), "Cannot mine old block");
-        require(((MultipartEntity)level.getBlockEntity(pos)).cells().occupied() == 2, "Mining old material removed other material");
+        require(Integer.bitCount(Placement.existing(level, pos).occupied()) == 2, "Mining old material removed other material");
         var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1));
         require(drops.stream().mapToInt(e -> MaterialStacks.units(e.getItem())).sum() == 2, "Old block refund balance changed");
         player.setItemInHand(InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", Shape.CORNER, 1));
         var hit = new BlockHitResult(new Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
         require(Placement.use(player, level, InteractionHand.MAIN_HAND, hit) == InteractionResult.SUCCESS, "Cannot add new part to old saved block");
-        require(((MultipartEntity)level.getBlockEntity(pos)).cells().occupied() == 3, "Combining into old block changed leftovers");
+        require(Integer.bitCount(Placement.existing(level, pos).occupied()) == 3, "Combining into old block changed leftovers");
         player.setItemInHand(InteractionHand.MAIN_HAND, held);
     }
 }

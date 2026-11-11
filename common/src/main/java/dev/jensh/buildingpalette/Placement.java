@@ -51,7 +51,52 @@ public final class Placement {
         // CNM's native step states only support a restricted diagonal doubling.
         return selection != null && selection.shape() != Shape.STEP && selection.shape() != Shape.VERTICAL_STEP
             && !PlacementPreferences.precise(player) && stack.getItem() instanceof BlockItem
-            && !(level.getBlockEntity(target(level, hit)) instanceof MultipartEntity);
+            && !(level.getBlockEntity(target(level, hit)) instanceof MultipartEntity)
+            && !isQuarter(level.getBlockState(target(level, hit)));
+    }
+    // Quarter steps used to stay in a carrier; keep combining into them through cells.
+    private static boolean isQuarter(BlockState state) {
+        Shape shape = Materials.classify(state.getBlock());
+        return shape == Shape.STEP || shape == Shape.VERTICAL_STEP;
+    }
+    private static final java.util.Set<Shape> NATIVE_STORAGE = java.util.EnumSet.of(Shape.SLAB, Shape.VERTICAL_SLAB, Shape.STEP, Shape.VERTICAL_STEP);
+    /** The material's own native block for a single piece, if one has exactly these cells.
+     * Other mods (e.g. Offgrid blocklogging) read shapes from block states, never our block entity.
+     * Stairs stay in a carrier: native stairs reshape themselves to connect with neighbours. */
+    public static BlockState nativeState(Cells cells, boolean wet) {
+        int mask = cells.occupied();
+        if (mask == 0 || mask == 255) return null;
+        String material = null;
+        for (int i = 0; i < 8; i++) if (cells.at(i) != null) {
+            if (material == null) material = cells.at(i);
+            else if (!material.equals(cells.at(i))) return null;
+        }
+        ItemStack seed = Materials.piece(material, Shape.CORNER, 1);
+        if (seed.isEmpty()) return null;
+        VoxelShape expected = MultipartBlock.shape(cells, 255);
+        for (ItemStack option : Materials.palette(seed)) {
+            var selection = Materials.get(option);
+            if (selection == null || !NATIVE_STORAGE.contains(selection.shape()) || selection.shape().cost != Integer.bitCount(mask)
+                    || option.getItem() == BuildingPalette.PIECE.get() || !(option.getItem() instanceof BlockItem item)) continue;
+            for (BlockState state : item.getBlock().getStateDefinition().getPossibleStates()) {
+                if (state.hasBlockEntity() || (state.hasProperty(BlockStateProperties.WATERLOGGED) ? state.getValue(BlockStateProperties.WATERLOGGED) != wet : wet)) continue;
+                VoxelShape shape = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                if (!Shapes.joinIsNotEmpty(shape, expected, BooleanOp.NOT_SAME)) return state;
+            }
+        }
+        return null;
+    }
+    /** Store cells as a full block, a native single piece, or a multipart carrier. */
+    public static void store(Level level, BlockPos pos, Cells cells, boolean wet) {
+        String full = cells.fullMaterial();
+        BlockState nativeState = full == null ? nativeState(cells, wet) : null;
+        if (full != null) level.setBlock(pos, MultipartBlock.material(full), 3);
+        else if (nativeState != null) level.setBlock(pos, nativeState, 3);
+        else {
+            BlockState state = BuildingPalette.MULTIPART.get().defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, wet);
+            if (!level.getBlockState(pos).is(BuildingPalette.MULTIPART.get())) level.setBlock(pos, state, 3);
+            if (level.getBlockEntity(pos) instanceof MultipartEntity e) e.setCells(cells);
+        }
     }
     public static Cells existing(Level level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof MultipartEntity e) return e.cells();
@@ -148,14 +193,7 @@ public final class Placement {
         VoxelShape added = MultipartBlock.shape(next, plan.mask()).move(plan.pos().getX(), plan.pos().getY(), plan.pos().getZ());
         if (!canOccupy(level, player, added)) return InteractionResult.FAIL;
         if (!level.isClientSide()) {
-            boolean wet = level.getFluidState(plan.pos()).getType() == Fluids.WATER;
-            String full = next.fullMaterial();
-            if (full != null) level.setBlock(plan.pos(), MultipartBlock.material(full), 3);
-            else {
-                BlockState state = BuildingPalette.MULTIPART.get().defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, wet);
-                if (!level.getBlockState(plan.pos()).is(BuildingPalette.MULTIPART.get())) level.setBlock(plan.pos(), state, 3);
-                if (level.getBlockEntity(plan.pos()) instanceof MultipartEntity e) e.setCells(next);
-            }
+            store(level, plan.pos(), next, level.getFluidState(plan.pos()).getType() == Fluids.WATER);
             if (!player.hasInfiniteMaterials()) MaterialStacks.spend(stack, 1);
             level.playSound(null, plan.pos(), MultipartBlock.material(plan.material()).getSoundType().getPlaceSound(),
                 net.minecraft.sounds.SoundSource.BLOCKS, 1, 1);
@@ -175,8 +213,9 @@ public final class Placement {
         ItemStack refund = Materials.piece(material, Shape.CORNER, Integer.bitCount(mask));
         if (refund.isEmpty()) return true;
         Cells remaining = entity.cells().remove(mask);
-        if (remaining.occupied() == 0) level.setBlock(pos,
-            entity.getBlockState().getValue(BlockStateProperties.WATERLOGGED) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+        boolean wet = entity.getBlockState().getValue(BlockStateProperties.WATERLOGGED);
+        if (remaining.occupied() == 0) level.setBlock(pos, wet ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+        else if (nativeState(remaining, wet) != null) store(level, pos, remaining, wet);
         else entity.setCells(remaining);
         if (!player.hasInfiniteMaterials()) {
             if (player.hasCorrectToolForDrops(source)) Block.popResource(level, pos, refund);

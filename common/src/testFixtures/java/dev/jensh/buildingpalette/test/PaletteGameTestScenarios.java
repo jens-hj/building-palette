@@ -49,8 +49,9 @@ public final class PaletteGameTestScenarios {
                     test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.SUCCESS, "All four quarter positions can be filled");
                     expected = expected.place(mask, useStone ? "minecraft:stone_bricks" : "minecraft:oak_planks");
                     if (part < 3 || mixed) {
-                        test.assertTrue(level.getBlockEntity(pos) instanceof MultipartEntity, "Step placement uses Building Palette carrier from first part");
-                        test.assertTrue(java.util.Arrays.equals(((MultipartEntity)level.getBlockEntity(pos)).cells().copy(), expected.copy()), "Step positions and materials match exactly");
+                        boolean single = java.util.Arrays.stream(expected.copy()).filter(java.util.Objects::nonNull).distinct().count() == 1;
+                        test.assertTrue(single || level.getBlockEntity(pos) instanceof MultipartEntity, "Mixed steps use Building Palette carrier");
+                        test.assertTrue(Placement.existing(level, pos) != null && java.util.Arrays.equals(Placement.existing(level, pos).copy(), expected.copy()), "Step positions and materials match exactly");
                     } else test.assertTrue(level.getBlockState(pos).is(Blocks.OAK_PLANKS), "Four same-material steps become a full native block");
                 }
                 test.assertTrue(oak.isEmpty() && (!mixed || stone.isEmpty()), "Four quarters spend exactly one block of material");
@@ -176,6 +177,77 @@ public final class PaletteGameTestScenarios {
         menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
         test.assertValueEqual(MaterialStacks.units(player.getInventory().getItem(8)), 512, "Full inventory still fills compatible material stack");
         test.assertValueEqual(MaterialStacks.units(chest.getItem(0)), 20, "Untransferable overflow remains in original slot");
+        test.succeed();
+    }
+    public void singlePiecesUseNativeBlocks(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(pos.getX() + 2, pos.getY(), pos.getZ() + 2);
+        try {
+            for (boolean precise : new boolean[]{false, true}) {
+                PlacementPreferences.set(player, precise);
+                // An upper step, placed against the top half of a neighbouring block.
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:oak_planks", Shape.STEP, 8));
+                var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX(), pos.getY() + .75, pos.getZ() + .25), Direction.EAST, pos.west(), false);
+                test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, hit) == net.minecraft.world.InteractionResult.SUCCESS, "Upper step places");
+                var state = level.getBlockState(pos);
+                test.assertTrue(Materials.classify(state.getBlock()) == Shape.STEP && !(level.getBlockEntity(pos) instanceof MultipartEntity), "Single upper step is stored as the native step block");
+                test.assertValueEqual(Integer.bitCount(Placement.existing(level, pos).occupied()), 2, "Native step keeps the quarter volume");
+                test.assertTrue((Placement.existing(level, pos).occupied() & 0b00110011) == 0, "Native step stays in the upper half");
+                // Offgrid can blocklog a fence running under the step.
+                var axis = state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).getAxis();
+                var fence = Blocks.OAK_FENCE.defaultBlockState();
+                for (Direction side : Direction.Plane.HORIZONTAL) if (side.getAxis() == axis)
+                    fence = fence.setValue(net.minecraft.world.level.block.PipeBlock.PROPERTY_BY_DIRECTION.get(side), true);
+                test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(fence, state) != null, "Offgrid can blocklog a fence into a placed upper step");
+                // Adding a different material still converts into a carrier.
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:stone_bricks", Shape.CORNER, 8));
+                var corner = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
+                test.assertTrue(Placement.use(player, level, net.minecraft.world.InteractionHand.MAIN_HAND, corner) == net.minecraft.world.InteractionResult.SUCCESS, "Corner combines into native step");
+                test.assertTrue(level.getBlockEntity(pos) instanceof MultipartEntity, "Mixed materials use a carrier");
+                test.assertValueEqual(Integer.bitCount(Placement.existing(level, pos).occupied()), 3, "Combining keeps the step volume");
+            }
+            // Mining a mixed block down to one native piece stores that piece natively.
+            level.setBlock(pos, BuildingPalette.MULTIPART.get().defaultBlockState(), 3);
+            ((MultipartEntity)level.getBlockEntity(pos)).setCells(new Cells().place(Cells.mask(Shape.SLAB, 2, 0), "minecraft:oak_planks").place(1 << 1, "minecraft:stone_bricks"));
+            player.setPos(pos.getX() + .75, pos.getY(), pos.getZ() - 2);
+            var aim = new net.minecraft.world.phys.Vec3(pos.getX() + .75, pos.getY() + .25, pos.getZ() + .25).subtract(player.getEyePosition());
+            player.setYRot((float)(Math.toDegrees(Math.atan2(aim.z, aim.x)) - 90));
+            player.setXRot((float)-Math.toDegrees(Math.atan2(aim.y, Math.sqrt(aim.x * aim.x + aim.z * aim.z))));
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.NETHERITE_PICKAXE));
+            test.assertTrue(Placement.mine(player, pos), "Mining handler accepts mixed block");
+            test.assertTrue(level.getBlockState(pos).getBlock() instanceof net.minecraft.world.level.block.SlabBlock, "Remaining single slab is stored natively");
+            test.assertValueEqual(Placement.existing(level, pos).occupied(), Cells.mask(Shape.SLAB, 2, 0), "Remaining slab keeps its cells");
+        } finally { PlacementPreferences.remove(player); }
+        test.succeed();
+    }
+    public void shiftClickMergesNativeBlocksIntoPartialShapes(GameTestHelper test) {
+        var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var chest = new SimpleContainer(27);
+        var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x3, 1, player.getInventory(), chest, 3);
+        // Fuel (planks) and non-fuel (stone bricks) materials, each from a plain
+        // native full-block stack as found in a chest.
+        for (var material : new Item[]{Items.OAK_PLANKS, Items.STONE_BRICKS}) {
+            String key = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(material).toString();
+            for (Shape shape : new Shape[]{Shape.CORNER, Shape.STEP, Shape.SLAB, Shape.STAIR}) {
+                player.getInventory().clearContent();
+                chest.clearContent();
+                chest.setItem(0, new ItemStack(material, 64));
+                player.getInventory().setItem(20, Materials.piece(key, shape, 100));
+                menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+                ItemStack merged = player.getInventory().getItem(20);
+                test.assertTrue(Materials.get(merged).shape() == shape, "Shift-clicked " + key + " keeps destination " + shape);
+                test.assertValueEqual(MaterialStacks.units(merged), 512, "Shift-clicked " + key + " fills partial " + shape);
+                int total = 0;
+                for (int i = 0; i < 36; i++) total += MaterialStacks.units(player.getInventory().getItem(i));
+                test.assertValueEqual(total, 612, "Shift-click " + key + " into " + shape + " conserves material");
+                test.assertTrue(chest.getItem(0).isEmpty(), "Shift-clicked " + key + " leaves the chest");
+            }
+        }
         test.succeed();
     }
     public void slabRoofMatchesNativeLightBlocking(GameTestHelper test) {
