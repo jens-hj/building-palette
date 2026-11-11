@@ -15,5 +15,6 @@ public final class FabricPlatform implements PlatformServices {
     @Override public boolean isModLoaded(String id) { return FabricLoader.getInstance().isModLoaded(id); }
     @Override public Path configDirectory() { return FabricLoader.getInstance().getConfigDir(); }
     @Override public ItemStack pickBackpack(ServerPlayer player, String material) { return dev.jensh.buildingpalette.compat.BackpackPick.pick(player, material); }
+    @Override public int takeBackpack(ServerPlayer player, ItemStack like, int units) { return dev.jensh.buildingpalette.compat.BackpackPick.take(player, like, units); }
     @Override public void renderDataChanged(MultipartEntity entity) {}
 }

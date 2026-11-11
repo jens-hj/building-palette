@@ -16,5 +16,6 @@ public final class NeoPlatform implements PlatformServices {
     @Override public boolean isModLoaded(String id) { return ModList.get().isLoaded(id); }
     @Override public Path configDirectory() { return FMLPaths.CONFIGDIR.get(); }
     @Override public ItemStack pickBackpack(ServerPlayer player, String material) { return dev.jensh.buildingpalette.compat.BackpackPick.pick(player, material); }
+    @Override public int takeBackpack(ServerPlayer player, ItemStack like, int units) { return dev.jensh.buildingpalette.compat.BackpackPick.take(player, like, units); }
     @Override public void renderDataChanged(MultipartEntity entity) { entity.requestModelDataUpdate(); }
 }

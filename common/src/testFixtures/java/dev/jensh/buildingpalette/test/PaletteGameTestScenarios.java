@@ -142,12 +142,58 @@ public final class PaletteGameTestScenarios {
         test.assertTrue(Materials.get(first).shape() == Shape.SLAB, "First pick preserves available shape");
         test.assertValueEqual(MaterialStacks.units(first), 80, "First pick preserves whole balance");
         player.getInventory().pickSlot(10);
-        ItemStack second = PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false);
+        test.assertTrue(PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false).isEmpty(), "Second pick edits the held slot in place");
+        ItemStack second = player.getMainHandItem();
         test.assertTrue(Materials.get(second).shape() == Shape.STAIR, "Second pick matches clicked shape");
         test.assertValueEqual(MaterialStacks.units(second), 80, "Second pick preserves fractional balance");
         test.assertTrue(second.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME).equals(stored.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME)), "Pick preserves custom components");
         player.getInventory().clearContent();
         test.assertTrue(PickBlock.pick(player, pos, test.getLevel().getBlockState(pos), false).isEmpty(), "Survival pick cannot create missing material");
+        test.succeed();
+    }
+    public void pickRefillsInsufficientHeldMaterial(GameTestHelper test) {
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(pos.getX() + 1, pos.getY(), pos.getZ() + 1);
+        var inventory = player.getInventory();
+        inventory.setSelectedSlot(0);
+        // Same shape: a full block stack with only a fraction left ("0+").
+        level.setBlock(pos, Blocks.OAK_PLANKS.defaultBlockState(), 3);
+        inventory.setItem(0, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 3));
+        inventory.setItem(5, Materials.piece("minecraft:oak_planks", Shape.SLAB, 200));
+        inventory.setItem(20, Materials.piece("minecraft:oak_planks", Shape.CORNER, 100));
+        inventory.setItem(21, Materials.piece("minecraft:stone_bricks", Shape.BLOCK, 64));
+        PickBlock.pick(player, pos, level.getBlockState(pos), false);
+        test.assertTrue(Materials.get(inventory.getItem(0)).shape() == Shape.BLOCK, "Refill keeps the held shape");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(0)), 303, "Refill pulls all matching material");
+        test.assertTrue(inventory.getItem(5).isEmpty() && inventory.getItem(20).isEmpty(), "Refill drains other stacks of the material");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(21)), 64, "Refill ignores other materials");
+        test.assertValueEqual(inventory.getSelectedSlot(), 0, "Refill keeps the selected slot");
+        // Storage is used before the hotbar, and the stack fills to capacity.
+        inventory.setItem(0, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 3));
+        inventory.setItem(1, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 3));
+        inventory.setItem(30, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 512));
+        PickBlock.pick(player, pos, level.getBlockState(pos), false);
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(0)), 512, "Refill fills to capacity");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(1)), 3, "Refill leaves hotbar stacks when storage suffices");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(30)), 3, "Refill takes only what fits");
+        test.assertValueEqual(inventory.getSelectedSlot(), 0, "Identical leftover stack is not selected");
+        // A different, larger target shape than the held material can make.
+        inventory.clearContent();
+        level.setBlock(pos, Blocks.OAK_STAIRS.defaultBlockState(), 3);
+        inventory.setItem(0, Materials.piece("minecraft:oak_planks", Shape.SLAB, 4));
+        inventory.setItem(12, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 64));
+        PickBlock.pick(player, pos, level.getBlockState(pos), false);
+        test.assertTrue(Materials.get(inventory.getItem(0)).shape() == Shape.STAIR, "Pick reshapes before refilling");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(0)), 68, "Reshaped stack is refilled");
+        // Enough material already: nothing else moves.
+        inventory.clearContent();
+        inventory.setItem(0, Materials.piece("minecraft:oak_planks", Shape.STAIR, 20));
+        inventory.setItem(12, Materials.piece("minecraft:oak_planks", Shape.BLOCK, 64));
+        PickBlock.pick(player, pos, level.getBlockState(pos), false);
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(0)), 20, "Sufficient held stack is not refilled");
+        test.assertValueEqual(MaterialStacks.units(inventory.getItem(12)), 64, "Sufficient pick leaves inventory alone");
         test.succeed();
     }
     public void shiftClickMergesShapesBeforeEmptySlots(GameTestHelper test) {

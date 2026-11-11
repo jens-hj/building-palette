@@ -5,6 +5,7 @@ import dev.jensh.buildingpalette.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
@@ -35,7 +36,12 @@ public final class PickBlock {
         if (current != null && current.material().equals(target.material)) {
             ItemStack shaped = reshape(held, target.shape);
             if (!shaped.isEmpty()) player.setItemInHand(InteractionHand.MAIN_HAND, shaped);
-            return player.getMainHandItem().copy();
+            if (player.hasInfiniteMaterials()) return player.getMainHandItem().copy();
+            if (MaterialStacks.available(player.getMainHandItem()) < 1) refill(player);
+            // The held slot already holds the result. Returning it would make vanilla
+            // select the first slot with an identical stack, which may be another one.
+            player.inventoryMenu.broadcastChanges();
+            return ItemStack.EMPTY;
         }
         // First pick selects existing material without changing its shape or count.
         for (ItemStack stored : player.getInventory().getNonEquipmentItems()) {
@@ -54,6 +60,27 @@ public final class PickBlock {
             if (!stored.isEmpty()) return stored;
         }
         return player.hasInfiniteMaterials() ? Materials.piece(target.material, target.shape, target.shape.cost) : ItemStack.EMPTY;
+    }
+    /** Top up the held stack with its material from the inventory, then the equipped backpack. */
+    static void refill(ServerPlayer player) {
+        var inventory = player.getInventory();
+        int selected = inventory.getSelectedSlot();
+        ItemStack held = inventory.getItem(selected);
+        int units = MaterialStacks.units(held);
+        // Storage before the hotbar, so the hotbar layout survives where possible.
+        int size = inventory.getNonEquipmentItems().size();
+        for (int n = 0; n < size && units < Balance.CAPACITY; n++) {
+            int i = (n + Inventory.getSelectionSize()) % size;
+            if (i == selected) continue;
+            ItemStack source = inventory.getItem(i);
+            if (!MaterialStacks.sameMaterial(held, source)) continue;
+            int take = Math.min(Balance.CAPACITY - units, MaterialStacks.units(source));
+            inventory.setItem(i, MaterialStacks.withUnits(source, MaterialStacks.units(source) - take));
+            units += take;
+        }
+        if (units < Balance.CAPACITY && Platform.INSTANCE.isModLoaded("travelersbackpack"))
+            units += Platform.INSTANCE.takeBackpack(player, held, Balance.CAPACITY - units);
+        if (units != MaterialStacks.units(held)) inventory.setItem(selected, MaterialStacks.withUnits(held, units));
     }
     public static ItemStack reshape(ItemStack source, Shape shape) {
         ItemStack result = source;

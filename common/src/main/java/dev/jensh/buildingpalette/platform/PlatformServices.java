@@ -12,5 +12,7 @@ public interface PlatformServices {
     boolean isModLoaded(String id);
     Path configDirectory();
     ItemStack pickBackpack(ServerPlayer player, String material);
+    /** Remove up to {@code units} of {@code like}'s material from the equipped backpack; returns units removed. */
+    int takeBackpack(ServerPlayer player, ItemStack like, int units);
     void renderDataChanged(MultipartEntity entity);
 }

@@ -1,6 +1,7 @@
 package dev.jensh.buildingpalette.compat;
 
 import com.tiviacz.travelersbackpack.attachment.AttachmentUtils;
+import dev.jensh.buildingpalette.MaterialStacks;
 import dev.jensh.buildingpalette.Materials;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -35,5 +36,28 @@ public final class BackpackPick {
             return source.copy();
         }
         return ItemStack.EMPTY;
+    }
+    public static int take(ServerPlayer player, ItemStack like, int units) {
+        if (!AttachmentUtils.isWearingBackpack(player)) return 0;
+        var storage = AttachmentUtils.getBackpackWrapper(player, AttachmentUtils.STORAGE_ONLY.get()).getStorageForInputOutput();
+        int taken = 0;
+        for (int i = 0; i < storage.size() && taken < units; i++) {
+            int count = Math.toIntExact(storage.getAmountAsLong(i));
+            if (count <= 0) continue;
+            var resource = storage.getResource(i);
+            ItemStack source = resource.toStack(count);
+            if (!MaterialStacks.sameMaterial(like, source)) continue;
+            int amount = Math.min(units - taken, MaterialStacks.units(source));
+            // A partial take changes the remaining stack's missing-unit component, so
+            // replace the slot's contents with the remainder in one transaction.
+            ItemStack remainder = MaterialStacks.withUnits(source, MaterialStacks.units(source) - amount);
+            try (var transaction = Transaction.openRoot()) {
+                if (storage.extract(i, resource, count, transaction) != count) continue;
+                if (!remainder.isEmpty() && storage.insert(i, ItemResource.of(remainder), remainder.getCount(), transaction) != remainder.getCount()) continue;
+                transaction.commit();
+            }
+            taken += amount;
+        }
+        return taken;
     }
 }

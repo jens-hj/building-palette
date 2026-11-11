@@ -7,6 +7,7 @@ public final class PaletteGameTests {
     @GameTest public void stepsAlwaysUseMultipartPlacement(GameTestHelper test) { new PaletteGameTestScenarios().stepsAlwaysUseMultipartPlacement(test); }
     @GameTest public void placementChecksExactPieceAgainstPlayer(GameTestHelper test) { new PaletteGameTestScenarios().placementChecksExactPieceAgainstPlayer(test); }
     @GameTest public void pickKeepsExistingShapeThenReshapesHeldMaterial(GameTestHelper test) { new PaletteGameTestScenarios().pickKeepsExistingShapeThenReshapesHeldMaterial(test); }
+    @GameTest public void pickRefillsInsufficientHeldMaterial(GameTestHelper test) { new PaletteGameTestScenarios().pickRefillsInsufficientHeldMaterial(test); }
     @GameTest public void shiftClickMergesShapesBeforeEmptySlots(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesShapesBeforeEmptySlots(test); }
     @GameTest public void singlePiecesUseNativeBlocks(GameTestHelper test) { new PaletteGameTestScenarios().singlePiecesUseNativeBlocks(test); }
     @GameTest public void shiftClickMergesNativeBlocksIntoPartialShapes(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesNativeBlocksIntoPartialShapes(test); }
