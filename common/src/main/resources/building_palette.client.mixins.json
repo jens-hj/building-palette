@@ -13,6 +13,7 @@
     "ItemStateAccessor",
     "ItemLayerAccessor",
     "ItemModelMixin",
-    "MiningPredictionMixin"
+    "MiningPredictionMixin",
+    "BreakingCracksMixin"
   ]
 }

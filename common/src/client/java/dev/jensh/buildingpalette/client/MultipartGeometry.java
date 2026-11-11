@@ -10,6 +10,23 @@ import org.joml.Vector3f;
 /** Crop each parent face to its octant, preserving vanilla texel density. */
 public final class MultipartGeometry {
     private MultipartGeometry() {}
+    /** Cropped vanilla parts for the masked cells, e.g. for the crack overlay, which only reads model parts. */
+    public static void cellParts(dev.jensh.buildingpalette.core.Cells cells, int mask, net.minecraft.core.BlockPos pos, List<BlockStateModelPart> out) {
+        var models = net.minecraft.client.Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+        for (int i = 0; i < 8; i++) {
+            String material = cells.at(i);
+            if (material == null || (mask & 1 << i) == 0) continue;
+            var source = dev.jensh.buildingpalette.MultipartBlock.material(material);
+            List<BlockStateModelPart> parts = new ArrayList<>();
+            models.get(source).collectParts(net.minecraft.util.RandomSource.create(source.getSeed(pos)), parts);
+            int visible = 0;
+            for (Direction direction : Direction.values()) {
+                int x = (i & 1) + direction.getStepX(), y = ((i >> 1) & 1) + direction.getStepY(), z = ((i >> 2) & 1) + direction.getStepZ();
+                if (x < 0 || x > 1 || y < 0 || y > 1 || z < 0 || z > 1 || cells.at(x | y << 1 | z << 2) == null) visible |= 1 << direction.ordinal();
+            }
+            for (var part : parts) out.add(new CroppedPart(part, i, visible));
+        }
+    }
     public record CroppedPart(BlockStateModelPart source, List<BakedQuad> quads) implements BlockStateModelPart {
         CroppedPart(BlockStateModelPart source, int octant, int visible) { this(source, crop(source, octant, visible)); }
         @Override public List<BakedQuad> getQuads(Direction direction) { return direction == null ? quads : List.of(); }
