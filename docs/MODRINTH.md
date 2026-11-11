@@ -16,7 +16,7 @@ Selected slabs remain slab ingredients, and planks remain plank ingredients. Fen
 
 ## Requirements
 
-With Offgrid, fences, walls, panes, and bars fit into any block holding a single step or slab, including a lone post beside a step.
+With Offgrid, fences, walls, panes, and bars fit into any block holding a single step or slab, including a lone post beside a step, whichever you place first.
 
 Client **and** server: Minecraft **26.3**, Java **25**, [Clutter No More 3.1.3+26.3 (3.1.x)](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 (1.0.x)](https://modrinth.com/mod/offgrid). Choose matching builds for your loader:
 

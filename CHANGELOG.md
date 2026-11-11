@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.22
+
+- Fix breaking a step, vertical step, or vertical slab dropping no material. Clutter No More's own drops for these shapes were skipped, and since alpha.20 single steps are stored as Clutter No More blocks. This also happened with an Offgrid fence inside the step.
+- Steps and slabs can now be placed into a block that already holds an Offgrid fence, wall, pane, or bars, so fence-then-step works like step-then-fence. A piece that couldn't hold the fence (a lone corner, a full block, or mixed materials) is refused instead of destroying it.
+
 ## 0.1.0-alpha.21
 
 - Offgrid fences, walls, panes, and bars can now stand anywhere in a block holding a step, including a lone post beside an upper step or a fence crossing under it. Offgrid normally only allows them when they run along the step. The part overlapping the step is cut away as usual. Stairs keep Offgrid's own rules.
