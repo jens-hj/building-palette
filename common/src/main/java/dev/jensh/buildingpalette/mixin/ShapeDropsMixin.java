@@ -35,10 +35,16 @@ public abstract class ShapeDropsMixin {
         var selection = Materials.get(new ItemStack(state.getBlock().asItem()));
         if (selection == null || selection.shape() == Shape.BLOCK) return;
         var original = palette$vanillaDrops(state, level, pos, entity, breaker, tool);
+        // Clutter No More shapes (steps, vertical slabs) have no loot table of their own; CNM
+        // derives their drops from the parent at RETURN, which this HEAD cancel skips. Ask the
+        // parent's loot whether the piece drops (tool requirements, etc.).
+        if (original.isEmpty() && selection.shape().isMultipart())
+            original = palette$vanillaDrops(Block.byItem(selection.parent()).defaultBlockState(), level, pos, entity, breaker, tool);
         if (!selection.shape().isMultipart() || original.isEmpty()) { cir.setReturnValue(original); return; }
-        // During vanilla destruction the block may already be air. Sample the supplied state directly.
+        // During vanilla destruction the block may already be air, and Offgrid moves shapes at
+        // positions with an offset. Native shape geometry depends only on the state, so sample that.
         int units = 0;
-        var boxes = state.getShape(level, pos).toAabbs();
+        var boxes = state.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO).toAabbs();
         for (int i = 0; i < 8; i++) {
             double x = (i & 1) * .5 + .25, y = ((i >> 1) & 1) * .5 + .25, z = ((i >> 2) & 1) * .5 + .25;
             if (boxes.stream().anyMatch(box -> box.contains(x, y, z))) units++;
