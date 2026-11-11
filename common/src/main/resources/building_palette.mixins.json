@@ -21,7 +21,8 @@
     "ShapeDropsMixin",
     "NativeConsumptionMixin",
     "StackedContentsMixin",
-    "ItemEntityMixin"
+    "ItemEntityMixin",
+    "OffgridStepBlocklogMixin"
   ],
   "injectors": {
     "defaultRequire": 1

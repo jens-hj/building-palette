@@ -250,6 +250,26 @@ public final class PaletteGameTestScenarios {
                 for (Direction side : Direction.Plane.HORIZONTAL) if (side.getAxis() == axis)
                     fence = fence.setValue(net.minecraft.world.level.block.PipeBlock.PROPERTY_BY_DIRECTION.get(side), true);
                 test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(fence, state) != null, "Offgrid can blocklog a fence into a placed upper step");
+                // A lone post, or a fence crossing the step, also fits; Offgrid cuts the overlap.
+                var crossing = Blocks.OAK_FENCE.defaultBlockState();
+                for (Direction side : Direction.Plane.HORIZONTAL) if (side.getAxis() != axis)
+                    crossing = crossing.setValue(net.minecraft.world.level.block.PipeBlock.PROPERTY_BY_DIRECTION.get(side), true);
+                for (var piece : new net.minecraft.world.level.block.state.BlockState[]{Blocks.OAK_FENCE.defaultBlockState(), crossing}) {
+                    var cut = dev.tazer.offgrid.world.Blocklogging.of(piece, state);
+                    test.assertTrue(cut != null, "Offgrid can blocklog " + piece + " into an upper step");
+                    test.assertTrue(!net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(cut.outline(),
+                        state.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO), net.minecraft.world.phys.shapes.BooleanOp.AND), "Blocklogged post does not overlap the step");
+                }
+                test.assertTrue(dev.tazer.offgrid.world.Blocklogging.of(Blocks.OAK_FENCE.defaultBlockState(), Blocks.OAK_STAIRS.defaultBlockState()) == null, "Offgrid's stair rule is unchanged");
+                // Real placement: a fence clicked against the step's underside goes into the step's block.
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.OAK_FENCE, 4));
+                var under = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY() + .5, pos.getZ() + .5), Direction.DOWN, pos, false);
+                player.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, under));
+                test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Fence post is blocklogged into the step's block");
+                test.assertTrue(Materials.classify(level.getBlockState(pos).getBlock()) == Shape.STEP, "Step stays in place under the fence");
+                test.assertValueEqual(player.getMainHandItem().getCount(), 3, "Blocklogging uses one fence");
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos, state, 3);
                 // Adding a different material still converts into a carrier.
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, Materials.piece("minecraft:stone_bricks", Shape.CORNER, 8));
                 var corner = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .25, pos.getY(), pos.getZ() + .25), Direction.UP, pos.below(), false);
