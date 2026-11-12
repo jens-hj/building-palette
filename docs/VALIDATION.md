@@ -175,3 +175,9 @@ Fabric dev and test runs now use Fabric Loader 0.20.1, which OmniVault requires;
 ## Small Offgrid pieces on combined blocks — alpha.25
 
 27 Fabric and 28 NeoForge server tests passed (NeoForge with OmniVault on the runtime), plus the Fabric client suite. A new test places an end rod through the normal item-use path on a bottom corner beside a higher corner, where Offgrid alone refuses it, and checks it is centred on the clicked half cell. With a rod on a lone corner, a corner clear of the rod joins the block and the rod survives, a corner inside the rod is refused, a top slab in the block above is placed, a corner beside the rod's upper half is placed, and a slab across it is refused.
+
+## Minecraft 1.21.1 NeoForge backport — alpha.25
+
+Branch `mc/1.21.1`, built against NeoForge 21.1.266 and run against 21.1.233. All 26 server GameTests pass alone and with the 103 server-side mods of a Create 6 modpack in the mods folder (Create, Quark, Lithium, C2ME, ModernFix, Sophisticated Backpacks and others). Two assertions were loosened for packs: Quark replaces the plank-ring chest with a wood-specific one, and Lithium keeps an idle furnace asleep until it is marked changed.
+
+The headless client suite passes with the vanilla renderer and with 144 of that pack's mods, including Sodium 0.8.12-beta.1: carrier geometry from model data, tinted and translucent cells, cropped piece icons, the hotbar and inventory shape strips, scroll and pick packets, partial mining and quarter assembly. Sinytra Connector and the pack's two Fabric-only mods cannot load in a development launch and were left out, so that combination is untested here.

@@ -2,6 +2,7 @@
 
 ## 0.1.0-alpha.25
 
+- **Minecraft 1.21.1 (NeoForge) build only:** first build for 1.21.1, so the mod can join Create-era modpacks. It needs NeoForge 21.1.205 or later and the 1.21.1 builds of Clutter No More 3.1.3 and Offgrid 1.0.6. Everything below works the same as on 26.3, except that Traveler's Backpack is not searched when picking a block.
 - Small Offgrid pieces such as end rods can stand on any free half cell of a combined block, also right beside a higher piece. Offgrid centres a piece on the box under the cursor, which in a combined block could land inside a neighbouring piece and refuse the placement; the clicked half cell is now tried as well.
 - Pieces can be added to a block that holds an end rod or another non-fence Offgrid piece, or that one reaches into from a neighbouring block, as long as the new cells do not overlap it. Before, any such piece blocked the whole block.
 
