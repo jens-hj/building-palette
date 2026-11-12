@@ -1,12 +1,16 @@
 # Building Palette
 
-> **Branch `mc/1.21.1`: Minecraft 1.21.1 backport, NeoForge only.** `main` targets 26.3 on Fabric and NeoForge; where this README mentions 26.3, Fabric or Java 25, the notes below apply instead.
+> **Branch `mc/1.21.1`: Minecraft 1.21.1 backport for Fabric and NeoForge.** `main` targets 26.3; where this README mentions 26.3 or Java 25, the notes below apply instead.
 >
-> - NeoForge **21.1.205** or later for Minecraft 1.21.1, Java 21
-> - Clutter No More **3.1.3+1.21.1** (3.1.x) and Offgrid **1.0.6+1.21.1** (1.0.x), NeoForge builds
+> - Minecraft 1.21.1, Java 21. NeoForge **21.1.205** or later, or Fabric Loader **0.19.5** or later with Fabric API
+> - Clutter No More **3.1.3+1.21.1** (3.1.x) and Offgrid **1.0.6+1.21.1** (1.0.x), in the build for your loader
 > - Same mod ID, registry IDs, data components and block entity data as the 26.3 builds
-> - Differences from 26.3: no Traveler's Backpack integration; mining cracks and outlines use the 1.21.1 renderer hooks; native slabs and steps keep their normal item icon
-> - Tests: `./gradlew build :neoforge:runGameTestServer` and `python scripts/headless-test.py ./gradlew --no-daemon :neoforge:runClientTest`. Add `-PpackMods=/path/to/instance/mods` to run either inside a modpack.
+> - Differences from 26.3: mining cracks and outlines use the 1.21.1 renderer hooks; native slabs and steps keep their normal item icon; pick-block is sent by the client, as 1.21.1 resolves it there
+> - Gradle runs on Java 25 (Loom) and compiles with a Java 21 toolchain; `nix develop` provides both
+> - Server tests: `./gradlew build :neoforge:runGameTestServer :fabric:runGameTest`. Add `-PoptionalMods` to put Traveler's Backpack and OmniVault on the runtime
+> - Client tests: `python scripts/headless-test.py ./gradlew --no-daemon :neoforge:runClientTest` (or `:fabric:runClientTest`)
+> - `:fabric:prodGameTest` and `:fabric:prodClientTest` run the same suites against the remapped release jar; `-Psodium` adds Sodium to the client run
+> - NeoForge only: `-PpackMods=/path/to/instance/mods` runs either suite inside a modpack
 
 Fabric and NeoForge 26.3 companion for Clutter No More and Offgrid. Hold **Alt** and scroll a held block or a stack in an inventory to select its building shape.
 

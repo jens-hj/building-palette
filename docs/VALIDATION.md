@@ -176,6 +176,15 @@ Fabric dev and test runs now use Fabric Loader 0.20.1, which OmniVault requires;
 
 27 Fabric and 28 NeoForge server tests passed (NeoForge with OmniVault on the runtime), plus the Fabric client suite. A new test places an end rod through the normal item-use path on a bottom corner beside a higher corner, where Offgrid alone refuses it, and checks it is centred on the clicked half cell. With a rod on a lone corner, a corner clear of the rod joins the block and the rod survives, a corner inside the rod is refused, a top slab in the block above is placed, a corner beside the rod's upper half is placed, and a slab across it is refused.
 
+## Minecraft 1.21.1 Fabric port and Traveler's Backpack — alpha.25.1
+
+Fabric Loader 0.20.1, Fabric API 0.116.18+1.21.1, Loom 1.19.4. The server scenarios and the client test driver moved to `common/src/testmod` and run unchanged on both loaders.
+
+- Server GameTests: 27 pass on NeoForge and on Fabric, alone and with Traveler's Backpack (10.1.41 NeoForge, 10.1.40 Fabric) and OmniVault 2.0.4 on the runtime (`-PoptionalMods`). The backpack scenario equips a backpack on a fake player, picks a stored material into a full hotbar and refills an exhausted held stack from it.
+- Headless client suite: passes on NeoForge and on Fabric (Indigo). On Fabric the carrier model emits its quads through the Fabric renderer API from block entity render data.
+- Release jar: `:fabric:prodGameTest` (27 pass) and `:fabric:prodClientTest` run the same suites against the remapped jar under intermediary names, the latter also with Sodium 0.8.13 (`-Psodium`). Under the software renderer Sodium meshes one chunk late, so the first screenshot misses blocks that later ones show.
+- Not run: a real launcher instance, a Fabric modpack, Traveler's Backpack worn in a Trinkets or Accessories slot, and Iris shaders on 1.21.1.
+
 ## Minecraft 1.21.1 NeoForge backport — alpha.25
 
 Branch `mc/1.21.1`, built against NeoForge 21.1.266 and run against 21.1.233. All 26 server GameTests pass alone and with the 103 server-side mods of a Create 6 modpack in the mods folder (Create, Quark, Lithium, C2ME, ModernFix, Sophisticated Backpacks and others). Two assertions were loosened for packs: Quark replaces the plank-ring chest with a wood-specific one, and Lithium keeps an idle furnace asleep until it is marked changed.

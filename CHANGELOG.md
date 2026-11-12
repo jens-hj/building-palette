@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.25.1
+
+Minecraft 1.21.1 builds only.
+
+- First Fabric build for 1.21.1. It needs Fabric Loader 0.19.5 or later, Fabric API, and the 1.21.1 Fabric builds of Clutter No More 3.1.3 and Offgrid 1.0.6. It behaves like the NeoForge build and works with Sodium.
+- Picking a block now also searches an equipped Traveler's Backpack on 1.21.1, on both loaders: the stored material swaps into the hotbar, and a held stack that has run out is topped up from the backpack.
+
 ## 0.1.0-alpha.25
 
 - **Minecraft 1.21.1 (NeoForge) build only:** first build for 1.21.1, so the mod can join Create-era modpacks. It needs NeoForge 21.1.205 or later and the 1.21.1 builds of Clutter No More 3.1.3 and Offgrid 1.0.6. Everything below works the same as on 26.3, except that Traveler's Backpack is not searched when picking a block.
