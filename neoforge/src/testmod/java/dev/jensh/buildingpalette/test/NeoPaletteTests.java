@@ -1,80 +1,68 @@
 package dev.jensh.buildingpalette.test;
 
 import dev.jensh.buildingpalette.BuildingPalette;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.RegisterEvent;
-import net.neoforged.neoforge.event.RegisterGameTestsEvent;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.gametest.framework.*;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 @Mod("building_palette_test")
+@GameTestHolder(BuildingPalette.ID)
+@PrefixGameTestTemplate(false)
 public final class NeoPaletteTests {
-    public NeoPaletteTests(IEventBus bus) {
-        if (System.getProperty("palette.upgrade.phase") != null) NeoUpgradeTest.install();
-        if (Boolean.getBoolean("building_palette.client_test") && net.neoforged.fml.loading.FMLEnvironment.getDist() == net.neoforged.api.distmarker.Dist.CLIENT) NeoClientTest.install();
-        bus.addListener((RegisterEvent event) -> {
-            if (!event.getRegistryKey().equals(Registries.TEST_FUNCTION)) return;
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("nativeresourcebalance"), () -> NeoResourceTest::verify);
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("stepsalwaysusemultipartplacement"), () -> helper -> new PaletteGameTestScenarios().stepsAlwaysUseMultipartPlacement(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("placementchecksexactpieceagainstplayer"), () -> helper -> new PaletteGameTestScenarios().placementChecksExactPieceAgainstPlayer(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("pickkeepsexistingshapethenreshapesheldmaterial"), () -> helper -> new PaletteGameTestScenarios().pickKeepsExistingShapeThenReshapesHeldMaterial(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("shiftclickmergesshapesbeforeemptyslots"), () -> helper -> new PaletteGameTestScenarios().shiftClickMergesShapesBeforeEmptySlots(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("offgridfenceandstepineitherorder"), () -> helper -> new PaletteGameTestScenarios().offgridFenceAndStepInEitherOrder(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("pickrefillsinsufficientheldmaterial"), () -> helper -> new PaletteGameTestScenarios().pickRefillsInsufficientHeldMaterial(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("singlepiecesusenativeblocks"), () -> helper -> new PaletteGameTestScenarios().singlePiecesUseNativeBlocks(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("shiftclickmergesnativeblocksintopartialshapes"), () -> helper -> new PaletteGameTestScenarios().shiftClickMergesNativeBlocksIntoPartialShapes(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("overlappingpiecesmerge"), () -> helper -> new PaletteGameTestScenarios().overlappingPiecesMerge(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("offgridsmallpiecessharecombinedblocks"), () -> helper -> new PaletteGameTestScenarios().offgridSmallPiecesShareCombinedBlocks(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("storagedescriptionsnevercreatematerial"), () -> helper -> new PaletteGameTestScenarios().storageDescriptionsNeverCreateMaterial(helper));
-            if (net.neoforged.fml.ModList.get().isLoaded("omnivault"))
-                event.register(Registries.TEST_FUNCTION, BuildingPalette.id("omnivaultnetworkstoreswholeblocks"), () -> helper -> new OmniVaultScenarios().networkStoresWholeBlocks(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("slabroofmatchesnativelightblocking"), () -> helper -> new PaletteGameTestScenarios().slabRoofMatchesNativeLightBlocking(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("everyshapemergesbymaterial"), () -> helper -> new PaletteGameTestScenarios().everyShapeMergesByMaterial(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("nativeplacementandpreferences"), () -> helper -> new PaletteGameTestScenarios().nativePlacementAndPreferences(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("noairplacementineithermode"), () -> helper -> new PaletteGameTestScenarios().noAirPlacementInEitherMode(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("randomizednativetransfers"), () -> helper -> new PaletteGameTestScenarios().randomizedNativeTransfers(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("eightcornersbecomeblock"), () -> helper -> new PaletteGameTestScenarios().eightCornersBecomeBlock(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("connectedmining"), () -> helper -> new PaletteGameTestScenarios().connectedMining(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("nativeshapedrops"), () -> helper -> new PaletteGameTestScenarios().nativeShapeDrops(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("repeatedcrafting"), () -> helper -> new PaletteGameTestScenarios().repeatedCrafting(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("inventorygestures"), () -> helper -> new PaletteGameTestScenarios().inventoryGestures(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("furnaceremainder"), () -> helper -> new PaletteGameTestScenarios().furnaceRemainder(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("materialstacks"), () -> helper -> new PaletteGameTestScenarios().materialStacks(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("remaindertransfers"), () -> helper -> new PaletteGameTestScenarios().remainderTransfers(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("multipartpersistence"), () -> helper -> new PaletteGameTestScenarios().multipartPersistence(helper));
-        });
-        bus.addListener((RegisterGameTestsEvent event) -> {
-            var environment = event.registerEnvironment(BuildingPalette.id("default"), new TestEnvironmentDefinition.AllOf());
-            event.registerTest(BuildingPalette.id("nativeresourcebalance"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("nativeresourcebalance")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("stepsalwaysusemultipartplacement"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("stepsalwaysusemultipartplacement")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("placementchecksexactpieceagainstplayer"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("placementchecksexactpieceagainstplayer")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("pickkeepsexistingshapethenreshapesheldmaterial"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("pickkeepsexistingshapethenreshapesheldmaterial")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("shiftclickmergesshapesbeforeemptyslots"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("shiftclickmergesshapesbeforeemptyslots")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("offgridfenceandstepineitherorder"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("offgridfenceandstepineitherorder")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("pickrefillsinsufficientheldmaterial"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("pickrefillsinsufficientheldmaterial")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("singlepiecesusenativeblocks"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("singlepiecesusenativeblocks")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("shiftclickmergesnativeblocksintopartialshapes"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("shiftclickmergesnativeblocksintopartialshapes")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("overlappingpiecesmerge"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("overlappingpiecesmerge")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("offgridsmallpiecessharecombinedblocks"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("offgridsmallpiecessharecombinedblocks")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("storagedescriptionsnevercreatematerial"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("storagedescriptionsnevercreatematerial")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            if (net.neoforged.fml.ModList.get().isLoaded("omnivault"))
-                event.registerTest(BuildingPalette.id("omnivaultnetworkstoreswholeblocks"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("omnivaultnetworkstoreswholeblocks")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("slabroofmatchesnativelightblocking"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("slabroofmatchesnativelightblocking")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 120, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, true, 0)));
-            event.registerTest(BuildingPalette.id("everyshapemergesbymaterial"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("everyshapemergesbymaterial")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("nativeplacementandpreferences"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("nativeplacementandpreferences")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("noairplacementineithermode"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("noairplacementineithermode")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("randomizednativetransfers"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("randomizednativetransfers")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("eightcornersbecomeblock"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("eightcornersbecomeblock")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("connectedmining"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("connectedmining")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("nativeshapedrops"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("nativeshapedrops")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("repeatedcrafting"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("repeatedcrafting")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("inventorygestures"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("inventorygestures")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("furnaceremainder"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("furnaceremainder")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("materialstacks"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("materialstacks")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("remaindertransfers"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("remaindertransfers")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-            event.registerTest(BuildingPalette.id("multipartpersistence"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("multipartpersistence")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
-        });
+    public NeoPaletteTests() {
+        if (Boolean.getBoolean("building_palette.client_test") && net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) NeoClientTest.install();
     }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void stepsalwaysusemultipartplacement(GameTestHelper test) { new PaletteGameTestScenarios().stepsAlwaysUseMultipartPlacement(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void placementchecksexactpieceagainstplayer(GameTestHelper test) { new PaletteGameTestScenarios().placementChecksExactPieceAgainstPlayer(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void pickkeepsexistingshapethenreshapesheldmaterial(GameTestHelper test) { new PaletteGameTestScenarios().pickKeepsExistingShapeThenReshapesHeldMaterial(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void pickrefillsinsufficientheldmaterial(GameTestHelper test) { new PaletteGameTestScenarios().pickRefillsInsufficientHeldMaterial(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void shiftclickmergesshapesbeforeemptyslots(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesShapesBeforeEmptySlots(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void singlepiecesusenativeblocks(GameTestHelper test) { new PaletteGameTestScenarios().singlePiecesUseNativeBlocks(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void offgridfenceandstepineitherorder(GameTestHelper test) { new PaletteGameTestScenarios().offgridFenceAndStepInEitherOrder(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void storagedescriptionsnevercreatematerial(GameTestHelper test) { new PaletteGameTestScenarios().storageDescriptionsNeverCreateMaterial(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void offgridsmallpiecessharecombinedblocks(GameTestHelper test) { new PaletteGameTestScenarios().offgridSmallPiecesShareCombinedBlocks(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void overlappingpiecesmerge(GameTestHelper test) { new PaletteGameTestScenarios().overlappingPiecesMerge(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void shiftclickmergesnativeblocksintopartialshapes(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesNativeBlocksIntoPartialShapes(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void slabroofmatchesnativelightblocking(GameTestHelper test) { new PaletteGameTestScenarios().slabRoofMatchesNativeLightBlocking(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void everyshapemergesbymaterial(GameTestHelper test) { new PaletteGameTestScenarios().everyShapeMergesByMaterial(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void nativeplacementandpreferences(GameTestHelper test) { new PaletteGameTestScenarios().nativePlacementAndPreferences(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void noairplacementineithermode(GameTestHelper test) { new PaletteGameTestScenarios().noAirPlacementInEitherMode(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void randomizednativetransfers(GameTestHelper test) { new PaletteGameTestScenarios().randomizedNativeTransfers(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void eightcornersbecomeblock(GameTestHelper test) { new PaletteGameTestScenarios().eightCornersBecomeBlock(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void connectedmining(GameTestHelper test) { new PaletteGameTestScenarios().connectedMining(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void nativeshapedrops(GameTestHelper test) { new PaletteGameTestScenarios().nativeShapeDrops(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void repeatedcrafting(GameTestHelper test) { new PaletteGameTestScenarios().repeatedCrafting(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void inventorygestures(GameTestHelper test) { new PaletteGameTestScenarios().inventoryGestures(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void furnaceremainder(GameTestHelper test) { new PaletteGameTestScenarios().furnaceRemainder(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void materialstacks(GameTestHelper test) { new PaletteGameTestScenarios().materialStacks(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void remaindertransfers(GameTestHelper test) { new PaletteGameTestScenarios().remainderTransfers(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void multipartpersistence(GameTestHelper test) { new PaletteGameTestScenarios().multipartPersistence(test); }
+    @GameTest(template = "empty", timeoutTicks = 120, required = false)
+    public static void networkstoreswholeblocks(GameTestHelper test) { if (!net.neoforged.fml.ModList.get().isLoaded("omnivault")) { test.succeed(); return; } new OmniVaultScenarios().networkStoresWholeBlocks(test); }
 }
