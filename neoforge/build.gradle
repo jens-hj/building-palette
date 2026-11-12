@@ -7,6 +7,9 @@ java { withSourcesJar(); toolchain.languageVersion = JavaLanguageVersion.of(21) 
 base { archivesName = 'building-palette' }
 sourceSets {
     testmod {
+        // Scenarios are shared with the Fabric build.
+        java.srcDir rootProject.file('common/src/testmod/java')
+        resources.srcDir rootProject.file('common/src/testmod/resources')
         compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
         runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
     }
@@ -45,7 +48,12 @@ dependencies {
     implementation "maven.modrinth:clutternomore:${project.clutternomore_version}"
     implementation "maven.modrinth:offgrid:${project.offgrid_version}"
     compileOnly "maven.modrinth:omnivault:${project.omnivault_version}"
-    if (providers.gradleProperty('neoOmniVault').isPresent()) runtimeOnly "maven.modrinth:omnivault:${project.omnivault_version}"
+    compileOnly "maven.modrinth:travelersbackpack:${project.travelersbackpack_version}"
+    // Optional compat on the dev runtime: -PoptionalMods
+    if (providers.gradleProperty('optionalMods').isPresent()) {
+        runtimeOnly "maven.modrinth:omnivault:${project.omnivault_version}"
+        runtimeOnly "maven.modrinth:travelersbackpack:${project.travelersbackpack_version}"
+    }
 }
 tasks.withType(Jar).configureEach { from(rootProject.file('LICENSE')) }
 tasks.named('jar') {
@@ -103,6 +111,7 @@ modrinth {
     changelog = currentChangelog
     dependencies {
         optional.project 'omnivault'
+        optional.project 'travelersbackpack'
         required.version project.clutternomore_version
         required.version project.offgrid_version
     }

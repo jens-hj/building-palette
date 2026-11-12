@@ -11,4 +11,4 @@ versionRange="*"
 ordering="AFTER"
 side="BOTH"
 [[mixins]]
-config="building_palette.neo.test.mixins.json"
+config="building_palette.test.mixins.json"

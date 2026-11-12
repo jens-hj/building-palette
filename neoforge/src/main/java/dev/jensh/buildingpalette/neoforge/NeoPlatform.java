@@ -15,8 +15,7 @@ public final class NeoPlatform implements PlatformServices {
     @Override public List<Item> shapes(Item parent) { return new ArrayList<>(ShapeMap.getShapes(parent)); }
     @Override public boolean isModLoaded(String id) { return ModList.get().isLoaded(id); }
     @Override public Path configDirectory() { return FMLPaths.CONFIGDIR.get(); }
-    // Traveler's Backpack compat is not part of the 1.21.1 build.
-    @Override public ItemStack pickBackpack(ServerPlayer player, String material) { return ItemStack.EMPTY; }
-    @Override public int takeBackpack(ServerPlayer player, ItemStack like, int units) { return 0; }
+    @Override public ItemStack pickBackpack(ServerPlayer player, String material) { return dev.jensh.buildingpalette.compat.BackpackPick.pick(player, material); }
+    @Override public int takeBackpack(ServerPlayer player, ItemStack like, int units) { return dev.jensh.buildingpalette.compat.BackpackPick.take(player, like, units); }
     @Override public void renderDataChanged(MultipartEntity entity) { entity.requestModelDataUpdate(); }
 }

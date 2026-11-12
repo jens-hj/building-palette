@@ -65,4 +65,6 @@ public final class NeoPaletteTests {
     public static void multipartpersistence(GameTestHelper test) { new PaletteGameTestScenarios().multipartPersistence(test); }
     @GameTest(template = "empty", timeoutTicks = 120, required = false)
     public static void networkstoreswholeblocks(GameTestHelper test) { if (!net.neoforged.fml.ModList.get().isLoaded("omnivault")) { test.succeed(); return; } new OmniVaultScenarios().networkStoresWholeBlocks(test); }
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void pickusesequippedbackpack(GameTestHelper test) { if (!net.neoforged.fml.ModList.get().isLoaded("travelersbackpack")) { test.succeed(); return; } BackpackScenarios.pickUsesEquippedBackpack(test, new NeoBackpack()); }
 }
