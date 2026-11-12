@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.jensh.buildingpalette.mixin.fabric",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "FurnaceFuelMixin"
+  ],
+  "client": [
+    "BreakingCracksMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

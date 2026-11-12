@@ -28,7 +28,11 @@ public final class NeoPaletteClient {
                 models.put(location, carrier);
             }
             var piece = ModelResourceLocation.inventory(BuildingPalette.id("piece"));
-            if (models.containsKey(piece)) models.put(piece, new PieceItemModel(models.get(piece)));
+            if (models.containsKey(piece)) models.put(piece, new PieceItemModel(models.get(piece), resolver -> new net.minecraft.client.renderer.block.model.ItemOverrides() {
+                @Override public net.minecraft.client.resources.model.BakedModel resolve(net.minecraft.client.resources.model.BakedModel model, ItemStack stack, net.minecraft.client.multiplayer.ClientLevel level, net.minecraft.world.entity.LivingEntity entity, int seed) {
+                    return resolver.resolve(model, stack, level, entity, seed);
+                }
+            }));
         });
         bus.addListener((RegisterColorHandlersEvent.Block event) -> event.register(NeoMultipartModel::tint, BuildingPalette.MULTIPART.get()));
         bus.addListener((RegisterColorHandlersEvent.Item event) -> event.register((stack, index) -> {

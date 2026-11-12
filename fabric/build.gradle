@@ -1,0 +1,118 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'com.modrinth.minotaur' version '2.10.0'
+}
+base { archivesName = 'building-palette' }
+java { withSourcesJar(); toolchain.languageVersion = JavaLanguageVersion.of(21) }
+sourceSets {
+    main {
+        java.srcDirs rootProject.file('common/src/main/java'), rootProject.file('common/src/client/java')
+        resources.srcDir rootProject.file('common/src/main/resources')
+    }
+    testmod {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+        // Scenarios are shared with the NeoForge build.
+        java.srcDir rootProject.file('common/src/testmod/java')
+        resources.srcDir rootProject.file('common/src/testmod/resources')
+    }
+}
+def clientRunDirectory = file('build/run/clientTest')
+loom {
+    mods {
+        building_palette { sourceSet sourceSets.main }
+        building_palette_test { sourceSet sourceSets.testmod }
+    }
+    runs {
+        gameTest {
+            server(); name = 'Game Test'; source sourceSets.testmod
+            runDir = 'build/run/gameTest'
+            vmArg '-Dfabric-api.gametest'
+            vmArg "-Dfabric-api.gametest.report-file=${rootProject.file('build/fabric-gametest.xml')}"
+        }
+        clientTest {
+            client(); name = 'Client Test'; source sourceSets.testmod
+            runDir = 'build/run/clientTest'
+            vmArg '-Dbuilding_palette.client_test=true'
+            vmArg "-Dbuilding_palette.previews=${rootProject.file('build/previews')}"
+            vmArg "-Dbuilding_palette.test_result=${rootProject.file('build/client-result.json')}"
+        }
+    }
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modCompileOnly "maven.modrinth:clutternomore:${project.fabric_clutternomore_version}"
+    modCompileOnly "maven.modrinth:offgrid:${project.fabric_offgrid_version}"
+    modLocalRuntime "maven.modrinth:clutternomore:${project.fabric_clutternomore_version}"
+    modLocalRuntime "maven.modrinth:offgrid:${project.fabric_offgrid_version}"
+    // Bundled inside Clutter No More and Offgrid; nested jars are not unpacked for the dev runtime.
+    localRuntime "folk.sisby:kaleido-config:${project.kaleido_config_version}"
+    modCompileOnly "maven.modrinth:modmenu:${project.fabric_modmenu_version}"
+    modCompileOnly "maven.modrinth:omnivault:${project.fabric_omnivault_version}"
+    modCompileOnly "maven.modrinth:travelersbackpack:${project.fabric_travelersbackpack_version}"
+    // Traveler's Backpack keeps the equipped backpack in a Cardinal Components entity component.
+    modCompileOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
+    modCompileOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+    // Optional compat on the dev runtime: -PoptionalMods
+    if (providers.gradleProperty('optionalMods').isPresent()) {
+        modLocalRuntime "maven.modrinth:omnivault:${project.fabric_omnivault_version}"
+        modLocalRuntime "maven.modrinth:travelersbackpack:${project.fabric_travelersbackpack_version}"
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}"
+        modLocalRuntime "maven.modrinth:cloth-config:${project.fabric_cloth_config_version}"
+    }
+}
+def releaseVersion = project.version.toString()
+processResources {
+    inputs.property 'version', releaseVersion
+    filesMatching('fabric.mod.json') { expand version: releaseVersion }
+}
+tasks.withType(Jar).configureEach { from(rootProject.file('LICENSE')) }
+jar { archiveClassifier = 'fabric-dev' }
+remapJar { archiveClassifier = 'fabric' }
+sourcesJar { archiveClassifier = 'fabric-dev-sources' }
+remapSourcesJar { archiveClassifier = 'fabric-sources' }
+
+// Graphical runs open on the desktop unless wrapped in scripts/headless-test.py; keep them silent.
+tasks.named('runClientTest') {
+    doFirst {
+        def directory = clientRunDirectory
+        directory.mkdirs()
+        new File(directory, 'options.txt').text = 'soundCategory_master:0.0\nsoundCategory_music:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\nonboardAccessibility:false\nnarrator:0\npauseOnLostFocus:false\ntutorialStep:none\n'
+        def config = new File(directory, 'config/building_palette.json'); config.parentFile.mkdirs(); config.text = '{"placementPreview":false,"precisePlacement":false}\n'
+    }
+}
+
+// Same publishing workflow as the other Minecraft projects. Credentials remain external.
+def modrinthToken = providers.environmentVariable('MODRINTH_TOKEN').orElse(
+    providers.fileContents(rootProject.layout.projectDirectory.file(
+        "${System.getProperty('user.home')}/.config/modrinth-token")).asText.map { it.trim() })
+def currentChangelog = providers.fileContents(rootProject.layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
+    def section = text.split(/(?m)^## /).find { it.startsWith("${version}\n") || it.startsWith("${version}\r") }
+    section ? section.substring(section.indexOf('\n') + 1).trim() : ''
+}
+modrinth {
+    token = modrinthToken
+    projectId = 'hBaJZHIg'
+    versionNumber = "${project.version}+${project.minecraft_version}-fabric"
+    versionName = "${project.version} (Fabric ${project.minecraft_version})"
+    versionType = 'alpha'
+    environment = 'client_and_server'
+    uploadFile = remapJar
+    additionalFiles { sourcesJar(tasks.named('remapSourcesJar')) }
+    gameVersions = [project.minecraft_version]
+    loaders = ['fabric']
+    changelog = currentChangelog
+    dependencies {
+        optional.project 'modmenu'
+        optional.project 'omnivault'
+        optional.project 'travelersbackpack'
+        required.project 'fabric-api'
+        required.version project.fabric_clutternomore_version
+        required.version project.fabric_offgrid_version
+    }
+}
+tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }

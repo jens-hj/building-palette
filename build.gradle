@@ -4,11 +4,20 @@ allprojects {
     version = rootProject.property('version')
     repositories {
         mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }
+        exclusiveContent {
+            forRepository { maven { name = 'SleepingTown'; url = 'https://repo.sleeping.town' } }
+            filter { includeGroup 'folk.sisby' }
+        }
+        exclusiveContent {
+            forRepository { maven { name = 'Ladysnake'; url = 'https://maven.ladysnake.org/releases' } }
+            filter { includeGroup 'org.ladysnake.cardinal-components-api' }
+        }
         exclusiveContent {
             forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
             filter { includeGroup 'maven.modrinth' }
         }
     }
 }
-tasks.named('build') { dependsOn ':common:build', ':neoforge:build' }
+tasks.named('build') { dependsOn ':common:build', ':fabric:build', ':neoforge:build' }
