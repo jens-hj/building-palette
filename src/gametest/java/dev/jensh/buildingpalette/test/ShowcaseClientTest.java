@@ -37,14 +37,14 @@ public final class ShowcaseClientTest implements FabricClientGameTest {
             server.runCommand("place feature minecraft:oak -6 100 -12");
             server.runCommand("place feature minecraft:birch -12 100 -7");
             server.computeOnServer(s -> { build(s.overworld()); return true; });
+            server.runCommand("gamemode spectator @a"); // fixed cameras: no falling between shots
             world.getConnection().waitForChunksRender();
             context.waitTicks(40);
             context.runOnClient(mc -> { mc.gui.toastManager().clear(); mc.options.fov().set(55); });
             context.getInput().pressKey(o -> o.keyToggleGui);
 
-            shot(context, server, "hero", new Vec3(7.2, 102.9, 8.6), new Vec3(0.4, 102.4, -1.4), 1920, 1080);
+            shot(context, server, "hero", new Vec3(7.2, 101.62, 8.6), new Vec3(0.4, 101.12, -1.4), 1920, 1080);
             shot(context, server, "detail_window", new Vec3(-0.2, 102.4, 4.4), new Vec3(-1.9, 101.4, 0.9), 1280, 720);
-            shot(context, server, "detail_bench", new Vec3(5.9, 101.6, 6.4), new Vec3(3.2, 100.4, 3.3), 1280, 720);
             shot(context, server, "detail_roof", new Vec3(7.8, 105.2, 3.6), new Vec3(3.5, 104.6, -1.5), 1280, 720);
 
             // Two steps laid across each other merge into an L.
@@ -57,6 +57,7 @@ public final class ShowcaseClientTest implements FabricClientGameTest {
 
             // Hotbar: Alt + scroll through the shapes of one stack.
             context.getInput().pressKey(o -> o.keyToggleGui);
+            server.runCommand("gamemode creative @a");
             server.computeOnServer(s -> {
                 var player = s.getPlayerList().getPlayers().getFirst();
                 player.getInventory().clearContent();
@@ -79,8 +80,43 @@ public final class ShowcaseClientTest implements FabricClientGameTest {
                 context.waitTicks(3);
             }
             context.getInput().releaseAlt();
+
+            // Mask pass: shaders off, sky replaced by magenta, same cameras. The software renderer
+            // leaves Photon's sky black, so the page art paints a sky into these exact pixels.
+            context.getInput().pressKey(o -> o.keyToggleGui);
+            server.runCommand("gamemode spectator @a");
+            context.runOnClient(mc -> {
+                shaders(false);
+                mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
+                SkyMask.active = true;
+            });
+            context.waitTicks(20);
+            for (var s : SHOTS) {
+                look(server, r(s.eye()), r(s.target()));
+                context.waitTicks(10);
+                context.takeScreenshot(TestScreenshotOptions.of(s.name() + "_mask").disableCounterPrefix().withSize(s.w(), s.h()).withDestinationDir(out));
+            }
+            context.runOnClient(mc -> { SkyMask.active = false; shaders(true); });
         }
     }
+
+    /** Toggles Iris shaders by reflection; Iris is only present in the showcase instance. */
+    private static void shaders(boolean on) {
+        try {
+            Class<?> api = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+            Object config = api.getMethod("getConfig").invoke(api.getMethod("getInstance").invoke(null));
+            config.getClass().getMethod("setShadersEnabledAndApply", boolean.class).invoke(config, on);
+        } catch (ClassNotFoundException e) {
+            // No Iris: nothing to toggle.
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private record Shot(String name, Vec3 eye, Vec3 target, int w, int h) {}
+    private final java.util.List<Shot> SHOTS = new java.util.ArrayList<>();
+    /** Frames averaged per shot; Photon's soft shadows and AO are dithered and vary per frame. */
+    private static final int FRAMES = 6;
 
     private static void look(net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext server, Vec3 eye, Vec3 target) {
         Vec3 d = target.subtract(eye);
@@ -88,9 +124,13 @@ public final class ShowcaseClientTest implements FabricClientGameTest {
         server.runCommand(String.format(java.util.Locale.ROOT, "tp @a %.3f %.3f %.3f %.2f %.2f", eye.x, eye.y - 1.62, eye.z, yaw, pitch));
     }
     private void shot(ClientGameTestContext context, net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext server, String name, Vec3 eye, Vec3 target, int w, int h) {
+        SHOTS.add(new Shot(name, eye, target, w, h));
         look(server, r(eye), r(target));
         context.waitTicks(20);
-        context.takeScreenshot(TestScreenshotOptions.of(name).disableCounterPrefix().withSize(w, h).withDestinationDir(out));
+        for (int i = 0; i < FRAMES; i++) {
+            context.takeScreenshot(TestScreenshotOptions.of(name + "_f" + i).disableCounterPrefix().withSize(w, h).withDestinationDir(out));
+            context.waitTicks(2);
+        }
     }
 
     private void frame(ClientGameTestContext context, net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext server, String name, BlockPos pos, Cells cells) {
@@ -105,7 +145,10 @@ public final class ShowcaseClientTest implements FabricClientGameTest {
             context.waitTicks(20);
         }
         context.waitTicks(8);
-        context.takeScreenshot(TestScreenshotOptions.of(name).disableCounterPrefix().withSize(900, 900).withDestinationDir(out));
+        for (int i = 0; i < FRAMES; i++) {
+            context.takeScreenshot(TestScreenshotOptions.of(name + "_f" + i).disableCounterPrefix().withSize(900, 900).withDestinationDir(out));
+            context.waitTicks(2);
+        }
     }
 
     private static void put(ServerLevel level, int x, int y, int z, Object... maskMaterial) {

@@ -5,7 +5,7 @@ Render first:  python scripts/headless-test.py ./gradlew --no-daemon runClientGa
 Icons are drawn here from the same 2x2x2 cell masks the mod uses; fonts are OFL (docs/page/fonts).
 """
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageEnhance
 
 root = Path(__file__).resolve().parents[1]
 shots = root / "build" / "showcase"
@@ -108,20 +108,31 @@ def extruded(text, font, scale, depth, face_top, face_bottom, extrude, outline):
     return img.crop(img.getbbox())
 
 
+def exists(name):
+    return (shots / f"{name}_f0.png").exists() or (shots / f"{name}.png").exists()
+
+
+def frames_of(name):
+    found = sorted(shots.glob(f"{name}_f*.png"))
+    return found or [shots / f"{name}.png"]
+
+
 def load(name):
-    """A showcase render with its sky filled in. The software renderer leaves Photon's sky black,
-    so near-black pixels connected to the top edge are replaced with a morning gradient."""
-    img = Image.open(shots / f"{name}.png").convert("RGB")
-    w, h = img.size
-    dark = img.convert("L").point(lambda v: 255 if v < 24 else 0)
-    mask = Image.new("L", (w, h), 0)
-    seed = dark.copy()
-    for x in range(0, w, 8):
-        if seed.getpixel((x, 0)) == 255:
-            ImageDraw.floodfill(seed, (x, 0), 128)
-    mask = seed.point(lambda v: 255 if v == 128 else 0)
+    """A showcase render: its frames averaged (Photon's soft shadows and AO are dithered per frame),
+    with the sky painted in. The software renderer leaves Photon's sky black, so the sky pixels
+    come from a matching mask render whose sky is pure magenta."""
+    paths = frames_of(name)
+    img = Image.open(paths[0]).convert("RGB")
+    for k, path in enumerate(paths[1:], start=2):
+        img = Image.blend(img, Image.open(path).convert("RGB"), 1 / k)
+    mask_path = shots / f"{name}_mask.png"
+    if not mask_path.exists():
+        return img
+    r, g, b = Image.open(mask_path).convert("RGB").split()
+    mask = ImageChops.multiply(ImageChops.multiply(r.point(lambda v: 255 if v > 200 else 0), g.point(lambda v: 255 if v < 60 else 0)), b.point(lambda v: 255 if v > 200 else 0))
     if not mask.getbbox():
         return img
+    w, h = img.size
     horizon = mask.getbbox()[3]
     sky = Image.new("RGB", (w, h))
     sd = ImageDraw.Draw(sky)
@@ -129,7 +140,7 @@ def load(name):
     for yy in range(h):
         t = min(yy / max(horizon, 1), 1) ** 1.6
         sd.line([(0, yy), (w, yy)], fill=tuple(int(top[c] + (low[c] - top[c]) * t) for c in range(3)))
-    return Image.composite(sky, img, mask.filter(ImageFilter.GaussianBlur(1)))
+    return Image.composite(sky, img, mask)
 
 
 def banner():
@@ -274,9 +285,9 @@ if __name__ == "__main__":
     for icon, text in [("stair", "Shapes"), ("mixed", "Combine"), ("fence", "Offgrid"), ("cog", "Controls"), ("block", "Requirements")]:
         header(icon, text)
     for name in ("detail_window", "detail_roof"):
-        if (shots / f"{name}.png").exists():
+        if exists(name):
             still(name)
-    if (shots / "hero.png").exists():
+    if exists("hero"):
         still("detail_bench", source="hero", box=(560, 372, 1420, 856))
     merge_gif()
     scroll_gif()
