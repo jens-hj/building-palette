@@ -23,6 +23,9 @@ dependencies {
     localRuntime "maven.modrinth:clutternomore:Chc4Pi2b"
     localRuntime "maven.modrinth:offgrid:IBTjtUTI"
     compileOnly "maven.modrinth:offgrid:IBTjtUTI"
+    // Optional compat; on the dev runtime so the game tests cover it.
+    compileOnly "maven.modrinth:omnivault:hfogg92G"
+    localRuntime "maven.modrinth:omnivault:hfogg92G"
 
 }
 processResources {
@@ -56,7 +59,7 @@ fabricApi {
 }
 
 // Offgrid API for blocklogging assertions; Offgrid itself is already on the dev runtime.
-dependencies { gametestCompileOnly "maven.modrinth:offgrid:IBTjtUTI" }
+dependencies { gametestCompileOnly "maven.modrinth:offgrid:IBTjtUTI"; gametestCompileOnly "maven.modrinth:omnivault:hfogg92G" }
 sourceSets.gametest.java.srcDirs rootProject.file('src/gametest/java'), rootProject.file('common/src/testFixtures/java')
 sourceSets.gametest.resources.srcDir rootProject.file('src/gametest/resources')
 sourceSets.test.java.srcDir rootProject.file('common/src/test/java')
@@ -172,6 +175,7 @@ modrinth {
     dependencies {
         optional.project 'modmenu'
         optional.project 'travelersbackpack'
+        optional.project 'omnivault'
         required.project 'fabric-api'
         required.version 'Chc4Pi2b'
         required.version 'IBTjtUTI'

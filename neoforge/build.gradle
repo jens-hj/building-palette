@@ -15,6 +15,8 @@ dependencies {
     implementation 'maven.modrinth:clutternomore:aP8yK8nm'
     implementation 'maven.modrinth:offgrid:Dh9cO38a'
     compileOnly 'maven.modrinth:travelersbackpack:YYMC88eu'
+    compileOnly 'maven.modrinth:omnivault:UHlYyKKQ'
+    if (providers.gradleProperty('neoOmniVault').isPresent()) runtimeOnly 'maven.modrinth:omnivault:UHlYyKKQ'
     if (providers.gradleProperty('neoBackpack').isPresent()) runtimeOnly 'maven.modrinth:travelersbackpack:YYMC88eu'
     if (providers.gradleProperty('neoShaders').isPresent()) runtimeOnly 'maven.modrinth:iris:Ag5S66CF'
     if (providers.gradleProperty('neoGraphics').isPresent()) {
@@ -35,7 +37,8 @@ processResources {
 sourceSets {
     testmod {
         java.srcDirs rootProject.file('common/src/testFixtures/java'), rootProject.file('src/gametest/java')
-        java.exclude '**/PaletteClientTest.java', '**/PaletteGameTests.java', '**/BackpackPickTest.java', '**/OptionsResetMixin.java'
+        java.exclude '**/PaletteClientTest.java', '**/PaletteGameTests.java', '**/BackpackPickTest.java', '**/OptionsResetMixin.java',
+            '**/ShowcaseClientTest.java', '**/SkyMask.java', '**/SkyMaskMixin.java', '**/NoSkyMixin.java'
         compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
         runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
     }
@@ -102,6 +105,7 @@ modrinth {
     syncBodyFrom = providers.fileContents(rootProject.layout.projectDirectory.file('docs/MODRINTH.md')).asText
     dependencies {
         optional.project 'travelersbackpack'
+        optional.project 'omnivault'
         required.version 'aP8yK8nm'
         required.version 'Dh9cO38a'
     }

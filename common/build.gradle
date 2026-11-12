@@ -10,6 +10,8 @@ dependencies {
     compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
     // Offgrid is a required dependency on both loaders; its world API is loader-neutral.
     compileOnly 'maven.modrinth:offgrid:Dh9cO38a'
+    // Optional compat; its storage classes are loader-neutral.
+    compileOnly 'maven.modrinth:omnivault:UHlYyKKQ'
 }
 tasks.register('modelTest', JavaExec) {
     dependsOn testClasses

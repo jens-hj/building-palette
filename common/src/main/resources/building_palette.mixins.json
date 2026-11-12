@@ -23,7 +23,8 @@
     "StackedContentsMixin",
     "ItemEntityMixin",
     "OffgridBlocklogMixin",
-    "OffgridHostShapeMixin"
+    "OffgridHostShapeMixin",
+    "OmniVaultStorageMixin"
   ],
   "injectors": {
     "defaultRequire": 1

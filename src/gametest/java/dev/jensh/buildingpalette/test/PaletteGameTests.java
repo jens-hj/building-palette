@@ -12,6 +12,8 @@ public final class PaletteGameTests {
     @GameTest public void singlePiecesUseNativeBlocks(GameTestHelper test) { new PaletteGameTestScenarios().singlePiecesUseNativeBlocks(test); }
     @GameTest public void offgridFenceAndStepInEitherOrder(GameTestHelper test) { new PaletteGameTestScenarios().offgridFenceAndStepInEitherOrder(test); }
     @GameTest public void shiftClickMergesNativeBlocksIntoPartialShapes(GameTestHelper test) { new PaletteGameTestScenarios().shiftClickMergesNativeBlocksIntoPartialShapes(test); }
+    @GameTest public void storageDescriptionsNeverCreateMaterial(GameTestHelper test) { new PaletteGameTestScenarios().storageDescriptionsNeverCreateMaterial(test); }
+    @GameTest public void omniVaultNetworkStoresWholeBlocks(GameTestHelper test) { new OmniVaultScenarios().networkStoresWholeBlocks(test); }
     @GameTest public void overlappingPiecesMerge(GameTestHelper test) { new PaletteGameTestScenarios().overlappingPiecesMerge(test); }
     @GameTest(maxTicks = 120, skyAccess = true) public void slabRoofMatchesNativeLightBlocking(GameTestHelper test) { new PaletteGameTestScenarios().slabRoofMatchesNativeLightBlocking(test); }
     @GameTest public void everyShapeMergesByMaterial(GameTestHelper test) { new PaletteGameTestScenarios().everyShapeMergesByMaterial(test); }
