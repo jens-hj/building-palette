@@ -3,18 +3,17 @@ package dev.jensh.buildingpalette.client;
 import dev.jensh.buildingpalette.*;
 import dev.jensh.buildingpalette.platform.ClientPlatform;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public final class PaletteClient {
-    private static final Identifier HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
-    private static final Identifier SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
+    private static final ResourceLocation HOTBAR = ResourceLocation.withDefaultNamespace("hud/hotbar");
+    private static final ResourceLocation SELECTION = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
     private static double scroll;
     public static void initialize() {
         PaletteConfig.load();
@@ -31,11 +30,11 @@ public final class PaletteClient {
     public static Slot target() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return null;
-        if (mc.gui.screen() instanceof AbstractContainerScreen<?>) return ClientPlatform.INSTANCE.hoveredSlot();
-        if (mc.gui.screen() != null) return null;
+        if (mc.screen instanceof AbstractContainerScreen<?>) return ClientPlatform.INSTANCE.hoveredSlot();
+        if (mc.screen != null) return null;
         if (Materials.get(mc.player.getMainHandItem()) == null && Materials.get(mc.player.getOffhandItem()) != null)
             return mc.player.inventoryMenu.getSlot(45);
-        return mc.player.inventoryMenu.getSlot(36 + mc.player.getInventory().getSelectedSlot());
+        return mc.player.inventoryMenu.getSlot(36 + mc.player.getInventory().selected);
     }
     public static boolean managed() { Slot slot = target(); return slot != null && Materials.get(slot.getItem()) != null; }
     public static boolean active() { return managed() && ClientPlatform.INSTANCE.shapeKeyDown(); }
@@ -58,14 +57,14 @@ public final class PaletteClient {
         }
         return true;
     }
-    public static void draw(GuiGraphicsExtractor graphics) {
+    public static void draw(GuiGraphics graphics) {
         if (!active()) return;
         Minecraft mc = Minecraft.getInstance();
-        int left = graphics.guiWidth() / 2 - 91 + mc.player.getInventory().getSelectedSlot() * 20;
+        int left = graphics.guiWidth() / 2 - 91 + mc.player.getInventory().selected * 20;
         if (target().index == 45) left = graphics.guiWidth() / 2 + (mc.player.getMainArm() == HumanoidArm.RIGHT ? -120 : 98);
         draw(graphics, left, graphics.guiHeight() - 22);
     }
-    public static void draw(GuiGraphicsExtractor graphics, int left, int top) {
+    public static void draw(GuiGraphics graphics, int left, int top) {
         if (!active()) return;
         ItemStack source = target().getItem();
         var palette = Materials.palette(source);
@@ -76,29 +75,33 @@ public final class PaletteClient {
         }
         // Scroll up pulls the nearest preview into the actual slot. Wrap the previews
         // with the same ordering as ScrollPayload, so there is no end to the strip.
-        boolean inventory = Minecraft.getInstance().gui.screen() instanceof AbstractContainerScreen<?>;
+        boolean inventory = Minecraft.getInstance().screen instanceof AbstractContainerScreen<?>;
         int above = Math.min(inventory ? 2 : 5, Math.min(palette.size() - 1, Math.max(0, top / 20)));
         int below = inventory ? Math.min(2, Math.min(palette.size() - 1 - above, Math.max(0, (graphics.guiHeight() - top - 22) / 20))) : 0;
         int visible = above + below + (inventory ? 1 : 0);
         // Turn one continuous vanilla hotbar upright so its internal dividers
         // remain thin. Repeating isolated slots also repeats their black end caps.
+        var pose = graphics.pose();
+        pose.pushPose();
+        // Above the items of the screen underneath, which are drawn with depth.
+        pose.translate(0, 0, 300);
         if (visible > 0) {
-            var pose = graphics.pose();
-            pose.pushMatrix();
-            pose.translate(left + 22, top - above * 20);
-            pose.rotate((float)(Math.PI / 2));
+            pose.pushPose();
+            pose.translate(left + 22, top - above * 20, 0);
+            pose.mulPose(com.mojang.math.Axis.ZP.rotation((float)(Math.PI / 2)));
             int length = visible * 20 + 1;
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 0, 0, 0, 0, length, 22);
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, 182, 22, 181, 0, length, 0, 1, 22);
-            pose.popMatrix();
+            graphics.blitSprite(HOTBAR, 182, 22, 0, 0, 0, 0, length, 22);
+            graphics.blitSprite(HOTBAR, 182, 22, 181, 0, length, 0, 1, 22);
+            pose.popPose();
         }
+        graphics.blitSprite(SELECTION, left - 1, top - 1, 24, 23);
         for (int offset = -above; offset <= below; offset++) {
             if (offset == 0 && !inventory) continue;
             int y = top + offset * 20;
             ItemStack icon = offset == 0 ? source : palette.get(Math.floorMod(selectedIndex + offset, palette.size()));
-            graphics.item(icon, left + 3, y + 3);
-            if (offset == 0) graphics.itemDecorations(Minecraft.getInstance().font, source, left + 3, y + 3);
+            graphics.renderItem(icon, left + 3, y + 3);
+            if (offset == 0) graphics.renderItemDecorations(Minecraft.getInstance().font, source, left + 3, y + 3);
         }
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SELECTION, left - 1, top - 1, 24, 23);
+        pose.popPose();
     }
 }

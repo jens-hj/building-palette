@@ -14,7 +14,7 @@ public final class PickBlock {
     public record Target(String material, Shape shape) {}
     private PickBlock() {}
     public static Target target(ServerPlayer player, BlockPos pos, BlockState state) {
-        if (!player.level().isLoaded(pos) || !player.isWithinBlockInteractionRange(pos, 1)) return null;
+        if (!player.level().isLoaded(pos) || !player.canInteractWithBlock(pos, 1)) return null;
         if (player.level().getBlockEntity(pos) instanceof MultipartEntity entity) {
             HitResult result = Placement.pick(player);
             if (!(result instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK || !hit.getBlockPos().equals(pos)) return null;
@@ -44,7 +44,7 @@ public final class PickBlock {
             return ItemStack.EMPTY;
         }
         // First pick selects existing material without changing its shape or count.
-        for (ItemStack stored : player.getInventory().getNonEquipmentItems()) {
+        for (ItemStack stored : player.getInventory().items) {
             var selection = Materials.get(stored);
             if (selection != null && selection.material().equals(target.material)) return stored.copy();
         }
@@ -64,11 +64,11 @@ public final class PickBlock {
     /** Top up the held stack with its material from the inventory, then the equipped backpack. */
     static void refill(ServerPlayer player) {
         var inventory = player.getInventory();
-        int selected = inventory.getSelectedSlot();
+        int selected = inventory.selected;
         ItemStack held = inventory.getItem(selected);
         int units = MaterialStacks.units(held);
         // Storage before the hotbar, so the hotbar layout survives where possible.
-        int size = inventory.getNonEquipmentItems().size();
+        int size = inventory.items.size();
         for (int n = 0; n < size && units < Balance.CAPACITY; n++) {
             int i = (n + Inventory.getSelectionSize()) % size;
             if (i == selected) continue;

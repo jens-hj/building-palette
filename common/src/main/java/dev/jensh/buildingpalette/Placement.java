@@ -28,7 +28,7 @@ public final class Placement {
     }
     public static int hitCell(BlockHitResult hit, boolean outside) {
         Vec3 local = hit.getLocation().subtract(Vec3.atLowerCornerOf(hit.getBlockPos()))
-            .add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(outside ? .0001 : -.0001));
+            .add(Vec3.atLowerCornerOf(hit.getDirection().getNormal()).scale(outside ? .0001 : -.0001));
         return cell(local);
     }
     private static int cell(Vec3 local) { return (local.x >= .5 ? 1 : 0) | (local.y >= .5 ? 2 : 0) | (local.z >= .5 ? 4 : 0); }
@@ -38,12 +38,12 @@ public final class Placement {
         BlockState state = level.getBlockState(hit.getBlockPos());
         if (state.isAir()) return false;
         Vec3 inside = hit.getLocation().subtract(Vec3.atLowerCornerOf(hit.getBlockPos()))
-            .add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(-.0001));
+            .add(Vec3.atLowerCornerOf(hit.getDirection().getNormal()).scale(-.0001));
         return state.getShape(level, hit.getBlockPos()).toAabbs().stream().anyMatch(box -> box.inflate(.00001).contains(inside));
     }
     private static BlockPos target(Level level, BlockHitResult hit) {
         return level.getBlockState(hit.getBlockPos()).canBeReplaced() ? hit.getBlockPos()
-            : BlockPos.containing(hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(.0001)));
+            : BlockPos.containing(hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getNormal()).scale(.0001)));
     }
     public static boolean usesNativePlacement(Level level, Player player, ItemStack stack, BlockHitResult hit) {
         var selection = Materials.get(stack);
@@ -146,14 +146,14 @@ public final class Placement {
             if (context == null || !context.canPlace()) return null;
             BlockState state = item.getBlock().getStateForPlacement(context);
             if (state == null || !state.canSurvive(level, context.getClickedPos())) return null;
-            if (!canOccupy(level, player, state.getCollisionShape(level, context.getClickedPos(), CollisionContext.placementContext(player))
-                    .move(context.getClickedPos()))) return null;
+            if (!canOccupy(level, player, state.getCollisionShape(level, context.getClickedPos(), CollisionContext.of(player))
+                    .move(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()))) return null;
             Cells before = existing(level, context.getClickedPos());
             if (before == null) return null;
             int mask = shapeMask(state, level, context.getClickedPos()) & ~before.occupied();
             return mask == 0 ? null : new Plan(context.getClickedPos(), before, mask, selection.material());
         }
-        Vec3 outside = hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(.0001));
+        Vec3 outside = hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getNormal()).scale(.0001));
         BlockPos target = BlockPos.containing(outside);
         // Replaceable blocks (grass, snow) use their own space.
         if (level.getBlockState(hit.getBlockPos()).canBeReplaced()) target = hit.getBlockPos();
@@ -176,7 +176,7 @@ public final class Placement {
         }
         mask = added(before, mask, selection.material());
         if (mask == 0) return null;
-        if (!canOccupy(level, player, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask).move(target))) return null;
+        if (!canOccupy(level, player, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask).move(target.getX(), target.getY(), target.getZ()))) return null;
         // Blocks holding Offgrid fences/walls only take a result that can still host them.
         if (OffgridHosts.occupied(level, target) && !OffgridHosts.accepts(level, target,
                 before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER)) return null;

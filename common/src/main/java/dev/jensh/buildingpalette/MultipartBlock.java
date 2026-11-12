@@ -4,7 +4,7 @@ import dev.jensh.buildingpalette.core.*;
 import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.*;
@@ -22,6 +22,8 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     public static final BooleanProperty OPAQUE = BooleanProperty.create("opaque");
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
     public static final IntegerProperty OCCLUSION = IntegerProperty.create("occlusion", 0, 255);
+    public static final com.mojang.serialization.MapCodec<MultipartBlock> CODEC = simpleCodec(MultipartBlock::new);
+    @Override protected com.mojang.serialization.MapCodec<MultipartBlock> codec() { return CODEC; }
     private static final VoxelShape[] OCCLUSION_SHAPES = occlusionShapes();
     private static VoxelShape[] occlusionShapes() {
         var result = new VoxelShape[256];
@@ -33,16 +35,16 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     public MultipartBlock(BlockBehaviour.Properties properties) {
         // Mining sends the removed material's break effect separately. The invisible
         // carrier has no particle texture and must not add a second placeholder burst.
-        super(properties.noTerrainParticles().pushReaction(PushReaction.IMMOVEABLE).lightLevel(state -> state.getValue(LIGHT)));
+        super(properties.noTerrainParticles().pushReaction(PushReaction.BLOCK).lightLevel(state -> state.getValue(LIGHT)));
         registerDefaultState(stateDefinition.any().setValue(BlockStateProperties.WATERLOGGED, false).setValue(OPAQUE, false).setValue(LIGHT, 0).setValue(OCCLUSION, 0));
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BlockStateProperties.WATERLOGGED, OPAQUE, LIGHT, OCCLUSION); }
-    @Override protected int getLightDampening(BlockState state) { return state.getValue(OPAQUE) ? 15 : state.getValue(BlockStateProperties.WATERLOGGED) ? 1 : 0; }
-    @Override protected boolean propagatesSkylightDown(BlockState state) { return !state.getValue(OPAQUE) && !state.getValue(BlockStateProperties.WATERLOGGED); }
+    @Override protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) { return state.getValue(OPAQUE) ? 15 : state.getValue(BlockStateProperties.WATERLOGGED) ? 1 : 0; }
+    @Override protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) { return !state.getValue(OPAQUE) && !state.getValue(BlockStateProperties.WATERLOGGED); }
     @Override protected boolean useShapeForLightOcclusion(BlockState state) { return true; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return BuildingPalette.ENTITY.get().create(pos, state); }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
-    @Override protected VoxelShape getOcclusionShape(BlockState state) { return OCCLUSION_SHAPES[state.getValue(OCCLUSION)]; }
+    @Override protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) { return OCCLUSION_SHAPES[state.getValue(OCCLUSION)]; }
     @Override protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) { return state.getValue(OPAQUE) ? .2f : 1; }
     @Override protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
         if (level.getBlockEntity(pos) instanceof MultipartEntity entity) entity.refreshPropertiesOnLoad();
@@ -61,14 +63,14 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
     @Override protected FluidState getFluidState(BlockState state) {
         return state.getValue(BlockStateProperties.WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
-    @Override protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-            Direction direction, BlockPos neighbor, BlockState neighborState, net.minecraft.util.RandomSource random) {
-        if (state.getValue(BlockStateProperties.WATERLOGGED)) ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+    @Override protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+            BlockPos pos, BlockPos neighbor) {
+        if (state.getValue(BlockStateProperties.WATERLOGGED)) level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         return state;
     }
     public static BlockState material(String name) {
-        Identifier id = name == null ? null : Identifier.tryParse(name);
-        Item item = id == null ? Items.AIR : BuiltInRegistries.ITEM.getValue(id);
+        ResourceLocation id = name == null ? null : ResourceLocation.tryParse(name);
+        Item item = id == null ? Items.AIR : BuiltInRegistries.ITEM.get(id);
         return item instanceof BlockItem b ? b.getBlock().defaultBlockState() : Blocks.STONE.defaultBlockState();
     }
     @Override protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {

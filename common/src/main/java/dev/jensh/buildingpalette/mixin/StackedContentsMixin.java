@@ -1,13 +1,13 @@
 package dev.jensh.buildingpalette.mixin;
 
 import dev.jensh.buildingpalette.*;
-import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(StackedItemContents.class)
+@Mixin(StackedContents.class)
 public abstract class StackedContentsMixin {
     @Inject(method = "accountStack(Lnet/minecraft/world/item/ItemStack;I)V", at = @At("HEAD"), cancellable = true)
     private void palette$recipeBook(ItemStack stack, int max, CallbackInfo ci) {
@@ -17,7 +17,7 @@ public abstract class StackedContentsMixin {
                 ItemStack whole = stack.copy();
                 MaterialStacks.clearRemainder(whole);
                 whole.setCount(count);
-                ((StackedItemContents)(Object)this).accountStack(whole, count);
+                ((StackedContents)(Object)this).accountStack(whole, count);
             }
             ci.cancel();
         }

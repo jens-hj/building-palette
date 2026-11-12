@@ -4,79 +4,84 @@ import dev.jensh.buildingpalette.*;
 import dev.jensh.buildingpalette.core.Cells;
 import dev.jensh.buildingpalette.neoforge.NeoMultipartEntity;
 import java.util.*;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
-import net.minecraft.client.renderer.block.dispatch.*;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.*;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
+import net.neoforged.neoforge.client.ChunkRenderTypeSet;
+import net.neoforged.neoforge.client.model.IDynamicBakedModel;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
-/** Chunk-meshed geometry; never reads live block entities on meshing threads. */
-public final class NeoMultipartModel implements DynamicBlockStateModel {
-    private final BlockStateModel fallback;
-    public NeoMultipartModel(BlockStateModel fallback) { this.fallback = fallback; }
+/** Chunk-meshed geometry from model data; never reads live block entities on meshing threads. */
+public final class NeoMultipartModel implements IDynamicBakedModel {
+    private final BakedModel fallback;
+    public NeoMultipartModel(BakedModel fallback) { this.fallback = fallback; }
+    /** The cells at pos as the renderer sees them, also off the main thread. */
     public static Cells cells(BlockAndTintGetter level, BlockPos pos) {
-        var data = level.getModelData(pos).get(NeoMultipartEntity.CELLS);
-        return data == null ? new Cells() : data;
+        Cells data = level.getModelData(pos).get(NeoMultipartEntity.CELLS);
+        if (data != null) return data;
+        return level.getBlockEntity(pos) instanceof MultipartEntity entity ? entity.cells() : null;
     }
-    private record Key(List<String> cells, long seed) {}
-    @Override public Object createGeometryKey(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random) {
-        return new Key(Arrays.asList(cells(level, pos).copy()), pos.asLong());
-    }
-    public record Tints(Map<String, Integer> offsets, IntArrayList colors) {}
-    public static Tints tints(Cells cells, BlockAndTintGetter level, BlockPos pos) {
-        var offsets = new LinkedHashMap<String, Integer>(); var colors = new IntArrayList();
-        var registry = Minecraft.getInstance().getBlockColors();
-        for (String material : cells.copy()) if (material != null && !offsets.containsKey(material)) {
-            offsets.put(material, colors.size());
-            var source = MultipartBlock.material(material);
-            var sources = registry.getTintSources(source);
-            if (!sources.isEmpty()) for (var tint : sources) colors.add(tint.colorInWorld(source, level, pos) | 0xff000000);
-            else {
-                int before = colors.size();
-                IClientBlockExtensions.of(source).collectDynamicTintValues(source, level, pos, colors);
-                if (colors.size() == before) colors.add(-1);
-            }
-        }
-        return new Tints(offsets, colors);
-    }
-    @Override public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> output) {
+    public static int tint(BlockState state, BlockAndTintGetter level, BlockPos pos, int index) {
+        if (level == null || pos == null || index < 0) return -1;
         Cells cells = cells(level, pos);
-        var tints = tints(cells, level, pos);
-        var models = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+        int octant = index / MultipartGeometry.TINT_STRIDE;
+        if (cells == null || octant > 7 || cells.at(octant) == null) return -1;
+        return Minecraft.getInstance().getBlockColors().getColor(MultipartBlock.material(cells.at(octant)), level, pos, index % MultipartGeometry.TINT_STRIDE);
+    }
+    @Override public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource random, ModelData data, RenderType renderType) {
+        Cells cells = data.get(NeoMultipartEntity.CELLS);
+        if (side != null || cells == null) return List.of();
+        BlockPos pos = data.get(NeoMultipartEntity.POS);
+        var models = Minecraft.getInstance().getBlockRenderer();
+        List<BakedQuad> result = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
-            String material = cells.at(i); if (material == null) continue;
-            var source = MultipartBlock.material(material);
-            var parts = new ArrayList<BlockStateModelPart>();
-            models.get(source).collectParts(level, pos, source, RandomSource.create(source.getSeed(pos)), parts);
-            int visible = 0;
+            String material = cells.at(i);
+            if (material == null) continue;
+            BlockState source = MultipartBlock.material(material);
+            BakedModel model = models.getBlockModel(source);
+            long seed = pos == null ? 42 : source.getSeed(pos);
+            random.setSeed(seed);
+            if (renderType != null && !model.getRenderTypes(source, random, ModelData.EMPTY).contains(renderType)) continue;
+            List<BakedQuad> all = new ArrayList<>();
+            random.setSeed(seed);
+            all.addAll(model.getQuads(source, null, random, ModelData.EMPTY, renderType));
             for (Direction direction : Direction.values()) {
-                int x = (i & 1) + direction.getStepX(), y = ((i >> 1) & 1) + direction.getStepY(), z = ((i >> 2) & 1) + direction.getStepZ();
-                if (x < 0 || x > 1 || y < 0 || y > 1 || z < 0 || z > 1 || cells.at(x | y << 1 | z << 2) == null) visible |= 1 << direction.ordinal();
+                random.setSeed(seed);
+                all.addAll(model.getQuads(source, direction, random, ModelData.EMPTY, renderType));
             }
-            for (var part : parts) {
-                var cropped = new MultipartGeometry.CroppedPart(part, i, visible);
-                var quads = new ArrayList<BakedQuad>();
-                for (var quad : cropped.quads()) {
-                    var info = quad.materialInfo();
-                    if (info.isTinted()) info = new BakedQuad.MaterialInfo(info.sprite(), info.layer(), info.itemRenderType(), info.itemGlintRenderType(), info.itemGlintSpecialRenderType(),
-                        tints.offsets.get(material) + info.tintIndex(), info.shadeDirectionOverride(), info.lightEmission());
-                    quads.add(new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(), quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), quad.direction(), info));
-                }
-                output.add(new MultipartGeometry.CroppedPart(part, quads));
-            }
+            MultipartGeometry.crop(all, i, MultipartGeometry.visible(cell -> cells.at(cell) != null, i), i * MultipartGeometry.TINT_STRIDE, result);
         }
+        return result;
     }
-    @Override public Material.Baked particleMaterial() { return fallback.particleMaterial(); }
-    @Override public int materialFlags() { return 0; }
-    @Override public int materialFlags(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-        int flags = 0;
-        for (String material : cells(level, pos).copy()) if (material != null) flags |= Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(MultipartBlock.material(material)).materialFlags();
-        return flags;
+    @Override public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource random, ModelData data) {
+        Cells cells = data.get(NeoMultipartEntity.CELLS);
+        if (cells == null) return ChunkRenderTypeSet.none();
+        var models = Minecraft.getInstance().getBlockRenderer();
+        List<ChunkRenderTypeSet> sets = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String material : cells.copy()) if (material != null && seen.add(material)) {
+            BlockState source = MultipartBlock.material(material);
+            sets.add(models.getBlockModel(source).getRenderTypes(source, random, ModelData.EMPTY));
+        }
+        return ChunkRenderTypeSet.union(sets);
     }
+    @Override public TextureAtlasSprite getParticleIcon(ModelData data) {
+        Cells cells = data.get(NeoMultipartEntity.CELLS);
+        if (cells != null) for (String material : cells.copy()) if (material != null)
+            return Minecraft.getInstance().getBlockRenderer().getBlockModel(MultipartBlock.material(material)).getParticleIcon(ModelData.EMPTY);
+        return fallback.getParticleIcon();
+    }
+    @Override public boolean useAmbientOcclusion() { return true; }
+    @Override public boolean isGui3d() { return false; }
+    @Override public boolean usesBlockLight() { return true; }
+    @Override public boolean isCustomRenderer() { return false; }
+    @Override public TextureAtlasSprite getParticleIcon() { return fallback.getParticleIcon(); }
+    @Override public ItemTransforms getTransforms() { return fallback.getTransforms(); }
+    @Override public ItemOverrides getOverrides() { return ItemOverrides.EMPTY; }
 }

@@ -29,7 +29,7 @@ public abstract class ClutterClientMixin {
         if (PaletteClient.managed()) { dev.jensh.buildingpalette.platform.ClientPlatform.INSTANCE.closeOverlay(); ci.cancel(); }
     }
     @Inject(method = "renderOverlay", at = @At("HEAD"), cancellable = true)
-    private static void palette$overlay(net.minecraft.client.gui.GuiGraphicsExtractor graphics, float delta, CallbackInfo ci) {
+    private static void palette$overlay(net.minecraft.client.gui.GuiGraphics graphics, float delta, CallbackInfo ci) {
         if (PaletteClient.managed()) ci.cancel();
     }
 }

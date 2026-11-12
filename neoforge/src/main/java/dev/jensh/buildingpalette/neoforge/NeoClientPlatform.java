@@ -11,9 +11,15 @@ public final class NeoClientPlatform implements ClientServices {
     @Override public void closeOverlay() { ClutterNoMoreClient.closeOverlay(); }
     @Override public Slot hoveredSlot() { return ClutterNoMoreClient.getHoveredSlot(); }
     @Override public boolean shapeKeyDown() { return ClutterNoMoreClient.isShapeKeyPhysicallyDown(); }
-    @Override public void sendScroll(ScrollPayload payload) { Minecraft.getInstance().getConnection().send(new net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket(payload)); }
+    @Override public void sendScroll(ScrollPayload payload) { PacketDistributor.sendToServer(payload); }
     @Override public void syncPreferences(PreferencesPayload payload) {
         var connection = Minecraft.getInstance().getConnection();
-        if (connection != null && connection.hasChannel(PreferencesPayload.TYPE)) Minecraft.getInstance().getConnection().send(new net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket(payload));
+        if (connection != null && connection.hasChannel(PreferencesPayload.TYPE)) PacketDistributor.sendToServer(payload);
+    }
+    @Override public boolean sendPick(PickPayload payload) {
+        var connection = Minecraft.getInstance().getConnection();
+        if (connection == null || !connection.hasChannel(PickPayload.TYPE)) return false;
+        PacketDistributor.sendToServer(payload);
+        return true;
     }
 }

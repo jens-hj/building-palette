@@ -1,16 +1,13 @@
 package dev.jensh.buildingpalette;
 
-import com.mojang.serialization.Codec;
 import dev.jensh.buildingpalette.core.Cells;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
 public class MultipartEntity extends BlockEntity {
     private volatile Cells cells = new Cells();
@@ -34,7 +31,7 @@ public class MultipartEntity extends BlockEntity {
                 String material = cells.at(i);
                 if (material == null) continue;
                 var state = MultipartBlock.material(material);
-                if (state.isSolidRender()) occlusion |= 1 << i;
+                if (state.isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) occlusion |= 1 << i;
                 light = Math.max(light, state.getLightEmission());
             }
             var state = getBlockState().setValue(MultipartBlock.OPAQUE, occlusion == 255).setValue(MultipartBlock.LIGHT, light).setValue(MultipartBlock.OCCLUSION, occlusion);
@@ -45,16 +42,19 @@ public class MultipartEntity extends BlockEntity {
             level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
         }
     }
-    @Override protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt("schema", 1);
-        output.store("cells", Codec.STRING.listOf(), Arrays.stream(cells.copy()).map(s -> s == null ? "" : s).toList());
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt("schema", 1);
+        ListTag saved = new ListTag();
+        for (String material : cells.copy()) saved.add(StringTag.valueOf(material == null ? "" : material));
+        tag.put("cells", saved);
     }
-    @Override protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        List<String> saved = input.read("cells", Codec.STRING.listOf()).orElse(List.of());
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ListTag saved = tag.getList("cells", Tag.TAG_STRING);
         if (saved.size() != 8) { cells = new Cells(); return; }
-        String[] values = saved.stream().map(s -> s.isEmpty() ? null : s).toArray(String[]::new);
+        String[] values = new String[8];
+        for (int i = 0; i < 8; i++) values[i] = saved.getString(i).isEmpty() ? null : saved.getString(i);
         cells = new Cells(values);
         // A block-entity-only update can leave its block state unchanged. Terrain
         // geometry must still be rebuilt from the new immutable render data.

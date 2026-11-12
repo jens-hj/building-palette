@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.*;
 import net.minecraft.world.item.Item;
@@ -29,22 +28,22 @@ public final class BuildingPalette {
         public void bind(T value) { if (this.value != null) throw new IllegalStateException("Content registered twice"); this.value = value; }
         @Override public T get() { if (value == null) throw new IllegalStateException("Building Palette content accessed before registration"); return value; }
     }
-    public static Identifier id(String path) { return Identifier.fromNamespaceAndPath(ID, path); }
-    public static void components(BiConsumer<Identifier, DataComponentType<?>> register) {
+    public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(ID, path); }
+    public static void components(BiConsumer<ResourceLocation, DataComponentType<?>> register) {
         MISSING.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 7)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         MISSING_FOR.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(1, 512)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         MATERIAL.bind(DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
         SHAPE.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 8)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         register.accept(id("missing_units"), MISSING.get()); register.accept(id("missing_for"), MISSING_FOR.get()); register.accept(id("material"), MATERIAL.get()); register.accept(id("shape"), SHAPE.get());
     }
-    public static void items(BiConsumer<Identifier, Item> register) {
-        PIECE.bind(new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id("piece")))));
+    public static void items(BiConsumer<ResourceLocation, Item> register) {
+        PIECE.bind(new Item(new Item.Properties()));
         register.accept(id("piece"), PIECE.get());
     }
-    public static void blocks(BiConsumer<Identifier, Block> register) {
-        MULTIPART.bind(new MultipartBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id("multipart"))).strength(2.0f).dynamicShape()));
+    public static void blocks(BiConsumer<ResourceLocation, Block> register) {
+        MULTIPART.bind(new MultipartBlock(BlockBehaviour.Properties.of().strength(2.0f).dynamicShape()));
         register.accept(id("multipart"), MULTIPART.get());
-        HOST_SHAPE.bind(new HostShapeBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id("host_shape"))).noCollision()));
+        HOST_SHAPE.bind(new HostShapeBlock(BlockBehaviour.Properties.of().noCollission()));
         register.accept(id("host_shape"), HOST_SHAPE.get());
     }
 }

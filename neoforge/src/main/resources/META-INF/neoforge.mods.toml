@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[12,)"
+loaderVersion="[4,)"
 license="MIT"
 [[mods]]
 modId="building_palette"
@@ -11,13 +11,13 @@ iconFile="assets/building_palette/icon.png"
 [[dependencies.building_palette]]
 modId="neoforge"
 type="required"
-versionRange="[26.3.0.76,26.4)"
+versionRange="[21.1.205,)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.building_palette]]
 modId="minecraft"
 type="required"
-versionRange="[26.3,26.4)"
+versionRange="[1.21.1,1.21.2)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.building_palette]]
@@ -29,7 +29,7 @@ side="BOTH"
 [[dependencies.building_palette]]
 modId="offgrid"
 type="required"
-versionRange="[1.0.5,1.1)"
+versionRange="[1.0.6,1.1)"
 ordering="AFTER"
 side="BOTH"
 [[mixins]]

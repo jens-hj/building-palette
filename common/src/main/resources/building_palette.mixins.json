@@ -1,9 +1,9 @@
 {
   "required": true,
   "package": "dev.jensh.buildingpalette.mixin",
-  "compatibilityLevel": "JAVA_25",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ItemInstanceMixin",
+    "StackCapacityMixin",
     "ItemStackMixin",
     "IngredientMixin",
     "RecipeFixesMixin",
@@ -15,9 +15,7 @@
     "MiningMixin",
     "ContainerMixin",
     "InventoryMixin",
-    "FurnaceMixin",
     "StackCodecMixin",
-    "TemplateCodecMixin",
     "ShapeDropsMixin",
     "NativeConsumptionMixin",
     "StackedContentsMixin",

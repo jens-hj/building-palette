@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "dev.jensh.buildingpalette.mixin.client",
-  "compatibilityLevel": "JAVA_25",
+  "compatibilityLevel": "JAVA_21",
   "injectors": {
     "defaultRequire": 1
   },
@@ -9,11 +9,7 @@
     "ClutterClientMixin",
     "GuiMixin",
     "ContainerScreenMixin",
-    "OutlineMixin",
-    "ItemStateAccessor",
-    "ItemLayerAccessor",
-    "ItemModelMixin",
     "MiningPredictionMixin",
-    "BreakingCracksMixin"
+    "PickBlockMixin"
   ]
 }

@@ -4,7 +4,7 @@ import dev.jensh.buildingpalette.core.Shape;
 import dev.jensh.buildingpalette.platform.Platform;
 import java.util.*;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.*;
@@ -22,8 +22,8 @@ public final class Materials {
         if (!PaletteState.ready || stack.isEmpty()) return null;
         if (stack.getItem() == BuildingPalette.PIECE.get()) {
             String key = stack.get(BuildingPalette.MATERIAL.get());
-            Identifier id = key == null ? null : Identifier.tryParse(key);
-            Item parent = id == null ? Items.AIR : BuiltInRegistries.ITEM.getValue(id);
+            ResourceLocation id = key == null ? null : ResourceLocation.tryParse(key);
+            Item parent = id == null ? Items.AIR : BuiltInRegistries.ITEM.get(id);
             int shape = stack.getOrDefault(BuildingPalette.SHAPE.get(), Shape.CORNER.ordinal());
             if (shape < 0 || shape >= Shape.values().length) return null;
             return parent instanceof BlockItem && eligible(parent) ? new Selection(parent, Shape.values()[shape]) : null;
@@ -32,10 +32,10 @@ public final class Materials {
         Item parent = Platform.INSTANCE.parent(item);
         if (parent == null) parent = item;
         if (parent == item && item instanceof BlockItem b && (b.getBlock() instanceof FenceBlock || b.getBlock() instanceof WallBlock)) {
-            Identifier key = BuiltInRegistries.ITEM.getKey(item);
+            ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
             String stem = key.getPath().replaceFirst("_(fence|wall)$", "");
             for (String suffix : new String[]{"_planks", "", "s", "_block"}) {
-                Item candidate = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(key.getNamespace(), stem + suffix));
+                Item candidate = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(key.getNamespace(), stem + suffix));
                 if (candidate != null && candidate != Items.AIR && eligible(candidate)) { parent = candidate; break; }
             }
         }
@@ -67,10 +67,10 @@ public final class Materials {
         if (selection == null) return List.of();
         List<ItemStack> result = new ArrayList<>();
         List<Item> nativeShapes = new ArrayList<>(Platform.INSTANCE.shapes(selection.parent()));
-        Identifier key = BuiltInRegistries.ITEM.getKey(selection.parent());
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(selection.parent());
         String stem = key.getPath().replaceFirst("_planks$", "");
         for (String suffix : new String[]{"_fence", "_wall"}) {
-            Item candidate = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(key.getNamespace(), stem + suffix));
+            Item candidate = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(key.getNamespace(), stem + suffix));
             if (candidate != null && candidate != Items.AIR && !nativeShapes.contains(candidate)) nativeShapes.add(candidate);
         }
         for (Shape shape : Shape.values()) {

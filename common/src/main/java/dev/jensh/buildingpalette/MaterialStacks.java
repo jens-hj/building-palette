@@ -45,10 +45,6 @@ public final class MaterialStacks {
         if (s == null) throw new IllegalArgumentException("Not a building material");
         Balance balance = new Balance(units);
         ItemStack result = target.copy();
-        if (result.getItem() == BuildingPalette.PIECE.get()) {
-            var fuel = new ItemStack(s.parent()).get(net.minecraft.core.component.DataComponents.COOKING_FUEL);
-            if (fuel != null) result.set(net.minecraft.core.component.DataComponents.COOKING_FUEL, fuel);
-        }
         clearRemainder(result);
         result.setCount(balance.slots(s.shape()));
         if (balance.missing(s.shape()) != 0) {

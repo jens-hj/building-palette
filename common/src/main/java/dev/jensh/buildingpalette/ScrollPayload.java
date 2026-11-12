@@ -36,18 +36,8 @@ public record ScrollPayload(int container, int slot, int direction) implements C
     }
     /** The given units of the source's material as the target palette entry, keeping the source's other components. */
     public static ItemStack reshape(ItemStack source, ItemStack target, int units) {
-        var current = Materials.get(source);
         ItemStack converted = source.transmuteCopy(target.getItem(), 1);
         converted.remove(BuildingPalette.MATERIAL.get()); converted.remove(BuildingPalette.SHAPE.get()); MaterialStacks.clearRemainder(converted);
-        if (source.getItem() == BuildingPalette.PIECE.get() && target.getItem() != BuildingPalette.PIECE.get()
-                && java.util.Objects.equals(source.get(net.minecraft.core.component.DataComponents.COOKING_FUEL),
-                    new ItemStack(current.parent()).get(net.minecraft.core.component.DataComponents.COOKING_FUEL))) {
-            // A piece carries its parent's fuel value. Give a native item its own value back;
-            // removing the component would mark it "not fuel" and stop it stacking with others.
-            var fuel = new ItemStack(target.getItem()).get(net.minecraft.core.component.DataComponents.COOKING_FUEL);
-            if (fuel != null) converted.set(net.minecraft.core.component.DataComponents.COOKING_FUEL, fuel);
-            else converted.remove(net.minecraft.core.component.DataComponents.COOKING_FUEL);
-        }
         if (target.has(BuildingPalette.MATERIAL.get())) converted.set(BuildingPalette.MATERIAL.get(), target.get(BuildingPalette.MATERIAL.get()));
         if (target.has(BuildingPalette.SHAPE.get())) converted.set(BuildingPalette.SHAPE.get(), target.get(BuildingPalette.SHAPE.get()));
         return MaterialStacks.withUnits(converted, units);

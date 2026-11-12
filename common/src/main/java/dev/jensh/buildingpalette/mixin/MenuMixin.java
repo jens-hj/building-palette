@@ -13,13 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 public abstract class MenuMixin {
     @Unique private final Set<Slot> palette$dragSlots = new LinkedHashSet<>();
     @Inject(method = "clicked", at = @At("HEAD"), cancellable = true)
-    private void palette$click(int index, int button, ContainerInput input, Player player, CallbackInfo ci) {
+    private void palette$click(int index, int button, ClickType input, Player player, CallbackInfo ci) {
         AbstractContainerMenu menu = (AbstractContainerMenu)(Object)this;
-        if (input == ContainerInput.PICKUP && InventoryTransactions.pickup(menu, index, button, player)) ci.cancel();
-        if (input == ContainerInput.PICKUP_ALL && Materials.get(menu.getCarried()) != null) {
+        if (input == ClickType.PICKUP && InventoryTransactions.pickup(menu, index, button, player)) ci.cancel();
+        if (input == ClickType.PICKUP_ALL && Materials.get(menu.getCarried()) != null) {
             InventoryTransactions.collect(menu, player); ci.cancel();
         }
-        if (input == ContainerInput.QUICK_CRAFT && Materials.get(menu.getCarried()) != null) {
+        if (input == ClickType.QUICK_CRAFT && Materials.get(menu.getCarried()) != null) {
             int header = AbstractContainerMenu.getQuickcraftHeader(button), type = AbstractContainerMenu.getQuickcraftType(button);
             if (header == 0) palette$dragSlots.clear();
             else if (header == 1 && index >= 0 && index < menu.slots.size()) {

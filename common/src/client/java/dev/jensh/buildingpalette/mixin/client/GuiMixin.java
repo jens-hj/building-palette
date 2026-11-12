@@ -2,21 +2,21 @@ package dev.jensh.buildingpalette.mixin.client;
 
 import dev.jensh.buildingpalette.*;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(GuiGraphicsExtractor.class)
+@Mixin(GuiGraphics.class)
 public abstract class GuiMixin {
-    @Inject(method = "itemCount", at = @At("HEAD"), cancellable = true)
-    private void palette$count(Font font, ItemStack stack, int x, int y, String text, CallbackInfo ci) {
+    /** Show usable pieces instead of the raw stack count; "+" marks a reserved remainder. */
+    @ModifyVariable(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
+        at = @At("HEAD"), argsOnly = true)
+    private String palette$count(String text, Font font, ItemStack stack) {
         var s = Materials.get(stack);
-        if (s == null || text != null) return;
+        if (s == null || text != null) return text;
         int units = MaterialStacks.units(stack), count = MaterialStacks.available(stack);
-        String label = Integer.toString(count) + (units % s.shape().cost != 0 ? "+" : "");
-        if (count != 1 || MaterialStacks.missing(stack) > 0) ((GuiGraphicsExtractor)(Object)this).text(font, label, x + 17 - font.width(label), y + 9, -1, true);
-        ci.cancel();
+        if (count == 1 && MaterialStacks.missing(stack) == 0) return null;
+        return count + (units % s.shape().cost != 0 ? "+" : "");
     }
 }

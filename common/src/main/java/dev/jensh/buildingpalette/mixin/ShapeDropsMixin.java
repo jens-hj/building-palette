@@ -28,10 +28,10 @@ public abstract class ShapeDropsMixin {
         palette$exactDrops(state, level, pos, entity, null, ItemStack.EMPTY, cir);
     }
 
-    @Inject(method = "getDrops(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemInstance;)Ljava/util/List;",
+    @Inject(method = "getDrops(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;",
             at = @At("HEAD"), cancellable = true)
     private static void palette$exactDrops(BlockState state, ServerLevel level, BlockPos pos, BlockEntity entity,
-            Entity breaker, ItemInstance tool, CallbackInfoReturnable<List<ItemStack>> cir) {
+            Entity breaker, ItemStack tool, CallbackInfoReturnable<List<ItemStack>> cir) {
         var selection = Materials.get(new ItemStack(state.getBlock().asItem()));
         if (selection == null || selection.shape() == Shape.BLOCK) return;
         var original = palette$vanillaDrops(state, level, pos, entity, breaker, tool);
@@ -55,7 +55,7 @@ public abstract class ShapeDropsMixin {
     }
 
     private static List<ItemStack> palette$vanillaDrops(BlockState state, ServerLevel level, BlockPos pos,
-            BlockEntity entity, Entity breaker, ItemInstance tool) {
+            BlockEntity entity, Entity breaker, ItemStack tool) {
         var params = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
                 .withParameter(LootContextParams.TOOL, tool)

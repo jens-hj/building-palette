@@ -9,4 +9,6 @@ public interface ClientServices {
     boolean shapeKeyDown();
     void sendScroll(ScrollPayload payload);
     void syncPreferences(PreferencesPayload payload);
+    /** False when the server cannot handle material picks. */
+    boolean sendPick(PickPayload payload);
 }

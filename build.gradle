@@ -4,7 +4,6 @@ allprojects {
     version = rootProject.property('version')
     repositories {
         mavenCentral()
-        maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }
         exclusiveContent {
             forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
@@ -12,7 +11,4 @@ allprojects {
         }
     }
 }
-tasks.named('build') { dependsOn ':common:build', ':fabric:build', ':neoforge:build' }
-for (def name : ['runClientGameTest', 'runGameTest', 'modelTest', 'modrinthSyncBody']) {
-    tasks.register(name) { dependsOn ":fabric:${name}" }
-}
+tasks.named('build') { dependsOn ':common:build', ':neoforge:build' }

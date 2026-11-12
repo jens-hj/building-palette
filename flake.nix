@@ -1,5 +1,5 @@
 {
-  description = "Building Palette - Minecraft Fabric/NeoForge mod dev environment";
+  description = "Building Palette - Minecraft NeoForge 1.21.1 mod dev environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        jdk = pkgs.jdk25;
+        jdk = pkgs.jdk21;
         # Native libs needed by `./gradlew runClient` (LWJGL / GLFW / OpenAL)
         runtimeLibs = with pkgs; [
           libGL
