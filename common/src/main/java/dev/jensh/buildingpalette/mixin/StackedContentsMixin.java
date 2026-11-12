@@ -15,7 +15,7 @@ public abstract class StackedContentsMixin {
             int count = Math.min(max, MaterialStacks.available(stack));
             if (count > 0) {
                 ItemStack whole = stack.copy();
-                whole.remove(BuildingPalette.MISSING.get());
+                MaterialStacks.clearRemainder(whole);
                 whole.setCount(count);
                 ((StackedItemContents)(Object)this).accountStack(whole, count);
             }

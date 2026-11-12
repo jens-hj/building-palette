@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 public final class BuildingPalette {
     public static final String ID = "building_palette";
     public static final Handle<DataComponentType<Integer>> MISSING = new Handle<>();
+    /** The stack count a {@link #MISSING} remainder was written for; see MaterialStacks. */
+    public static final Handle<DataComponentType<Integer>> MISSING_FOR = new Handle<>();
     public static final Handle<DataComponentType<String>> MATERIAL = new Handle<>();
     public static final Handle<DataComponentType<Integer>> SHAPE = new Handle<>();
     public static final Handle<Item> PIECE = new Handle<>();
@@ -30,9 +32,10 @@ public final class BuildingPalette {
     public static Identifier id(String path) { return Identifier.fromNamespaceAndPath(ID, path); }
     public static void components(BiConsumer<Identifier, DataComponentType<?>> register) {
         MISSING.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 7)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+        MISSING_FOR.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(1, 512)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         MATERIAL.bind(DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
         SHAPE.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 8)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
-        register.accept(id("missing_units"), MISSING.get()); register.accept(id("material"), MATERIAL.get()); register.accept(id("shape"), SHAPE.get());
+        register.accept(id("missing_units"), MISSING.get()); register.accept(id("missing_for"), MISSING_FOR.get()); register.accept(id("material"), MATERIAL.get()); register.accept(id("shape"), SHAPE.get());
     }
     public static void items(BiConsumer<Identifier, Item> register) {
         PIECE.bind(new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id("piece")))));

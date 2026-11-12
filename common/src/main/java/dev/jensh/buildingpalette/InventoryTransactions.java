@@ -9,9 +9,13 @@ import net.minecraft.world.item.ItemStack;
 public final class InventoryTransactions {
     private InventoryTransactions() {}
     public static void assign(ItemStack destination, ItemStack value) {
+        // Clear first: changing the count of a stack that still carries a remainder rebalances it.
+        MaterialStacks.clearRemainder(destination);
         destination.setCount(value.getCount());
-        if (value.has(BuildingPalette.MISSING.get())) destination.set(BuildingPalette.MISSING.get(), value.get(BuildingPalette.MISSING.get()));
-        else destination.remove(BuildingPalette.MISSING.get());
+        if (value.has(BuildingPalette.MISSING.get()) && !destination.isEmpty()) {
+            destination.set(BuildingPalette.MISSING.get(), value.get(BuildingPalette.MISSING.get()));
+            destination.set(BuildingPalette.MISSING_FOR.get(), MaterialStacks.sealed(value));
+        }
     }
     /** Transfer material to a slot, preserving the receiver's selected shape. */
     public static int insert(Slot slot, ItemStack source, int limitUnits) {

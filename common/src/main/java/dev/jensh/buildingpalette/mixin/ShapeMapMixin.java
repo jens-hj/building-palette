@@ -14,7 +14,7 @@ public abstract class ShapeMapMixin {
             var list = dev.jensh.buildingpalette.platform.Platform.INSTANCE.shapes(stack.getItem());
             if (index < 0 || index >= list.size()) { cir.setReturnValue(stack.copy()); return; }
             ItemStack target = stack.transmuteCopy(list.get(index), 1);
-            target.remove(BuildingPalette.MISSING.get());
+            MaterialStacks.clearRemainder(target);
             if (Materials.get(target) != null && MaterialStacks.units(stack) <= 512)
                 cir.setReturnValue(MaterialStacks.withUnits(target, MaterialStacks.units(stack)));
             else cir.setReturnValue(stack.copy());

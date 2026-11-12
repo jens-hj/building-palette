@@ -373,6 +373,42 @@ public final class PaletteGameTestScenarios {
         } finally { PlacementPreferences.remove(player); }
         test.succeed();
     }
+    /** Storage mods describe a stack as "item x count" and rebuild stacks of any size from that.
+     * However they split or merge those, a remainder must never turn into extra material. */
+    public void storageDescriptionsNeverCreateMaterial(GameTestHelper test) {
+        String oak = "minecraft:oak_planks";
+        ItemStack stack = Materials.piece(oak, Shape.BLOCK, 20);
+        test.assertValueEqual(stack.getCount(), 3, "20 units show as three blocks, the last incomplete");
+        ItemStack key = stack.copyWithCount(1);
+        test.assertValueEqual(MaterialStacks.units(key.copyWithCount(3)), 20, "The whole stack comes back exact");
+        test.assertValueEqual(MaterialStacks.units(key.copyWithCount(6)), 40, "Two merged stacks come back exact");
+        test.assertTrue(3 * MaterialStacks.units(key.copyWithCount(1)) <= 20, "Taking one at a time creates nothing");
+        test.assertTrue(MaterialStacks.units(key.copyWithCount(2)) + MaterialStacks.units(key.copyWithCount(1)) <= 20, "An uneven split creates nothing");
+        test.assertTrue(MaterialStacks.units(key.copyWithCount(4)) + MaterialStacks.units(key.copyWithCount(2)) <= 40, "Splitting a merged pool creates nothing");
+
+        ItemStack rest = stack.copy(), part = rest.split(1);
+        test.assertValueEqual(MaterialStacks.units(part), 8, "A split takes whole pieces");
+        test.assertValueEqual(MaterialStacks.units(rest), 12, "and the remainder stays behind");
+        test.assertTrue(MaterialStacks.intact(rest), "The rest is an exact stack again");
+        rest.shrink(1);
+        test.assertValueEqual(MaterialStacks.units(rest), 4, "Consuming a piece keeps the remainder");
+
+        ItemStack pool = key.copyWithCount(6), most = pool.split(4);
+        test.assertValueEqual(MaterialStacks.units(most) + MaterialStacks.units(pool), 40, "Splitting a merged stack keeps every unit");
+        pool = key.copyWithCount(6);
+        pool.shrink(2);
+        test.assertValueEqual(MaterialStacks.units(pool), 24, "Shrinking a merged stack keeps both remainders");
+
+        ItemStack planks = ScrollPayload.convert(Materials.piece(oak, Shape.CORNER, 8), 1);
+        for (int i = 0; i < 12 && Materials.get(planks).shape() != Shape.BLOCK; i++) planks = ScrollPayload.convert(planks, 1);
+        test.assertTrue(ItemStack.isSameItemSameComponents(planks, new ItemStack(Items.OAK_PLANKS)), "Corners reshaped to a block are ordinary planks");
+
+        ItemStack one = Materials.piece(oak, Shape.BLOCK, 4), merged = one.copy();
+        merged.grow(1);
+        test.assertValueEqual(MaterialStacks.units(merged), 8, "Two half blocks merged by count are still two halves");
+        test.succeed();
+    }
+
     public void overlappingPiecesMerge(GameTestHelper test) {
         var level = test.getLevel();
         var pos = test.absolutePos(new BlockPos(2, 2, 2));
