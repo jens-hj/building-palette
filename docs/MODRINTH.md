@@ -54,6 +54,6 @@ Building Palette is an add-on for other people's mods. It contains no code, text
 - **[Clutter No More](https://modrinth.com/mod/clutternomore)** by Monad Modding (All Rights Reserved): required. Its step, vertical slab and vertical step blocks are used as they are; Building Palette adds material accounting and shape selection on top, and derives their drops from Clutter No More's own rules.
 - **[Offgrid](https://modrinth.com/mod/offgrid)** by Monad Modding (All Rights Reserved): required. Building Palette calls Offgrid's public classes to place fences, walls, panes, bars and chains inside building pieces. At runtime it changes two Offgrid placement rules (pieces running along stairs and steps, and not being notched) and shows Offgrid the shape of combined blocks. Offgrid's files are not modified or shipped.
 - **[Traveler's Backpack](https://modrinth.com/mod/travelersbackpack)** (LGPL-3.0): optional. Middle-click can take material from an equipped backpack through its API.
-- **Minecraft**: combined pieces are drawn by cropping the game's own block models and textures at runtime; no Mojang assets are included. The icon is original pixel art made with a script in the repository.
+- **Minecraft**: combined pieces are drawn by cropping the game's own block models and textures at runtime; no Mojang assets are included. The icon is original AI-generated art; the prompt is in the repository.
 
 Please report problems with these combinations to [Building Palette's issue tracker](https://github.com/jens-hj/building-palette/issues), not to the original authors.
