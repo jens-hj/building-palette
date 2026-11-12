@@ -48,6 +48,7 @@ public final class NeoClientTest {
             if (++ticks > 6000) throw new AssertionError("Graphical test timed out");
             if (!started) {
                 if (mc.screen instanceof net.neoforged.neoforge.client.gui.LoadingErrorScreen) throw new AssertionError("NeoForge loading errors; see client log");
+                if (ticks > 3000) throw new AssertionError("Never reached the title screen; stuck on " + mc.screen);
                 if (!(mc.screen instanceof TitleScreen)) return;
                 started = true;
                 mc.createWorldOpenFlows().createFreshLevel("palette-test-" + System.currentTimeMillis(),
@@ -57,7 +58,7 @@ public final class NeoClientTest {
                 return;
             }
             if (mc.level == null || mc.player == null || mc.getSingleplayerServer() == null) return;
-            if (!seeded) { seeded = true; seed(); scenario(); delay = 60; }
+            if (!seeded) { seeded = true; seed(); scenario(); delay = Integer.getInteger("building_palette.settle_ticks", 60); }
             if (delay-- > 0) return;
             var step = steps.poll();
             if (step != null) { step.action.run(); delay = step.delay; }
