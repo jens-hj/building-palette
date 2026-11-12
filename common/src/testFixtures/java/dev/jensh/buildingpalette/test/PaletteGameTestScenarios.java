@@ -409,6 +409,60 @@ public final class PaletteGameTestScenarios {
         test.succeed();
     }
 
+    /** An end rod (any small Offgrid piece) and pieces share a block wherever they do not actually overlap. */
+    public void offgridSmallPiecesShareCombinedBlocks(GameTestHelper test) {
+        var level = test.getLevel();
+        var pos = test.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+        var player = (net.minecraft.server.level.ServerPlayer)test.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setPos(pos.getX() + .5, pos.getY(), pos.getZ() - 1.5);
+        var hand = net.minecraft.world.InteractionHand.MAIN_HAND;
+        String stone = "minecraft:stone_bricks";
+        java.util.function.BiFunction<Double, Double, net.minecraft.world.phys.BlockHitResult> onCorner = (x, z) ->
+            new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + x, pos.getY() + .5, pos.getZ() + z), Direction.UP, pos, false);
+        try {
+            PlacementPreferences.set(player, true);
+            // Three bottom corners and one on top: a rod stands on a free bottom corner beside it.
+            Placement.store(level, pos, new dev.jensh.buildingpalette.core.Cells().place(0b00010111, stone), false);
+            player.setItemInHand(hand, new ItemStack(Items.END_ROD, 4));
+            test.assertTrue(player.gameMode.useItemOn(player, level, player.getMainHandItem(), hand, onCorner.apply(.75, .25)).consumesAction(), "Rod stands on a bottom corner next to a higher one");
+            var rods = dev.tazer.offgrid.world.Cells.overlays(level, pos);
+            test.assertValueEqual(rods.size(), 1, "Rod is kept in the pieces' block");
+            test.assertTrue(rods.getFirst().getState().is(Blocks.END_ROD), "Kept piece is the rod");
+            test.assertValueEqual(rods.getFirst().getOffset(), new net.minecraft.world.phys.Vec3(.25, .5, -.25), "Rod is centred on the clicked half cell");
+            test.assertTrue(!player.gameMode.useItemOn(player, level, player.getMainHandItem(), hand, onCorner.apply(.75, .25)).consumesAction()
+                || dev.tazer.offgrid.world.Cells.overlays(level, pos).size() == 1, "A second rod cannot stand inside the first");
+            dev.tazer.offgrid.world.Overlays.remove(level, pos, rods.getFirst(), false);
+
+            // A lone corner with a rod on it: other pieces join wherever the rod is not.
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            Placement.store(level, pos, new dev.jensh.buildingpalette.core.Cells().place(0b00000001, stone), false);
+            player.setItemInHand(hand, new ItemStack(Items.END_ROD, 4));
+            test.assertTrue(player.gameMode.useItemOn(player, level, player.getMainHandItem(), hand, onCorner.apply(.25, .25)).consumesAction(), "Rod stands on a lone corner");
+            test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Rod shares the corner's block");
+            player.setItemInHand(hand, Materials.piece(stone, Shape.CORNER, 8));
+            var floor = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .75, pos.getY(), pos.getZ() + .75), Direction.UP, pos.below(), false);
+            test.assertTrue(Placement.use(player, level, hand, floor) == net.minecraft.world.InteractionResult.SUCCESS, "A corner clear of the rod joins the block");
+            test.assertValueEqual(Placement.existing(level, pos).occupied(), 0b00100001, "Both corners are stored");
+            test.assertValueEqual(dev.tazer.offgrid.world.Cells.overlays(level, pos).size(), 1, "Rod survives the new corner");
+            test.assertTrue(Placement.plan(level, player, player.getMainHandItem(), onCorner.apply(.25, .25)) == null, "A corner inside the rod is refused");
+            // A rod reaching in from the block below blocks only the cells it reaches.
+            player.setItemInHand(hand, Materials.piece(stone, Shape.SLAB, 8));
+            var above = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .75, pos.getY() + 2, pos.getZ() + .75), Direction.DOWN, pos.above(2), false);
+            level.setBlock(pos.above(2), Blocks.STONE.defaultBlockState(), 3);
+            test.assertTrue(Placement.use(player, level, hand, above) == net.minecraft.world.InteractionResult.SUCCESS, "A top slab above the rod's block is clear of it");
+            var beside = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + .75, pos.getY() + 1.5, pos.getZ() + .75), Direction.DOWN, pos.above(), false);
+            player.setItemInHand(hand, Materials.piece(stone, Shape.CORNER, 8));
+            test.assertTrue(Placement.use(player, level, hand, beside) == net.minecraft.world.InteractionResult.SUCCESS, "A corner beside the rod's upper half is placed");
+            player.setItemInHand(hand, Materials.piece(stone, Shape.SLAB, 8));
+            test.assertTrue(Placement.plan(level, player, player.getMainHandItem(), beside) == null, "A slab across the rod's upper half is refused");
+            test.succeed();
+        } finally {
+            PlacementPreferences.set(player, false);
+            for (BlockPos cell : new BlockPos[]{pos, pos.above()}) for (var overlay : java.util.List.copyOf(dev.tazer.offgrid.world.Cells.overlays(level, cell))) dev.tazer.offgrid.world.Overlays.remove(level, cell, overlay, false);
+        }
+    }
+
     public void overlappingPiecesMerge(GameTestHelper test) {
         var level = test.getLevel();
         var pos = test.absolutePos(new BlockPos(2, 2, 2));

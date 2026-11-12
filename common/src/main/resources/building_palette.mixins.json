@@ -24,6 +24,7 @@
     "ItemEntityMixin",
     "OffgridBlocklogMixin",
     "OffgridHostShapeMixin",
+    "OffgridSurfaceMixin",
     "OmniVaultStorageMixin"
   ],
   "injectors": {

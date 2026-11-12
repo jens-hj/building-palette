@@ -179,7 +179,9 @@ public final class Placement {
         if (!canOccupy(level, player, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask).move(target))) return null;
         // Blocks holding Offgrid fences/walls only take a result that can still host them.
         if (OffgridHosts.occupied(level, target) && !OffgridHosts.accepts(level, target,
-                OffgridHosts.host(before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER))) return null;
+                before.place(mask, selection.material()), level.getFluidState(target).getType() == Fluids.WATER)) return null;
+        // Other Offgrid pieces (an end rod, a lantern) only block the cells they actually reach into.
+        if (OffgridHosts.blocked(level, target, MultipartBlock.shape(new Cells().place(mask, selection.material()), mask))) return null;
         return new Plan(target, before, mask, selection.material());
     }
     private static boolean canOccupy(Level level, Player player, VoxelShape added) {

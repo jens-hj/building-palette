@@ -4,7 +4,11 @@ import dev.jensh.buildingpalette.core.Cells;
 import dev.tazer.offgrid.OffgridSettings;
 import dev.tazer.offgrid.world.Blocklogging;
 import dev.tazer.offgrid.world.Overlay;
+import dev.tazer.offgrid.world.OverlayShapes;
 import dev.tazer.offgrid.world.Overlays;
+import dev.tazer.offgrid.world.Surfaces;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.shapes.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
@@ -42,14 +46,54 @@ public final class OffgridHosts {
     public static BlockState fit(BlockState guest, BlockState host) {
         return Blocklogging.of(guest, host) != null ? guest : Blocklogging.fit(guest, host, guest);
     }
-    /** Whether {@code host} can replace the block at pos without dropping what it holds. */
-    public static boolean accepts(Level level, BlockPos pos, BlockState host) {
-        if (host == null) return false;
-        BlockState current = level.getBlockState(pos);
-        if (isGuest(level, pos, current)) return fit(current, host) != null;
+    /** Whether the block at pos can become {@code cells} without dropping what it holds. Blocklog
+     * pieces need a host that keeps part of them visible; any other Offgrid piece in the block
+     * (an end rod, a lantern) only has to stay clear of the cells themselves. */
+    public static boolean accepts(Level level, BlockPos pos, Cells cells, boolean wet) {
+        BlockState host = host(cells, wet), current = level.getBlockState(pos);
+        if (isGuest(level, pos, current)) return host != null && fit(current, host) != null;
         for (Overlay overlay : dev.tazer.offgrid.world.Cells.overlays(level, pos))
-            if (Blocklogging.of(overlay.getState(), host, overlay.getOffset()) == null) return false;
+            if (Blocklogging.canBlocklog(overlay.getState()) && (host == null || Blocklogging.of(overlay.getState(), host, overlay.getOffset()) == null)) return false;
         return true;
+    }
+    /** Whether an Offgrid piece other than a blocklog piece, in this block or reaching in from a
+     * neighbour, occupies part of {@code added} (a shape relative to pos). */
+    public static boolean blocked(Level level, BlockPos pos, VoxelShape added) {
+        if (added.isEmpty()) return false;
+        for (BlockPos cell : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
+            if (!level.hasChunkAt(cell)) continue;
+            for (Overlay overlay : dev.tazer.offgrid.world.Cells.overlays(level, cell)) {
+                if (Blocklogging.canBlocklog(overlay.getState())) continue;
+                VoxelShape shape = OverlayShapes.of(level, cell, overlay);
+                if (!shape.isEmpty() && Shapes.joinIsNotEmpty(added, shape.move(cell.getX() - pos.getX(), cell.getY() - pos.getY(), cell.getZ() - pos.getZ()), BooleanOp.AND)) return true;
+            }
+        }
+        return false;
+    }
+    /** Offgrid centres a placed piece on whichever box of the clicked shape lies under the cursor.
+     * A combined block's boxes span several cells, so that centre can land inside a neighbouring
+     * piece and the placement is refused. When Offgrid finds no spot, try the centre of the
+     * clicked half cell: anything at most half a block wide fits there if the space is really free. */
+    public static Vec3 halfCellOffset(Level level, BlockPos clicked, Direction face, Vec3 location, BlockState placed) {
+        if (!dev.tazer.offgrid.world.Cells.realState(level, clicked).is(BuildingPalette.MULTIPART.get())) return null;
+        VoxelShape shape = placed.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty());
+        if (shape.isEmpty()) return null;
+        var bounds = shape.bounds();
+        Direction.Axis axis = face.getAxis();
+        double[] hit = {location.x - clicked.getX(), location.y - clicked.getY(), location.z - clicked.getZ()}, offset = new double[3];
+        for (Direction.Axis lateral : Direction.Axis.values()) {
+            int i = lateral.ordinal();
+            if (lateral == axis) {
+                // Offsets are relative to the block in front of the clicked face.
+                offset[i] = Math.round((hit[i] - (face.getAxisDirection().getStep() > 0 ? 1 : 0)) * 16) / 16.0;
+                continue;
+            }
+            if (bounds.max(lateral) - bounds.min(lateral) > .5 + 1.0E-4) return null;
+            double centre = hit[i] < .5 ? .25 : .75;
+            offset[i] = centre - (bounds.min(lateral) + bounds.max(lateral)) / 2;
+        }
+        Vec3 candidate = new Vec3(offset[0], offset[1], offset[2]);
+        return Surfaces.fits(level, clicked.relative(face), placed, candidate) ? candidate : null;
     }
     /** Turn a former guest block into an overlay of the host now at pos. */
     public static boolean adopt(ServerLevel level, BlockPos pos, BlockState guest) {
