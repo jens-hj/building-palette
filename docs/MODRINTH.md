@@ -1,59 +1,57 @@
-# Building Palette
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/banner.jpg" alt="Building Palette: slabs, steps and corners in one slot" width="100%"></p>
 
-Build with slabs, stairs, quarter-volume steps, and eighth-volume corners while keeping your material in one inventory slot.
+<p align="center"><b>Every shape of a block in one stack. Build on a half-block grid, mix materials inside a block, and pay only for what you place.</b></p>
 
-Hold **Alt** and scroll a held stack or an inventory stack to change its shape. A full stack of 64 blocks becomes 128 slabs, 256 steps, or 512 corners **in the same slot**. Stair leftovers remain stored and become usable when you select another shape.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
 
-The selector rises vertically from the active hotbar slot using Minecraft's hotbar styling. In inventories it shows choices above and below the hovered stack, with the same shape order and corners. Drop any shape onto another stack of the same material to merge into the destination's shape, leaving only overflow beyond 64 blocks of material.
+<img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_shapes.png" alt="Shapes" height="54">
 
-Shift-click also fills existing material stacks first. Middle-click selects the pointed material from any shape in your inventory or equipped Traveler's Backpack; pick again while holding it to match the target shape while keeping the same material balance. If the held stack is too small for the picked shape (a full block showing **0+**), picking tops it up with the same material from your inventory or backpack. Compound shapes choose a reusable building piece, such as steps for diagonal steps or vertical steps for a rotated stair. Mixed blocks pick the material you point at.
+Hold **Alt** and scroll to change a stack's shape, in your hand or in any inventory. A stack of 64 blocks is 128 slabs, 256 steps or 512 corners, all in the same slot.
 
-On NeoForge, or on Fabric with Mod Menu installed, open **Mods → Building Palette → Configure**. Placement previews, precise half-grid placement, and coloured part highlighting default off. Selection outlines match vanilla by default; enable **Highlight combined parts** and choose **Outline hue** for an optional custom-colour highlight. Slabs and stairs use their normal placement rules by default, including stair facing, upside-down placement, and corner connections. Enable precise placement to use the clicked half-grid position instead. Placement controls apply per player; horizontal and vertical quarter steps, corners, and pieces without a native item always use Building Palette’s half-grid placement and mixed-material combining. Settings are also available in `config/building_palette.json`.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/scroll.gif" alt="Alt + scroll through the shapes of one stack" width="49%"> <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/shapes.png" alt="Material cost: block 8, stair 6, slab 4, step 2, corner 1" width="49%"></p>
 
-Combine pieces on a half-block grid, including different materials in the same block space. A piece may partly overlap the same material already there, such as a second step laid across the first to make an L, and only costs the cells it adds. Mine the aimed material to remove all face-connected pieces of that material within the block. Explicit stairs and corner pieces allow small details with ordinary Minecraft block textures.
+Leftovers are kept: a **+** beside the count means material waiting for a smaller shape.
 
-Selected slabs remain slab ingredients, and planks remain plank ingredients. Fences and walls stay available in the palette with their normal behavior.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
 
-## Requirements
+<img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_combine.png" alt="Combine" height="54">
 
-With Offgrid, fences, walls, panes, bars, and chains can share a block with any shape that leaves part of them visible, including corners, stairs, and mixed materials, whichever you place first.
+Pieces snap to a half-block grid and stack inside one block, in any mix of materials. Lay a step across another and they merge into an L, costing only the added corner. Mining takes the piece you aim at and returns exactly its material.
 
-Client **and** server: Minecraft **26.3**, Java **25**, [Clutter No More 3.1.3+26.3 (3.1.x)](https://modrinth.com/mod/clutternomore), and [Offgrid 1.0.5+26.3 (1.0.x)](https://modrinth.com/mod/offgrid). Choose matching builds for your loader:
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/merge.gif" alt="Steps and corners merging inside one block" width="40%"> <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_roof.jpg" alt="Brick gable under a stepped roof edge" width="58%"></p>
 
-- **Fabric:** Loader 0.19.5 or newer and [Fabric API](https://modrinth.com/mod/fabric-api). Mod Menu is optional for settings.
-- **NeoForge:** 26.3.0.76 or newer for Minecraft 26.3. Settings are available in NeoForge’s Mods screen.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_window.jpg" alt="Window with a protruding sill and lintel" width="100%"></p>
 
-Install the Building Palette jar for the same loader on both sides. Forge is not supported.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
 
-Building Palette is a companion: keep both original mods installed. It handles material accounting and solid-piece combinations while fences and walls keep their native placement behavior.
+<img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_offgrid.png" alt="Offgrid" height="54">
 
-## Survival building
+Fences, walls, panes, bars and chains pass through any piece, placed in either order.
 
-- Full block: 8 material units
-- Slab or vertical slab: 4 units
-- Straight stair: 6 units
-- Step or vertical step: 2 units
-- Corner cube: 1 unit
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_bench.jpg" alt="Bench of oak steps on fence legs" width="100%"></p>
 
-Each material stack holds up to 512 units. A **+** beside a count means some material is reserved until you choose a smaller shape. Mining returns the exact removed material amount.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
 
-Families from the RPG test instance were checked across vanilla and modded building blocks. Functional blocks and families without a full-block parent are excluded. Pack authors can adjust supported materials with the `building_palette:included` and `building_palette:excluded` item tags.
+<img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_controls.png" alt="Controls" height="54">
 
-## Alpha limitations
+| Input | Does |
+|---|---|
+| **Alt** + scroll | Change shape |
+| Middle-click | Pick the pointed material; tops up from inventory or [Traveler's Backpack](https://modrinth.com/mod/travelersbackpack) |
+| Drop onto a stack | Merge into that stack's shape |
+| Shift-click | Fill partial stacks first |
 
-Test in a copied instance and disposable world first. Multipart blocks cannot be pushed by pistons and do not reproduce ticking/functional-block behavior. Functional block entities are excluded. Arbitrary third-party machine compatibility is not guaranteed.
+Precise half-grid placement, placement preview and part highlighting are in **Mods → Building Palette → Configure** (Mod Menu on Fabric).
 
-Keep the mod installed while a world contains multipart blocks; restore a pre-install backup before removing it. Existing items are valued by their current shape, without attempting to reconstruct historical conversion losses.
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
 
-Combined pieces render with chunk terrain at block render distance. Existing saved pieces keep their materials and automatically refresh lighting after their chunks load.
+<img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_requirements.png" alt="Requirements" height="54">
 
-## Derivative work
+Install on **client and server**, Minecraft **26.3**, Java **25**.
 
-Building Palette is an add-on for other people's mods. It contains no code, textures, models or other assets copied from them, and it does not redistribute them. Its source is original and MIT licensed.
+| | Fabric | NeoForge |
+|---|---|---|
+| Loader | 0.19.5+ with [Fabric API](https://modrinth.com/mod/fabric-api) | 26.3.0.76+ |
+| Required | [Clutter No More](https://modrinth.com/mod/clutternomore) 3.1.x, [Offgrid](https://modrinth.com/mod/offgrid) 1.0.x | same |
 
-- **[Clutter No More](https://modrinth.com/mod/clutternomore)** by Monad Modding (All Rights Reserved): required. Its step, vertical slab and vertical step blocks are used as they are; Building Palette adds material accounting and shape selection on top, and derives their drops from Clutter No More's own rules.
-- **[Offgrid](https://modrinth.com/mod/offgrid)** by Monad Modding (All Rights Reserved): required. Building Palette calls Offgrid's public classes to place fences, walls, panes, bars and chains inside building pieces. At runtime it changes two Offgrid placement rules (pieces running along stairs and steps, and not being notched) and shows Offgrid the shape of combined blocks. Offgrid's files are not modified or shipped.
-- **[Traveler's Backpack](https://modrinth.com/mod/travelersbackpack)** (LGPL-3.0): optional. Middle-click can take material from an equipped backpack through its API.
-- **Minecraft**: combined pieces are drawn by cropping the game's own block models and textures at runtime; no Mojang assets are included. The icon is original AI-generated art; the prompt is in the repository.
-
-Please report problems with these combinations to [Building Palette's issue tracker](https://github.com/jens-hj/building-palette/issues), not to the original authors.
+**Alpha:** back up your world first, and keep the mod installed while a world contains combined blocks. Combined blocks can't be pushed by pistons. Functional blocks are excluded; pack authors can adjust materials with the `building_palette:included` and `building_palette:excluded` item tags.
