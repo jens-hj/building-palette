@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.25
+
+- Small Offgrid pieces such as end rods can stand on any free half cell of a combined block, also right beside a higher piece. Offgrid centres a piece on the box under the cursor, which in a combined block could land inside a neighbouring piece and refuse the placement; the clicked half cell is now tried as well.
+- Pieces can be added to a block that holds an end rod or another non-fence Offgrid piece, or that one reaches into from a neighbouring block, as long as the new cells do not overlap it. Before, any such piece blocked the whole block.
+
 ## 0.1.0-alpha.24
 
 - Fix duplicating material through storage mods that keep "item × count" instead of stacks (OmniVault, and the same pattern in AE2 or Refined Storage style mods). A stack with a leftover, such as a block showing **0+**, could come back out as whole pieces. A leftover now belongs to the exact stack it was written for, so however such a mod splits or merges it, material can be rounded down but never created.

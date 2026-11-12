@@ -171,3 +171,7 @@ A new server test takes a stack of 20 units (three blocks, the last incomplete) 
 The OmniVault test builds a real `NetworkStorage` over an in-memory cell. Five steps become one block and two corners with no step entry. A half block (**0+**) adds four corners and no block. A 20-unit partial stack rolls the corners over into blocks, 34 units in and 34 stored. Six more corners complete a block and remove the corner entry, and whole blocks pass through untouched. Simulated inserts store nothing.
 
 Fabric dev and test runs now use Fabric Loader 0.20.1, which OmniVault requires; the mod's own minimum is unchanged.
+
+## Small Offgrid pieces on combined blocks — alpha.25
+
+27 Fabric and 28 NeoForge server tests passed (NeoForge with OmniVault on the runtime), plus the Fabric client suite. A new test places an end rod through the normal item-use path on a bottom corner beside a higher corner, where Offgrid alone refuses it, and checks it is centred on the clicked half cell. With a rod on a lone corner, a corner clear of the rod joins the block and the rod survives, a corner inside the rod is refused, a top slab in the block above is placed, a corner beside the rod's upper half is placed, and a slab across it is refused.
