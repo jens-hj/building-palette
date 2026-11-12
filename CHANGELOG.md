@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.24
+
+- Fix duplicating material through storage mods that keep "item × count" instead of stacks (OmniVault, and the same pattern in AE2 or Refined Storage style mods). A stack with a leftover, such as a block showing **0+**, could come back out as whole pieces. A leftover now belongs to the exact stack it was written for, so however such a mod splits or merges it, material can be rounded down but never created.
+- OmniVault networks store every shape as full blocks, plus at most seven loose corners per material. Steps, slabs and partial stacks merge into the block entry instead of taking their own, and nothing is lost on the way in. Drawers, vaults and backpacks are unchanged.
+- Fix wooden pieces reshaped back to a native item (corners scrolled to planks, for example) losing their fuel value, which also stopped them stacking with ordinary planks.
+
 ## 0.1.0-alpha.23
 
 - A piece can now overlap existing material of the same kind in its block, as long as the overlap is only part of both: a step laid across another step makes an L. You only spend the cells it adds.

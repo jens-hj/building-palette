@@ -161,3 +161,13 @@ New server tests place a fence first and then add a step by clicking the ceiling
 ## Overlapping pieces, any-shape Offgrid hosts and breaking cracks — alpha.23
 
 New server tests lay a step, then a perpendicular step over it: they merge into an L of three cells and spend one unit. The same step again, a slab covering the whole L, and an overlapping step of another material are refused. A fence keeps its place when a lone corner and then a corner of a second material are added. The resulting carrier is an Offgrid host. A fence is also blocklogged into a carrier missing one corner, and the carrier keeps its cells. A full block is refused and leaves the fence and the material. Offgrid accepts a lone post and a pane in a stair, and a wall in a bottom slab. Shift-clicking into the hotbar and into the main inventory, both from the player inventory and from a chest, merges into partial stacks of every shape. The crack hook was checked to apply on each loader: with the hook made mandatory, both graphical suites passed. All 24 Fabric and 25 NeoForge server tests passed, as did both graphical suites, the Fabric pack fixture, and every published saved-world upgrade path on both loaders.
+
+## Abstract storage and OmniVault — alpha.24
+
+`./gradlew build` passed with 26 Fabric server tests; NeoForge passed 26, and 27 with OmniVault 2.0.4 on the runtime (`-PneoOmniVault`). Both client suites passed.
+
+A new server test takes a stack of 20 units (three blocks, the last incomplete) and treats it the way a storage mod does: a one-item description, rebuilt at other counts. The whole stack and two merged stacks come back exact; taking items one at a time, uneven splits, and splitting a merged pool never exceed the original units. `split` takes whole pieces and leaves the leftover behind, shrinking keeps it, and two half blocks merged by count stay two halves. Corners reshaped to a block equal ordinary planks.
+
+The OmniVault test builds a real `NetworkStorage` over an in-memory cell. Five steps become one block and two corners with no step entry. A half block (**0+**) adds four corners and no block. A 20-unit partial stack rolls the corners over into blocks, 34 units in and 34 stored. Six more corners complete a block and remove the corner entry, and whole blocks pass through untouched. Simulated inserts store nothing.
+
+Fabric dev and test runs now use Fabric Loader 0.20.1, which OmniVault requires; the mod's own minimum is unchanged.
