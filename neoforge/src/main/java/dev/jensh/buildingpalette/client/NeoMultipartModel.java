@@ -55,7 +55,10 @@ public final class NeoMultipartModel implements IDynamicBakedModel {
                 random.setSeed(seed);
                 all.addAll(model.getQuads(source, direction, random, ModelData.EMPTY, renderType));
             }
-            MultipartGeometry.crop(all, i, MultipartGeometry.visible(cell -> cells.at(cell) != null, i), i * MultipartGeometry.TINT_STRIDE, result);
+            // A neighbouring cell hides a face only if it is the same material or opaque: glass must not hide stone.
+            MultipartGeometry.crop(all, i, MultipartGeometry.visible(cell -> cells.at(cell) != null
+                && (cells.at(cell).equals(material) || MultipartBlock.material(cells.at(cell)).isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO)), i),
+                i * MultipartGeometry.TINT_STRIDE, result);
         }
         return result;
     }

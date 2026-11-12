@@ -16,7 +16,7 @@ if xvfb is None:
 if not xvfb:
     raise SystemExit("Xvfb is required; run inside nix develop")
 if len(sys.argv) < 2:
-    raise SystemExit("Usage: headless-test.py ./gradlew runClientGameTest [options]")
+    raise SystemExit("Usage: headless-test.py ./gradlew :neoforge:runClientTest [options]")
 started = time.time()
 with (root / "build" / "xvfb.log").open("w") as log:
     display = subprocess.Popen([xvfb, "-displayfd", "1", "-screen", "0", "1280x720x24", "-nolisten", "tcp"],
@@ -33,15 +33,13 @@ with (root / "build" / "xvfb.log").open("w") as log:
         result = subprocess.run(sys.argv[1:], env=environment, cwd=root)
         if result.returncode:
             raise SystemExit(result.returncode)
-        for name in (("building_palette_neoforge_shapes.png", "building_palette_neoforge_distance.png")
-                     if os.environ.get("BUILDING_PALETTE_TEST_LOADER") == "neoforge" else ("building_palette_shapes.png", "building_palette_inventory.png")):
-            screenshot = root / "build" / "previews" / name
-            if not screenshot.exists() or screenshot.stat().st_mtime < started:
-                raise SystemExit("Minecraft exited without completing the graphical test: " + name)
-        if os.environ.get("BUILDING_PALETTE_TEST_LOADER") == "neoforge":
-            marker = root / "build/neoforge-client-result.json"
-            if not marker.exists() or marker.stat().st_mtime < started or not json.loads(marker.read_text())["passed"]:
-                raise SystemExit("NeoForge client assertions did not pass; inspect build/neoforge-client-result.json")
+        marker = root / "build/client-result.json"
+        if not marker.exists() or marker.stat().st_mtime < started:
+            raise SystemExit("Minecraft exited without completing the graphical test")
+        result = json.loads(marker.read_text())
+        print(result["message"])
+        if not result["passed"]:
+            raise SystemExit("Client assertions did not pass")
     finally:
         display.terminate()
         display.wait(timeout=10)
