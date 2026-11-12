@@ -2,7 +2,7 @@
 
 <p align="center"><b>Every shape of a block in one stack. Build on a half-block grid, mix materials inside a block, and pay only for what you place.</b></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="Section divider" width="100%"></p>
 
 <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_shapes.png" alt="Shapes" height="54">
 
@@ -12,7 +12,7 @@ Hold **Alt** and scroll to change a stack's shape, in your hand or in any invent
 
 Leftovers are kept: a **+** beside the count means material waiting for a smaller shape.
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="Section divider" width="100%"></p>
 
 <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_combine.png" alt="Combine" height="54">
 
@@ -22,7 +22,7 @@ Pieces snap to a half-block grid and stack inside one block, in any mix of mater
 
 <p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_window.jpg" alt="Window with a protruding sill and lintel" width="100%"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="Section divider" width="100%"></p>
 
 <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_offgrid.png" alt="Offgrid" height="54">
 
@@ -30,7 +30,7 @@ Fences, walls, panes, bars and chains pass through any piece, placed in either o
 
 <p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_bench.jpg" alt="Bench of oak steps on fence legs" width="100%"></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="Section divider" width="100%"></p>
 
 <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_controls.png" alt="Controls" height="54">
 
@@ -43,7 +43,7 @@ Fences, walls, panes, bars and chains pass through any piece, placed in either o
 
 Precise half-grid placement, placement preview and part highlighting are in **Mods → Building Palette → Configure** (Mod Menu on Fabric).
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/divider.png" alt="Section divider" width="100%"></p>
 
 <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/header_requirements.png" alt="Requirements" height="54">
 
