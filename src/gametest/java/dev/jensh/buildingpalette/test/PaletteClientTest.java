@@ -9,6 +9,7 @@ import net.minecraft.world.item.*;
 
 public final class PaletteClientTest implements FabricClientGameTest {
     @Override public void runTest(ClientGameTestContext context) {
+        if (Boolean.getBoolean("building_palette.showcase")) return;
         try (var world = context.worldBuilder().create()) {
             world.getServer().runCommand("time set noon");
             world.getServer().runCommand("weather clear");

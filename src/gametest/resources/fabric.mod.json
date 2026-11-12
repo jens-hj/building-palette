@@ -9,7 +9,8 @@
       "dev.jensh.buildingpalette.test.PaletteGameTests"
     ],
     "fabric-client-gametest": [
-      "dev.jensh.buildingpalette.test.PaletteClientTest"
+      "dev.jensh.buildingpalette.test.PaletteClientTest",
+      "dev.jensh.buildingpalette.test.ShowcaseClientTest"
     ]
   },
   "depends": {

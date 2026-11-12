@@ -70,6 +70,11 @@ tasks.named('runClientGameTest') {
     def fixtureMods = providers.gradleProperty('rpgMods')
     def testShaders = providers.gradleProperty('paletteShaders').map { it.toBoolean() }.getOrElse(false)
     if (testShaders) jvmArgs '-Dbuilding_palette.shader_test=true'
+    // Modrinth page images: -PpaletteShowcase renders them into build/showcase.
+    if (providers.gradleProperty('paletteShowcase').isPresent()) {
+        jvmArgs '-Dbuilding_palette.showcase=true'
+        jvmArgs '-Dbuilding_palette.showcase_dir=' + rootProject.file('build/showcase').absolutePath
+    }
     if (fixtureMods.isPresent()) {
         dependsOn 'harnessAgent'
         jvmArgs '-Dbuilding_palette.rpg_test=true'
