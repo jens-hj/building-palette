@@ -116,3 +116,42 @@ modrinth {
     }
 }
 tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
+
+// The released jar under production (intermediary) names: the same suites as the dev runs.
+tasks.register('testmodJar', Jar) {
+    from sourceSets.testmod.output
+    archiveClassifier = 'testmod-dev'
+}
+tasks.register('remapTestmodJar', net.fabricmc.loom.task.RemapJarTask) {
+    inputFile = tasks.named('testmodJar').flatMap { it.archiveFile }
+    classpath.from sourceSets.testmod.compileClasspath
+    archiveClassifier = 'testmod'
+    addNestedDependencies = false
+}
+dependencies {
+    productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    productionRuntimeMods "maven.modrinth:clutternomore:${project.fabric_clutternomore_version}"
+    productionRuntimeMods "maven.modrinth:offgrid:${project.fabric_offgrid_version}"
+    // Another renderer under the multipart model: -Psodium
+    if (providers.gradleProperty('sodium').isPresent()) productionRuntimeMods "maven.modrinth:sodium:${project.fabric_sodium_version}"
+}
+tasks.register('prodGameTest', net.fabricmc.loom.task.prod.ServerProductionRunTask) {
+    mods.from tasks.named('remapTestmodJar')
+    jvmArgs.add '-Dfabric-api.gametest'
+    runDir = layout.buildDirectory.dir('run/prodGameTest')
+}
+tasks.register('prodClientTest', net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+    mods.from tasks.named('remapTestmodJar')
+    jvmArgs.addAll '-Dbuilding_palette.client_test=true',
+        "-Dbuilding_palette.previews=${rootProject.file('build/previews')}".toString(),
+        "-Dbuilding_palette.test_result=${rootProject.file('build/client-result.json')}".toString()
+    runDir = layout.buildDirectory.dir('run/prodClientTest')
+    // A software renderer needs longer before the first chunk meshes exist.
+    if (providers.gradleProperty('sodium').isPresent()) jvmArgs.add '-Dbuilding_palette.settle_ticks=400'
+    doFirst {
+        def directory = runDir.get().asFile
+        directory.mkdirs()
+        new File(directory, 'options.txt').text = 'soundCategory_master:0.0\nsoundCategory_music:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\nonboardAccessibility:false\nnarrator:0\npauseOnLostFocus:false\ntutorialStep:none\n'
+        def config = new File(directory, 'config/building_palette.json'); config.parentFile.mkdirs(); config.text = '{"placementPreview":false,"precisePlacement":false}\n'
+    }
+}
