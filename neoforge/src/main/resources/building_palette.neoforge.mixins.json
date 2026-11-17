@@ -6,7 +6,8 @@
     "PickBlockMixin",
     "StackCapacityMixin",
     "ResourceCapacityMixin",
-    "SophisticatedSorterMixin"
+    "SophisticatedSorterMixin",
+    "SophisticatedToolSwapperMixin"
   ],
   "injectors": {
     "defaultRequire": 1
