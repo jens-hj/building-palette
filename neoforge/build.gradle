@@ -77,7 +77,7 @@ tasks.named('runClientTest') {
                 java.nio.file.Files.copy(source.toPath(),new File(target,source.name).toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING)
             }
         }
-        new File(directory, 'options.txt').text = 'soundCategory_master:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\nonboardAccessibility:false\n'
+        new File(directory, 'options.txt').text = 'soundCategory_master:0.0\nsoundCategory_music:0.0\nnarrator:0\npauseOnLostFocus:false\nonboardAccessibility:false\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\nonboardAccessibility:false\n'
         def config = new File(directory, 'config/building_palette.json'); config.parentFile.mkdirs(); config.text = '{"placementPreview":false,"precisePlacement":false}\n'
     }
 }
@@ -91,10 +91,11 @@ def currentChangelog = providers.fileContents(rootProject.layout.projectDirector
     section ? section.substring(section.indexOf('\n') + 1).trim() : ''
 }
 modrinth {
+    debugMode = providers.gradleProperty('modrinthDryRun').isPresent()
     token = modrinthToken
     projectId = 'hBaJZHIg'
-    versionNumber = "${project.version}+neoforge"
-    versionName = "${project.version} (NeoForge)"
+    versionNumber = "${project.version}+${project.minecraft_version}-neoforge"
+    versionName = "${project.version} (NeoForge ${project.minecraft_version})"
     versionType = 'alpha'
     environment = 'client_and_server'
     uploadFile = jar

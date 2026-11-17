@@ -44,7 +44,7 @@ for loader, directory, companions in [
                          {'project_id': 'mOgUt4GM', 'dependency_type': 'optional'}]
     (destination / f'metadata-{loader}.json').write_text(json.dumps({
         'name': f'Building Palette {version} ({loader.title()})',
-        'version': f'{version}+{loader}', 'version_type': 'alpha',
+        'version': f'{version}+26.3-{loader}', 'version_type': 'alpha',
         'game_versions': ['26.3'], 'loaders': [loader],
         'client_side': 'required', 'server_side': 'required', 'dependencies': dependencies,
     }, indent=2) + '\n')

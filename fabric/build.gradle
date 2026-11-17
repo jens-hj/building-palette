@@ -138,7 +138,7 @@ tasks.named('runClientGameTest') {
         paletteConfig.text = '{"placementPreview":false,"precisePlacement":false}\n'
         def options = new File(directory, 'options.txt')
         options.parentFile.mkdirs()
-        options.text = 'soundCategory_master:0.0\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\n'
+        options.text = 'soundCategory_master:0.0\nsoundCategory_music:0.0\nnarrator:0\npauseOnLostFocus:false\nonboardAccessibility:false\nfullscreen:false\nrenderDistance:6\nsimulationDistance:5\n'
     }
 }
 
@@ -160,10 +160,11 @@ def currentChangelog = providers.fileContents(rootProject.layout.projectDirector
     section ? section.substring(section.indexOf('\n') + 1).trim() : ''
 }
 modrinth {
+    debugMode = providers.gradleProperty('modrinthDryRun').isPresent()
     token = modrinthToken
     projectId = 'hBaJZHIg'
-    versionNumber = "${project.version}+fabric"
-    versionName = "${project.version} (Fabric)"
+    versionNumber = "${project.version}+${project.minecraft_version}-fabric"
+    versionName = "${project.version} (Fabric ${project.minecraft_version})"
     versionType = 'alpha'
     environment = 'client_and_server'
     uploadFile = jar
