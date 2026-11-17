@@ -3,7 +3,7 @@
   "url": "https://modrinth.com/mod/building-palette",
   "status": "processing",
   "requested_status": "approved",
-  "version": "0.1.0-alpha.27",
+  "version": "0.1.0-alpha.27.1",
   "minecraft_version": "1.21.1",
   "version_type": "alpha",
   "environment": "client_and_server",
@@ -32,23 +32,23 @@
       ]
     },
     "neoforge": {
-      "version_id": "EQXfc3FU",
-      "version": "0.1.0-alpha.27+1.21.1-neoforge",
-      "url": "https://modrinth.com/mod/building-palette/version/EQXfc3FU",
+      "version_id": "fAtgP8Ki",
+      "version": "0.1.0-alpha.27.1+1.21.1-neoforge",
+      "url": "https://modrinth.com/mod/building-palette/version/fAtgP8Ki",
       "files": [
         {
-          "filename": "building-palette-0.1.0-alpha.27-neoforge.jar",
+          "filename": "building-palette-0.1.0-alpha.27.1-neoforge.jar",
           "hashes": {
-            "sha1": "7e1aa0f1924ee91e51452cbc8adecacddd076435",
-            "sha512": "a56e39d6286063294ebde7970ce578ccd4c75073fe84eca47e794b4e1179dd9b9a2774a7a8536476de7b1e584fc1aa273023c2a7c25ef4f34a7eb7ba582726bc"
+            "sha1": "f56c62fe2f1d4e4d678b78c3942db755271ddab0",
+            "sha512": "680336b08f14b3f58e8b4600fa5b820966b5e8924cb4ab70da494c0134c4900db1f60a996662048c52208513c2f84de768204719aa94a7741446a7582b6bee24"
           },
           "primary": true
         },
         {
-          "filename": "building-palette-0.1.0-alpha.27-neoforge-sources.jar",
+          "filename": "building-palette-0.1.0-alpha.27.1-neoforge-sources.jar",
           "hashes": {
-            "sha512": "3ded32bb0520a1e06119d6ab6e81c300da23650bc4e20b6c53c746e040852cc3d0e6b30a37fc0c024063e6895c6c3a368c05e8d811a6522dc806aed0dcdb0169",
-            "sha1": "7545eed1cd0148d9ed100e12edc959b8a6f55a98"
+            "sha512": "5e51e8053eb219fc93d6884048d3e427312c3273d4b2f4521660d57ce63b588752b1008b6b84d5c57b7e45dd8394c5d1089f2fa9ce94cb2f4c9c6d7e04052d02",
+            "sha1": "7b41e3c11faf83d6d6c234fcdbb01a1b65941e08"
           },
           "primary": false
         }
