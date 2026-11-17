@@ -98,6 +98,7 @@ def currentChangelog = providers.fileContents(rootProject.layout.projectDirector
     section ? section.substring(section.indexOf('\n') + 1).trim() : ''
 }
 modrinth {
+    debugMode = providers.gradleProperty('modrinthDryRun').isPresent()
     token = modrinthToken
     projectId = 'hBaJZHIg'
     versionNumber = "${project.version}+${project.minecraft_version}-neoforge"

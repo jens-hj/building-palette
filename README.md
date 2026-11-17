@@ -104,3 +104,5 @@ python scripts/neoforge-world-test.py     # native NeoForge save, edit, and reop
 ```
 
 NeoForge graphics integration can be tested with `-PneoGraphics` (Sodium 0.9.3-beta.4) and `-PneoBackpack`. The currently published Iris 1.11.7 is incompatible with that Sodium version; NeoForge shader testing awaits a compatible upstream release. See [compatibility notes](docs/COMPATIBILITY.md).
+
+Release numbering is shared across Minecraft branches: each release advances `alpha.N` for both 1.21.1 and 26.3. Minecraft and loader variants belong in release metadata, not additional alpha subversions.
