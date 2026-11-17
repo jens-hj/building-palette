@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.26
+
+For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
+
+- Fix crashing when taking building materials from oversized storage stacks, including Sophisticated Backpacks with stack upgrades. Clicking takes up to a normal palette stack and preserves the excess in storage; shift-click and double-click collection also preserve it.
+- Preserve fractional material when shrinking oversized stacks combined by storage mods.
+
 ## 0.1.0-alpha.25
 
 - Small Offgrid pieces such as end rods can stand on any free half cell of a combined block, also right beside a higher piece. Offgrid centres a piece on the box under the cursor, which in a combined block could land inside a neighbouring piece and refuse the placement; the clicked half cell is now tried as well.
