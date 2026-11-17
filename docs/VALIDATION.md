@@ -1,5 +1,11 @@
 # Validation — 2026-11-06
 
+## Shared loader release — alpha.28
+
+All four artifacts share alpha.28. Tool-swapper integration passes the real-upgrade regression on NeoForge 1.21.1 (30 tests), NeoForge 26.3 (30 tests), and Fabric 1.21.1 (29 tests). With optional Sophisticated mods absent, the server suites pass on both versions/loaders: 30 NeoForge tests per version, 29 Fabric tests on 1.21.1 and 28 on 26.3. Both complete builds pass the 414,333-assertion material/geometry suite. The Fabric 1.21.1 production jar's injection target was verified to use intermediary Minecraft names, while the optional mod's method remains unmapped.
+
+The Fabric test runtime exposes the port's own embedded Porting Lib libraries and Forge Config API Port's NightConfig libraries; none are bundled in Building Palette. Fabric 26.3 has no published Sophisticated Backpacks port, so no tool-swapper integration is claimed there. No graphical client tests or live-server deployment were performed for this server-side change.
+
 ## Automated checks
 
 - `./gradlew build`: 414,333 model assertions and all 19 required Minecraft server GameTests passed in alpha.15.
