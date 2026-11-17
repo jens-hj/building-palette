@@ -25,6 +25,7 @@ public final class PaletteGameTests {
     @GameTest public void connectedMining(GameTestHelper test) { new PaletteGameTestScenarios().connectedMining(test); }
     @GameTest public void nativeShapeDrops(GameTestHelper test) { new PaletteGameTestScenarios().nativeShapeDrops(test); }
     @GameTest public void repeatedCrafting(GameTestHelper test) { new PaletteGameTestScenarios().repeatedCrafting(test); }
+    @GameTest public void oversizedStorageTransfers(GameTestHelper test) { new PaletteGameTestScenarios().oversizedStorageTransfers(test); }
     @GameTest public void inventoryGestures(GameTestHelper test) { new PaletteGameTestScenarios().inventoryGestures(test); }
     @GameTest public void furnaceRemainder(GameTestHelper test) { new PaletteGameTestScenarios().furnaceRemainder(test); }
     @GameTest public void materialStacks(GameTestHelper test) { new PaletteGameTestScenarios().materialStacks(test); }

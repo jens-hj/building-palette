@@ -772,6 +772,63 @@ public final class PaletteGameTestScenarios {
         test.succeed();
     }
 
+    public void oversizedStorageTransfers(GameTestHelper test) {
+        var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var storage = new SimpleContainer(27) {
+            @Override public int getMaxStackSize() { return 4096; }
+            @Override public int getMaxStackSize(ItemStack stack) { return 4096; }
+        };
+        var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x3, 1, player.getInventory(), storage, 3);
+        // The reported stack is 248 cobblestone (1984 material units). Exercise
+        // the injected menu entry points, including a fractional oversized stack.
+        for (ItemStack seed : new ItemStack[]{new ItemStack(Items.COBBLESTONE, 248),
+                MaterialStacks.withStoredUnits(new ItemStack(Items.OAK_STAIRS), 12001)}) {
+            int total = MaterialStacks.units(seed);
+            // Storage mods persist the item description and count separately.
+            var ops = RegistryOps.create(NbtOps.INSTANCE, test.getLevel().registryAccess());
+            ItemStack description = seed.copyWithCount(1);
+            var encoded = ItemStack.CODEC.encodeStart(ops, description).getOrThrow();
+            ItemStack restored = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+            restored.setCount(seed.getCount());
+            test.assertValueEqual(MaterialStacks.units(restored), total, "Storage description roundtrip preserves large remainder seal");
+            ItemStack merged = seed.copy();
+            merged.setCount(seed.getCount() * 2);
+            int beforeShrink = MaterialStacks.units(merged);
+            merged.shrink(1);
+            test.assertValueEqual(MaterialStacks.units(merged), beforeShrink - Materials.get(seed).shape().cost,
+                "Shrinking foreign oversized merges does not truncate material");
+            for (int button : new int[]{0, 1}) {
+                storage.clearContent(); menu.setCarried(ItemStack.EMPTY);
+                storage.setItem(0, seed.copy());
+                menu.clicked(0, button, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+                test.assertValueEqual(MaterialStacks.units(menu.getCarried()), 512, "Oversized pickup caps cursor at normal capacity");
+                test.assertValueEqual(MaterialStacks.units(storage.getItem(0)), total - 512, "Pickup preserves oversized storage remainder");
+                // Deposit into an ordinary empty slot and take another stack.
+                menu.clicked(1, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+                menu.clicked(0, button, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+                test.assertValueEqual(MaterialStacks.units(storage.getItem(0)) + MaterialStacks.units(storage.getItem(1))
+                    + MaterialStacks.units(menu.getCarried()), total, "Repeated pickup conserves all material");
+            }
+            storage.clearContent(); player.getInventory().clearContent(); menu.setCarried(ItemStack.EMPTY);
+            storage.setItem(0, seed.copy());
+            menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+            int moved = 0;
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                int units = MaterialStacks.units(player.getInventory().getItem(i));
+                test.assertTrue(units <= 512, "Shift click respects normal inventory capacity");
+                moved += units;
+            }
+            test.assertValueEqual(moved + MaterialStacks.units(storage.getItem(0)), total, "Shift click preserves all material");
+            test.assertTrue(storage.getItem(0).isEmpty(), "Shift click drains storage when inventory has room");
+            storage.clearContent(); storage.setItem(0, seed.copy());
+            menu.setCarried(MaterialStacks.withUnits(seed, 8));
+            menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.PICKUP_ALL, player);
+            test.assertValueEqual(MaterialStacks.units(menu.getCarried()), 512, "Collection caps cursor");
+            test.assertValueEqual(MaterialStacks.units(storage.getItem(0)), total - 504, "Collection preserves oversized remainder");
+        }
+        test.succeed();
+    }
+
     public void inventoryGestures(GameTestHelper test) {
         var player = test.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
         var chest = new SimpleContainer(27);
