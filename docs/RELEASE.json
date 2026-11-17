@@ -3,51 +3,52 @@
   "url": "https://modrinth.com/mod/building-palette",
   "status": "processing",
   "requested_status": "approved",
-  "version": "0.1.0-alpha.25",
+  "version": "0.1.0-alpha.26",
+  "minecraft_version": "26.3",
   "version_type": "alpha",
   "environment": "client_and_server",
   "releases": {
     "fabric": {
-      "version_id": "tMZnWIxS",
-      "version": "0.1.0-alpha.25+fabric",
-      "url": "https://modrinth.com/mod/building-palette/version/tMZnWIxS",
+      "version_id": "OJQlLlXc",
+      "version": "0.1.0-alpha.26+26.3-fabric",
+      "url": "https://modrinth.com/mod/building-palette/version/OJQlLlXc",
       "files": [
         {
-          "filename": "building-palette-0.1.0-alpha.25-fabric.jar",
+          "filename": "building-palette-0.1.0-alpha.26-fabric.jar",
           "hashes": {
-            "sha512": "ba7e7a8f1badb75f619f955cb9b780df32fa3080a7f76d0c0d8d7ea450053238dc0adfea89976a9683d631722353fbddee54bb82b14db8f8385c21d4e8e94bd5",
-            "sha1": "466c919d43be3bd60d8409ff978965b3a7420007"
+            "sha1": "8842ac74005a2a4b6156be354015bb78d8f734ca",
+            "sha512": "e289b1a75ade96a83974614eb37c859987f8cc7a3d699b682b75334484d216d3e8b47e80ab9e68df20e60159fe0bcd2f0b0ddbe5c5d52fc798bc11f0f7e9a56a"
           },
           "primary": true
         },
         {
-          "filename": "building-palette-0.1.0-alpha.25-fabric-sources.jar",
+          "filename": "building-palette-0.1.0-alpha.26-fabric-sources.jar",
           "hashes": {
-            "sha1": "baefa23bd53c5ab4a023c9cb683b81049dc9849d",
-            "sha512": "fe716603ffa0c1cd506088d03562e03cb8e572e9f3831b54053fb639cb4c88c6ec66837fb17fb938bf09b7bca6984df14ac19b668dce5ad485550b715a21119b"
+            "sha1": "2cdc00e58a1df0c6c20c051d7a7567b62cc6ab37",
+            "sha512": "bee35e5ccc031924d7cac62e5c0ec3d6e8857467a051784a42746ae36f093d8bf8593a92227dd16c77e5b1f411ec60e9f734efea8326666a3ae501aa645e411e"
           },
           "primary": false
         }
       ]
     },
     "neoforge": {
-      "version_id": "5vnZWovo",
-      "version": "0.1.0-alpha.25+neoforge",
-      "url": "https://modrinth.com/mod/building-palette/version/5vnZWovo",
+      "version_id": "hfdo9Wjc",
+      "version": "0.1.0-alpha.26+26.3-neoforge",
+      "url": "https://modrinth.com/mod/building-palette/version/hfdo9Wjc",
       "files": [
         {
-          "filename": "building-palette-0.1.0-alpha.25-neoforge.jar",
+          "filename": "building-palette-0.1.0-alpha.26-neoforge.jar",
           "hashes": {
-            "sha512": "44e3fe29ad5f4d87955ad18b5ec17089817c3b62f71a4c6895b21f074925b7e9c88269ef80a31b8fb590c2777337f72cbdbeac5df92243e060824139460d67e2",
-            "sha1": "ccf04fe130db63d0d706c162191ac8be9ea59a1d"
+            "sha1": "82f130b8e9f92acc0d561ccfff97cbf46bc450c5",
+            "sha512": "5d905beaf3c50acb92dc938ae2330d8b6ff80fbc311cbcccda18e4d0205b0d211a90c24f63584eeb093dd0eafc7e7b06f95b218bbfc715c8cf0b7b65b6184e9f"
           },
           "primary": true
         },
         {
-          "filename": "building-palette-0.1.0-alpha.25-neoforge-sources.jar",
+          "filename": "building-palette-0.1.0-alpha.26-neoforge-sources.jar",
           "hashes": {
-            "sha1": "5ba0a7fbbf830e76b561dd567d150bc6eb70c295",
-            "sha512": "659bc1c877aab3ce86bfa1bac47fa1d2f06fc1d6ada9e1f5115b6446ed810fa9971e54b79d3c52caadb591693be47c84e6bf9539be7b4ede80e47dc7d05f32c3"
+            "sha512": "b068db93cb90be9c193fbee54b6d82b621a8a893aacaeed18e2c863bff5bd6b8a8b6d5d6c3ee79f3059c9b75f13e9d1bd7e8e12f27fa140bcb7413a3b59631c2",
+            "sha1": "f46864710e51d3df3a8dd2b7b17a2f118909441b"
           },
           "primary": false
         }
