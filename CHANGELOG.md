@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.28
+
+For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge. Supersedes the 1.21.1 NeoForge alpha.27.1 patch.
+
+- Sophisticated Backpacks' tool swapper selects tools for the material you aim at inside combined blocks, including when switching between wood, stone, and dirt in the same block. Supported on NeoForge 1.21.1/26.3 and with the Sophisticated Backpacks Fabric port on 1.21.1.
+- All four builds share alpha.28. Fabric 26.3 is a version-alignment release; no Sophisticated Backpacks Fabric port is published for that Minecraft version.
+
 ## 0.1.0-alpha.27
 
 For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
