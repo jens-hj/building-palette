@@ -16,6 +16,7 @@ public final class NeoPaletteTests {
         if (Boolean.getBoolean("building_palette.client_test") && net.neoforged.fml.loading.FMLEnvironment.getDist() == net.neoforged.api.distmarker.Dist.CLIENT) NeoClientTest.install();
         bus.addListener((RegisterEvent event) -> {
             if (!event.getRegistryKey().equals(Registries.TEST_FUNCTION)) return;
+            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("sophisticatedtoolswapper"), () -> helper -> { if (net.neoforged.fml.ModList.get().isLoaded("sophisticatedbackpacks")) SophisticatedToolSwapperTest.run(helper); else helper.succeed(); });
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("nativeresourcebalance"), () -> NeoResourceTest::verify);
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("stepsalwaysusemultipartplacement"), () -> helper -> new PaletteGameTestScenarios().stepsAlwaysUseMultipartPlacement(helper));
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("placementchecksexactpieceagainstplayer"), () -> helper -> new PaletteGameTestScenarios().placementChecksExactPieceAgainstPlayer(helper));
@@ -49,6 +50,7 @@ public final class NeoPaletteTests {
         });
         bus.addListener((RegisterGameTestsEvent event) -> {
             var environment = event.registerEnvironment(BuildingPalette.id("default"), new TestEnvironmentDefinition.AllOf());
+            event.registerTest(BuildingPalette.id("sophisticatedtoolswapper"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("sophisticatedtoolswapper")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
             event.registerTest(BuildingPalette.id("nativeresourcebalance"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("nativeresourcebalance")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
             event.registerTest(BuildingPalette.id("stepsalwaysusemultipartplacement"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("stepsalwaysusemultipartplacement")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));
             event.registerTest(BuildingPalette.id("placementchecksexactpieceagainstplayer"), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, BuildingPalette.id("placementchecksexactpieceagainstplayer")), new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, BuildingPalette.id("empty"), 100, 1, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false, 0)));

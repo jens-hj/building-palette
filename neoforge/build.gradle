@@ -11,6 +11,11 @@ neoForge {
     mods { building_palette { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } }
 }
 dependencies {
+    compileOnly "maven.modrinth:sophisticated-backpacks:WEwNaMhT"
+    if (providers.gradleProperty('toolSwapper').isPresent()) {
+        runtimeOnly "maven.modrinth:sophisticated-backpacks:WEwNaMhT"
+        runtimeOnly "maven.modrinth:sophisticated-core:DRZnyP7g"
+    }
     compileOnly "maven.modrinth:sophisticated-core:DRZnyP7g"
     if (providers.gradleProperty("sophisticated").isPresent()) {
         runtimeOnly "maven.modrinth:sophisticated-core:DRZnyP7g"
