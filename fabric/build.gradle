@@ -18,6 +18,14 @@ sourceSets {
     }
 }
 def clientRunDirectory = file('build/run/clientTest')
+// Porting Lib is bundled inside Sophisticated Core. Expose those exact embedded
+// libraries to Loom for compilation/remapping; no extra libraries ship in our jar.
+def sophisticatedCoreJar = configurations.detachedConfiguration(
+    dependencies.create('maven.modrinth:sophisticated-core-unofficial-fabric-port:ZLVrtF0Q')).singleFile
+def sophisticatedLibraries = zipTree(sophisticatedCoreJar).matching {
+    include 'META-INF/jars/*.jar'
+    exclude 'META-INF/jars/mixinextras-*.jar'
+}.files
 loom {
     mods {
         building_palette { sourceSet sourceSets.main }
@@ -40,6 +48,19 @@ loom {
     }
 }
 dependencies {
+    modCompileOnly files(sophisticatedLibraries)
+    modCompileOnly "maven.modrinth:sophisticated-backpacks-unoffical-fabric-port:nHhuPdda"
+    modCompileOnly "maven.modrinth:sophisticated-core-unofficial-fabric-port:ZLVrtF0Q"
+    if (providers.gradleProperty('toolSwapper').isPresent()) {
+        modLocalRuntime "maven.modrinth:forge-config-api-port:N5qzq0XV"
+        // Loom's dev classpath does not unpack Forge Config API Port's NightConfig jars.
+        def configPortJar = configurations.detachedConfiguration(
+            dependencies.create('maven.modrinth:forge-config-api-port:N5qzq0XV')).singleFile
+        localRuntime files(zipTree(configPortJar).matching { include 'META-INF/jars/*.jar' }.files)
+        modLocalRuntime files(sophisticatedLibraries)
+        modLocalRuntime "maven.modrinth:sophisticated-backpacks-unoffical-fabric-port:nHhuPdda"
+        modLocalRuntime "maven.modrinth:sophisticated-core-unofficial-fabric-port:ZLVrtF0Q"
+    }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"

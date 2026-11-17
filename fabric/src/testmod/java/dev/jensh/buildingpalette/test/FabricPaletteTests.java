@@ -7,6 +7,8 @@ import net.minecraft.gametest.framework.*;
 public final class FabricPaletteTests {
     private static final String EMPTY = "building_palette:empty";
     @GameTest(template = EMPTY, timeoutTicks = 120)
+    public void sophisticatedToolSwapper(GameTestHelper test) { if (FabricLoader.getInstance().isModLoaded("sophisticatedbackpacks")) SophisticatedToolSwapperTest.run(test); else test.succeed(); }
+    @GameTest(template = EMPTY, timeoutTicks = 120)
     public void oversizedStorageTransfers(GameTestHelper test) { new PaletteGameTestScenarios().oversizedStorageTransfers(test); }
     @GameTest(template = EMPTY, timeoutTicks = 120)
     public void stepsAlwaysUseMultipartPlacement(GameTestHelper test) { new PaletteGameTestScenarios().stepsAlwaysUseMultipartPlacement(test); }
