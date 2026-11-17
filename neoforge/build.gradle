@@ -44,6 +44,11 @@ neoForge {
 }
 if (packMods.isPresent()) neoForge.runs.configureEach { jvmArgument '-Xmx6G' }
 dependencies {
+    testmodCompileOnly "maven.modrinth:sophisticated-backpacks:tJnK2DE1"
+    if (providers.gradleProperty('toolSwapper').isPresent()) {
+        runtimeOnly "maven.modrinth:sophisticated-backpacks:tJnK2DE1"
+        runtimeOnly "maven.modrinth:sophisticated-core:hhok4NTk"
+    }
     compileOnly "maven.modrinth:sophisticated-core:hhok4NTk"
     if (providers.gradleProperty("sophisticated").isPresent()) {
         runtimeOnly "maven.modrinth:sophisticated-core:hhok4NTk"
