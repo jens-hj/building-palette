@@ -41,7 +41,7 @@ public final class NeoPaletteTests {
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("repeatedcrafting"), () -> helper -> new PaletteGameTestScenarios().repeatedCrafting(helper));
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("inventorygestures"), () -> helper -> new PaletteGameTestScenarios().inventoryGestures(helper));
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("oversizedstoragetransfers"), () -> helper -> new PaletteGameTestScenarios().oversizedStorageTransfers(helper));
-            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("sophisticatedstoragemerges"), () -> helper -> SophisticatedStorageTest.run(helper));
+            event.register(Registries.TEST_FUNCTION, BuildingPalette.id("sophisticatedstoragemerges"), () -> helper -> { if (net.neoforged.fml.ModList.get().isLoaded("sophisticatedstorage")) SophisticatedStorageTest.run(helper); else helper.succeed(); });
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("furnaceremainder"), () -> helper -> new PaletteGameTestScenarios().furnaceRemainder(helper));
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("materialstacks"), () -> helper -> new PaletteGameTestScenarios().materialStacks(helper));
             event.register(Registries.TEST_FUNCTION, BuildingPalette.id("remaindertransfers"), () -> helper -> new PaletteGameTestScenarios().remainderTransfers(helper));
