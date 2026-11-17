@@ -3,7 +3,8 @@
   "package": "dev.jensh.buildingpalette.mixin.fabric",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "FurnaceFuelMixin"
+    "FurnaceFuelMixin",
+    "SophisticatedToolSwapperMixin"
   ],
   "client": [
     "BreakingCracksMixin"
