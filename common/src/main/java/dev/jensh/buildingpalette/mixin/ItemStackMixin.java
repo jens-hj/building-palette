@@ -67,7 +67,7 @@ public abstract class ItemStackMixin implements RawStack {
         MaterialStacks.clearRemainder(self);
         if (units <= 0) this.count = 0;
         else {
-            ItemStack exact = MaterialStacks.withUnits(self, Math.min(units, 512));
+            ItemStack exact = MaterialStacks.withStoredUnits(self, units);
             this.count = exact.getCount();
             if (MaterialStacks.missing(exact) != 0) {
                 self.set(BuildingPalette.MISSING.get(), MaterialStacks.missing(exact));

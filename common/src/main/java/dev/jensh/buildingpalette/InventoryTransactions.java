@@ -30,7 +30,7 @@ public final class InventoryTransactions {
         if (amount <= 0) return 0;
         int left = MaterialStacks.units(source) - amount;
         slot.setByPlayer(MaterialStacks.withUnits(target, stored + amount));
-        assign(source, MaterialStacks.withUnits(source, left));
+        assign(source, MaterialStacks.withStoredUnits(source, left));
         slot.setChanged();
         return amount;
     }
@@ -47,9 +47,9 @@ public final class InventoryTransactions {
         if (cursor.isEmpty() && managedSlot) {
             int units = MaterialStacks.units(existing);
             int take = button == 0 ? units : Math.max(1, (MaterialStacks.available(existing) + 1) / 2) * Materials.get(existing).shape().cost;
-            take = Math.min(units, take);
+            take = Math.min(Balance.CAPACITY, Math.min(units, take));
             menu.setCarried(MaterialStacks.withUnits(existing, take));
-            slot.setByPlayer(MaterialStacks.withUnits(existing, units - take));
+            slot.setByPlayer(MaterialStacks.withStoredUnits(existing, units - take));
         } else if (managedCursor && (existing.isEmpty() || MaterialStacks.sameMaterial(cursor, existing))) {
             // Do not mutate a carried stack that a prediction/synchronization snapshot
             // may still reference. Publish the completed cursor value atomically.
@@ -81,7 +81,7 @@ public final class InventoryTransactions {
             int take = Math.min(512 - MaterialStacks.units(cursor), MaterialStacks.units(source));
             if (take <= 0) break;
             cursor = MaterialStacks.withUnits(cursor, MaterialStacks.units(cursor) + take);
-            slot.setByPlayer(MaterialStacks.withUnits(source, MaterialStacks.units(source) - take));
+            slot.setByPlayer(MaterialStacks.withStoredUnits(source, MaterialStacks.units(source) - take));
         }
         menu.setCarried(cursor);
     }

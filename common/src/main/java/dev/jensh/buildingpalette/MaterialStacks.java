@@ -32,8 +32,7 @@ public final class MaterialStacks {
     public static void normalize(ItemStack stack) {
         if (intact(stack) || Materials.get(stack) == null) return;
         int units = units(stack);
-        if (units > Balance.CAPACITY) return; // an oversized merge stays conservative
-        InventoryTransactions.assign(stack, withUnits(stack, units));
+        InventoryTransactions.assign(stack, withStoredUnits(stack, units));
     }
     public static int available(ItemStack stack) {
         var s = Materials.get(stack);
@@ -43,13 +42,25 @@ public final class MaterialStacks {
         if (units == 0) return ItemStack.EMPTY;
         var s = Materials.get(target);
         if (s == null) throw new IllegalArgumentException("Not a building material");
-        Balance balance = new Balance(units);
+        new Balance(units); // Ordinary inventory stacks retain the 64-block limit.
+        return withStoredUnits(target, units);
+    }
+    /** Rebuild a storage-mod stack in its existing shape, without truncating its balance.
+     * Callers enforce the destination's capacity; upgraded storage can exceed a normal stack. */
+    public static ItemStack withStoredUnits(ItemStack target, int units) {
+        if (units == 0) return ItemStack.EMPTY;
+        if (units < 0) throw new IllegalArgumentException("Material units: " + units);
+        var s = Materials.get(target);
+        if (s == null) throw new IllegalArgumentException("Not a building material");
+        int cost = s.shape().cost;
+        int count = units / cost + (units % cost == 0 ? 0 : 1);
+        int missing = units % cost == 0 ? 0 : cost - units % cost;
         ItemStack result = target.copy();
         clearRemainder(result);
-        result.setCount(balance.slots(s.shape()));
-        if (balance.missing(s.shape()) != 0) {
-            result.set(BuildingPalette.MISSING.get(), balance.missing(s.shape()));
-            result.set(BuildingPalette.MISSING_FOR.get(), result.getCount());
+        result.setCount(count);
+        if (missing != 0) {
+            result.set(BuildingPalette.MISSING.get(), missing);
+            result.set(BuildingPalette.MISSING_FOR.get(), count);
         }
         return result;
     }

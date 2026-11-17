@@ -31,7 +31,7 @@ public final class BuildingPalette {
     public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(ID, path); }
     public static void components(BiConsumer<ResourceLocation, DataComponentType<?>> register) {
         MISSING.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 7)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
-        MISSING_FOR.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(1, 512)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+        MISSING_FOR.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(1, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         MATERIAL.bind(DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
         SHAPE.bind(DataComponentType.<Integer>builder().persistent(Codec.intRange(0, 8)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
         register.accept(id("missing_units"), MISSING.get()); register.accept(id("missing_for"), MISSING_FOR.get()); register.accept(id("material"), MATERIAL.get()); register.accept(id("shape"), SHAPE.get());
