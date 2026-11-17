@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.25.2
+
+Minecraft 1.21.1 builds only.
+
+- Fix crashing when taking building materials from oversized storage stacks, including Sophisticated Backpacks with stack upgrades. Clicking takes up to a normal palette stack and preserves the excess in storage; shift-click and double-click collection also preserve it.
+- Preserve fractional material when shrinking oversized stacks combined by storage mods.
+
 ## 0.1.0-alpha.25.1
 
 Minecraft 1.21.1 builds only.
