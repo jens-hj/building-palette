@@ -14,7 +14,7 @@ public final class NeoPaletteTests {
         if (Boolean.getBoolean("building_palette.client_test") && net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) NeoClientTest.install();
     }
     @GameTest(template = "empty", timeoutTicks = 120)
-    public static void sophisticatedstoragemerges(GameTestHelper test) { SophisticatedStorageTest.run(test); }
+    public static void sophisticatedstoragemerges(GameTestHelper test) { if (net.neoforged.fml.ModList.get().isLoaded("sophisticatedstorage")) SophisticatedStorageTest.run(test); else test.succeed(); }
     @GameTest(template = "empty", timeoutTicks = 120)
     public static void oversizedstoragetransfers(GameTestHelper test) { new PaletteGameTestScenarios().oversizedStorageTransfers(test); }
     @GameTest(template = "empty", timeoutTicks = 120)
