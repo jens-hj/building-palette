@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.26
+
+For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
+
+- Fix oversized storage withdrawals, including Sophisticated Backpacks with stack upgrades, while preserving all remaining material. Includes normal clicks, right-clicks, shift-clicks, and double-click collection.
+- Preserve fractional material when storage mods shrink oversized merged stacks.
+- Supersedes the 1.21.1-only alpha.25.2 patch with the shared alpha.26 release number.
+
 ## 0.1.0-alpha.25.2
 
 Minecraft 1.21.1 builds only.
