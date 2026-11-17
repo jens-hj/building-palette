@@ -44,6 +44,11 @@ neoForge {
 }
 if (packMods.isPresent()) neoForge.runs.configureEach { jvmArgument '-Xmx6G' }
 dependencies {
+    compileOnly "maven.modrinth:sophisticated-core:hhok4NTk"
+    if (providers.gradleProperty("sophisticated").isPresent()) {
+        runtimeOnly "maven.modrinth:sophisticated-core:hhok4NTk"
+        runtimeOnly "maven.modrinth:sophisticated-storage:acJAaBrG"
+    }
     implementation project(':common')
     implementation "maven.modrinth:clutternomore:${project.clutternomore_version}"
     implementation "maven.modrinth:offgrid:${project.offgrid_version}"
