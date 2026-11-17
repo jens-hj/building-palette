@@ -1,5 +1,11 @@
 # Validation — 2026-11-06
 
+## Sophisticated tool swapping — alpha.27.1 (NeoForge 1.21.1)
+
+The new regression fails without the compatibility mixin: a diamond pickaxe remains selected while aiming at the wood portion of a combined block. With the fix, all 30 server GameTests pass against Sophisticated Backpacks 3.26.21.2249 and Sophisticated Core 1.5.38. The regression aims at wood, stone, dirt, and wood again in one carrier, verifies ordinary stone still swaps correctly, and conserves all three tools. The suite also passes without Sophisticated mods installed, exercising the optional mixin/class-loading guards. The build passes 414,333 material and geometry assertions. Release metadata and absence of test classes were checked in the NeoForge jar.
+
+Separate isolated tests with Forgeweave 1.0.9 and the Engineering server's Sophisticated Core 1.5.37 passed intact pickaxe/shovel/hatchet swaps on ordinary blocks, including backpack discovery through inventory and Accessories. This does not claim full-pack or live-server validation. No client window was launched for this server-side selection change.
+
 ## Automated checks
 
 - `./gradlew build`: 414,333 model assertions and all 19 required Minecraft server GameTests passed in alpha.15.
