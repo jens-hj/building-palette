@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.27.1
+
+For Minecraft 1.21.1 on NeoForge.
+
+- Sophisticated Backpacks' tool swapper now selects tools for the material you aim at inside a combined block, including when switching between wood, stone, and dirt in the same block.
+
 ## 0.1.0-alpha.27
 
 For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
