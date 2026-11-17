@@ -1,5 +1,11 @@
 # Validation — 2026-11-06
 
+## Shared loader release — alpha.28
+
+All four artifacts share alpha.28. Tool-swapper integration passes the real-upgrade regression on NeoForge 1.21.1 (30 tests), NeoForge 26.3 (30 tests), and Fabric 1.21.1 (29 tests). With optional Sophisticated mods absent, the server suites pass on both versions/loaders: 30 NeoForge tests per version, 29 Fabric tests on 1.21.1 and 28 on 26.3. Both complete builds pass the 414,333-assertion material/geometry suite. The Fabric 1.21.1 production jar's injection target was verified to use intermediary Minecraft names, while the optional mod's method remains unmapped.
+
+The Fabric test runtime exposes the port's own embedded Porting Lib libraries and Forge Config API Port's NightConfig libraries; none are bundled in Building Palette. Fabric 26.3 has no published Sophisticated Backpacks port, so no tool-swapper integration is claimed there. No graphical client tests or live-server deployment were performed for this server-side change.
+
 ## Sophisticated tool swapping — alpha.27.1 (NeoForge 1.21.1)
 
 The new regression fails without the compatibility mixin: a diamond pickaxe remains selected while aiming at the wood portion of a combined block. With the fix, all 30 server GameTests pass against Sophisticated Backpacks 3.26.21.2249 and Sophisticated Core 1.5.38. The regression aims at wood, stone, dirt, and wood again in one carrier, verifies ordinary stone still swaps correctly, and conserves all three tools. The suite also passes without Sophisticated mods installed, exercising the optional mixin/class-loading guards. The build passes 414,333 material and geometry assertions. Release metadata and absence of test classes were checked in the NeoForge jar.

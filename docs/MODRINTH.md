@@ -18,7 +18,7 @@ Leftovers are kept: a **+** beside the count means material waiting for a smalle
 
 Pieces snap to a half-block grid and stack inside one block, in any mix of materials. Lay a step across another and they merge into an L, costing only the added corner. Mining takes the piece you aim at and returns exactly its material.
 
-On **NeoForge 1.21.1**, Sophisticated Backpacks' tool swapper selects tools for the material you aim at inside combined blocks (Building Palette **alpha.27.1+**).
+In **alpha.28+**, Sophisticated Backpacks' tool swapper selects tools for the material you aim at inside combined blocks. Supported on **NeoForge 1.21.1/26.3** and with the **Fabric 1.21.1 port**. There is no published Sophisticated Backpacks Fabric port for 26.3.
 
 <p align="center"><img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/merge.gif" alt="Steps and corners merging inside one block" width="40%"> <img src="https://raw.githubusercontent.com/jens-hj/building-palette/main/docs/page/detail_roof.jpg" alt="Brick gable under a stepped roof edge" width="58%"></p>
 

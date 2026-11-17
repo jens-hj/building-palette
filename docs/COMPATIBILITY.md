@@ -1,5 +1,11 @@
 # Compatibility and data
 
+## Sophisticated Backpacks tool swapper (alpha.28)
+
+Automatic tool selection resolves the material under the crosshair inside a combined block before comparing candidate tools. Changing aim from wood to stone or dirt in the same carrier updates the last-mined cache correctly. Filters, tool condition, inventory space and mining-speed selection remain the backpack mod's responsibility. Sophisticated Backpacks remains optional.
+
+Supported integrations: NeoForge 1.21.1 and 26.3, plus the unofficial Fabric port on 1.21.1. No Sophisticated Backpacks Fabric build is published for 26.3; that Fabric artifact shares the release number without claiming unavailable integration coverage. Run the applicable loader's server tests with `-PtoolSwapper`. The regression uses the real upgrade and checks material changes, ordinary stone and conservation of all tools.
+
 ## Inventory format
 
 A native shape retains its native item identity. The ordinary item count stores the number of whole pieces plus one reserved partial piece, if needed. `building_palette:missing_units` records how much of that final piece is missing. Total material is `count * selected_shape_cost - missing_units`.
