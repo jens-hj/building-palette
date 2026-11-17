@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.27
+
+For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
+
+- NeoForge: Sophisticated Storage sorting now merges fractional building-material leftovers into matching non-full stacks, including slots enlarged by stack upgrades. Sorting preserves exact quantities, memory slots, and excluded slots.
+- Manual material merges now respect upgraded storage capacity instead of stopping at a normal palette stack.
+- Preserve fractional stairs when sorting completely full upgraded storage.
+
 ## 0.1.0-alpha.26
 
 For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge.
