@@ -11,6 +11,11 @@ neoForge {
     mods { building_palette { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } }
 }
 dependencies {
+    compileOnly "maven.modrinth:sophisticated-core:DRZnyP7g"
+    if (providers.gradleProperty("sophisticated").isPresent()) {
+        runtimeOnly "maven.modrinth:sophisticated-core:DRZnyP7g"
+        runtimeOnly "maven.modrinth:sophisticated-storage:ClykrVPc"
+    }
     implementation project(':common')
     implementation 'maven.modrinth:clutternomore:aP8yK8nm'
     implementation 'maven.modrinth:offgrid:Dh9cO38a'

@@ -24,12 +24,18 @@ public final class InventoryTransactions {
         if (!slot.mayPlace(source) || (!existing.isEmpty() && !MaterialStacks.sameMaterial(existing, source))) return 0;
         ItemStack target = existing.isEmpty() ? source : existing;
         int stored = existing.isEmpty() ? 0 : MaterialStacks.units(existing);
+        ItemStack capacityProbe = target.copy();
+        MaterialStacks.clearRemainder(capacityProbe);
+        int pieces = slot.getMaxStackSize(capacityProbe);
+        int cost = Materials.get(target).shape().cost;
+        // Ordinary palette slots hold 512 units; storage overrides may raise that limit.
+        int capacity = MaterialStacks.storageCapacity(capacityProbe, pieces);
         if (slot.getMaxStackSize() < 64)
-            limitUnits = Math.min(limitUnits, Math.max(0, slot.getMaxStackSize() * Materials.get(target).shape().cost - stored));
-        int amount = Math.min(Math.min(Balance.CAPACITY - stored, MaterialStacks.units(source)), limitUnits);
+            capacity = Math.min(capacity, slot.getMaxStackSize() * cost);
+        int amount = Math.min(Math.min(Math.max(0, capacity - stored), MaterialStacks.units(source)), limitUnits);
         if (amount <= 0) return 0;
         int left = MaterialStacks.units(source) - amount;
-        slot.setByPlayer(MaterialStacks.withUnits(target, stored + amount));
+        slot.setByPlayer(MaterialStacks.withStoredUnits(target, stored + amount));
         assign(source, MaterialStacks.withStoredUnits(source, left));
         slot.setChanged();
         return amount;
@@ -69,7 +75,7 @@ public final class InventoryTransactions {
         boolean changed = false;
         for (int pass = 0; pass < 2; pass++) for (int i = 0; i < end - start && !source.isEmpty(); i++) {
             Slot slot = menu.getSlot(reverse ? end - 1 - i : start + i);
-            if ((pass == 0) == slot.hasItem()) changed |= insert(slot, source, 512) > 0;
+            if ((pass == 0) == slot.hasItem()) changed |= insert(slot, source, Integer.MAX_VALUE) > 0;
         }
         return changed;
     }

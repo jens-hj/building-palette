@@ -78,6 +78,17 @@ public final class MaterialStacks {
         }
         return aa.getComponents().equals(bb.getComponents());
     }
+    /** Translate a storage slot's piece limit without losing the fractional capacity
+     * of stairs: one ordinary stack is 512 units, even though it holds 85 whole stairs. */
+    public static int storageCapacity(ItemStack stack, int pieceLimit) {
+        if (pieceLimit <= 0) return 0;
+        var selection = Materials.get(stack);
+        if (selection == null) return pieceLimit;
+        int normal = Balance.CAPACITY / selection.shape().cost;
+        long units = (long)(pieceLimit / normal) * Balance.CAPACITY
+            + (long)(pieceLimit % normal) * selection.shape().cost;
+        return (int)Math.min(Integer.MAX_VALUE, units);
+    }
     public static int capacity(ItemStack stack) {
         var selection = Materials.get(stack);
         return selection == null ? stack.getMaxStackSize() : (Balance.CAPACITY + missing(stack)) / selection.shape().cost;
