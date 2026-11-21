@@ -1,5 +1,11 @@
 # Validation — 2026-11-06
 
+## Sable multipart collisions (alpha.28.1, NeoForge 1.21.1)
+
+Tested on NeoForge 21.1.266 with Engineering’s Sable 2.0.6, Create 6.0.10, Create Aeronautics 1.3.2 and Sable Physics Compat 1.3.0 in an isolated world. All 31 required server GameTests passed. A falling Sable stone body rested on a glass multipart floor, then dropped half a block and settled again when the glass moved to the bottom half. The block state stayed identical during the edit. A separate check read the occupied glass cells from a Create contraption’s captured block data.
+
+Without Sable and Create, all 31 NeoForge and 29 Fabric server tests passed. The shared model suite passed 414,333 assertions. The muted NeoForge client suite also passed its graphical, packet, inventory, partial mining and terrain checks with the physics mods on a private display. The release jar contains the compatibility code and excludes the test mod and optional dependencies.
+
 ## Shared loader release — alpha.28
 
 All four artifacts share alpha.28. Tool-swapper integration passes the real-upgrade regression on NeoForge 1.21.1 (30 tests), NeoForge 26.3 (30 tests), and Fabric 1.21.1 (29 tests). With optional Sophisticated mods absent, the server suites pass on both versions/loaders: 30 NeoForge tests per version, 29 Fabric tests on 1.21.1 and 28 on 26.3. Both complete builds pass the 414,333-assertion material/geometry suite. The Fabric 1.21.1 production jar's injection target was verified to use intermediary Minecraft names, while the optional mod's method remains unmapped.

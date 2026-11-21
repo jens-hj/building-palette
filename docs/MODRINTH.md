@@ -59,3 +59,5 @@ Install on **client and server**, Minecraft **26.3**, Java **25**.
 **Alpha:** back up your world first, and keep the mod installed while a world contains combined blocks. Combined blocks can't be pushed by pistons. Functional blocks are excluded; pack authors can adjust materials with the `building_palette:included` and `building_palette:excluded` item tags.
 
 On NeoForge, Sophisticated Storage stack upgrades are supported: sorting merges fractional material leftovers into matching non-full stacks while preserving exact quantities, memory slots, and excluded slots. Manual merges use the upgraded capacity too.
+
+On NeoForge 1.21.1, Create Aeronautics and Sable physics bodies collide with each occupied half-block cell in a combined block, including transparent pieces.
