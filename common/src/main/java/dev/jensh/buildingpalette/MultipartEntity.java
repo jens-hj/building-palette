@@ -49,13 +49,16 @@ public class MultipartEntity extends BlockEntity {
         for (String material : cells.copy()) saved.add(StringTag.valueOf(material == null ? "" : material));
         tag.put("cells", saved);
     }
+    public static Cells readCells(ListTag saved) {
+        String[] values = new String[8];
+        for (int i = 0; i < 8; i++) values[i] = saved.getString(i).isEmpty() ? null : saved.getString(i);
+        return new Cells(values);
+    }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         ListTag saved = tag.getList("cells", Tag.TAG_STRING);
         if (saved.size() != 8) { cells = new Cells(); return; }
-        String[] values = new String[8];
-        for (int i = 0; i < 8; i++) values[i] = saved.getString(i).isEmpty() ? null : saved.getString(i);
-        cells = new Cells(values);
+        cells = readCells(saved);
         // A block-entity-only update can leave its block state unchanged. Terrain
         // geometry must still be rebuilt from the new immutable render data.
         if (level != null && level.isClientSide()) {

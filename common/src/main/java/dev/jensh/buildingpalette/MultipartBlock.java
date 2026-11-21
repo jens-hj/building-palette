@@ -58,7 +58,7 @@ public final class MultipartBlock extends BaseEntityBlock implements SimpleWater
         return shape;
     }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        return world.getBlockEntity(pos) instanceof MultipartEntity e ? shape(e.cells(), 255) : Shapes.empty();
+        return world.getBlockEntity(pos) instanceof MultipartEntity e ? shape(e.cells(), 255) : OCCLUSION_SHAPES[state.getValue(OCCLUSION)];
     }
     @Override protected FluidState getFluidState(BlockState state) {
         return state.getValue(BlockStateProperties.WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);

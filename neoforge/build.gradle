@@ -43,7 +43,16 @@ neoForge {
     }
 }
 if (packMods.isPresent()) neoForge.runs.configureEach { jvmArgument '-Xmx6G' }
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.ryanhcode.dev/releases' } }
+        filter { includeGroup 'dev.ryanhcode.sable'; includeGroup 'dev.ryanhcode.sable-companion' }
+    }
+}
 dependencies {
+    compileOnly "maven.modrinth:create:UjX6dr61" // Captured block data on Create 6.0.10 contraptions
+    compileOnly("dev.ryanhcode.sable:sable-neoforge-1.21.1:2.0.6") { transitive = false }
+    testmodCompileOnly("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:1.6.0") { transitive = false }
     testmodCompileOnly "maven.modrinth:sophisticated-backpacks:tJnK2DE1"
     if (providers.gradleProperty('toolSwapper').isPresent()) {
         runtimeOnly "maven.modrinth:sophisticated-backpacks:tJnK2DE1"
@@ -121,6 +130,7 @@ modrinth {
     loaders = ['neoforge']
     changelog = currentChangelog
     dependencies {
+        optional.project 'sable'
         optional.project 'omnivault'
         optional.project 'travelersbackpack'
         required.version project.clutternomore_version
