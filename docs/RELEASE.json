@@ -1,9 +1,9 @@
 {
   "project_id": "hBaJZHIg",
   "url": "https://modrinth.com/mod/building-palette",
-  "status": "processing",
-  "requested_status": "approved",
-  "version": "0.1.0-alpha.28",
+  "status": "withheld",
+  "requested_status": "unlisted",
+  "version": "0.1.0-alpha.28.1",
   "minecraft_version": "1.21.1",
   "version_type": "alpha",
   "environment": "client_and_server",
@@ -32,23 +32,23 @@
       ]
     },
     "neoforge": {
-      "version_id": "PmOZR9LY",
-      "version": "0.1.0-alpha.28+1.21.1-neoforge",
-      "url": "https://modrinth.com/mod/building-palette/version/PmOZR9LY",
+      "version_id": "dGAIjW8T",
+      "version": "0.1.0-alpha.28.1+1.21.1-neoforge",
+      "url": "https://modrinth.com/mod/building-palette/version/dGAIjW8T",
       "files": [
         {
-          "filename": "building-palette-0.1.0-alpha.28-neoforge.jar",
+          "filename": "building-palette-0.1.0-alpha.28.1-neoforge.jar",
           "hashes": {
-            "sha1": "6d37e1e2f05a42b060c81f4e016cc469010d23ea",
-            "sha512": "59d324852389ee92d361ba6776016daaca7f41a28c302eb686893b19eeb4b9b06a5b4d17cf63fd994b094d249acb2bd50124ffadff1cc91ac5ece451533fd5bd"
+            "sha512": "91d7871d7a5ecba24a5520eebdda2b39ee7e2f71aec404a6582efe5a26f96e418acde45f1882085126132357ad4e32a71d6373ec2fb7efe6073f86a9fd488701",
+            "sha1": "eb88a14e57805ff02c66fa3b7069609e1d5928d3"
           },
           "primary": true
         },
         {
-          "filename": "building-palette-0.1.0-alpha.28-neoforge-sources.jar",
+          "filename": "building-palette-0.1.0-alpha.28.1-neoforge-sources.jar",
           "hashes": {
-            "sha1": "7b41e3c11faf83d6d6c234fcdbb01a1b65941e08",
-            "sha512": "5e51e8053eb219fc93d6884048d3e427312c3273d4b2f4521660d57ce63b588752b1008b6b84d5c57b7e45dd8394c5d1089f2fa9ce94cb2f4c9c6d7e04052d02"
+            "sha1": "5a57f228ef9e39922c49eba1652b066d95e98b52",
+            "sha512": "1a857d61fb3033e5a7aee2dbb0191b74b4d49e0ef3c6cd3032b6f670548cdb23cb4aa16e12980085dea4e7b9fc9937adfdc8fbec56fda763eaf298443aa003f4"
           },
           "primary": false
         }
