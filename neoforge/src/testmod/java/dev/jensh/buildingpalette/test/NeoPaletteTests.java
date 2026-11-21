@@ -13,6 +13,11 @@ public final class NeoPaletteTests {
     public NeoPaletteTests() {
         if (Boolean.getBoolean("building_palette.client_test") && net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) NeoClientTest.install();
     }
+    @GameTest(template = "empty", timeoutTicks = 140)
+    public static void sablemultipartfloor(GameTestHelper test) {
+        if (net.neoforged.fml.ModList.get().isLoaded("sable")) SableFloorTest.run(test);
+        else test.succeed();
+    }
     @GameTest(template = "empty", timeoutTicks = 120)
     public static void sophisticatedtoolswapper(GameTestHelper test) { if (net.neoforged.fml.ModList.get().isLoaded("sophisticatedbackpacks")) SophisticatedToolSwapperTest.run(test); else test.succeed(); }
     @GameTest(template = "empty", timeoutTicks = 120)
