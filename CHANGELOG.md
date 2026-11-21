@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.28.1
+
+For Minecraft 1.21.1 on NeoForge.
+
+- Create Aeronautics and Sable physics bodies land on the occupied parts of combined blocks, including glass. Open halves and missing corners stay open. Existing builds pick up the fix when their chunks load.
+
 ## 0.1.0-alpha.28
 
 For Minecraft 1.21.1 and 26.3, on Fabric and NeoForge. Supersedes the 1.21.1 NeoForge alpha.27.1 patch.
